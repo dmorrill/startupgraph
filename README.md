@@ -35,4 +35,4 @@ Early development. See [Issue #1](https://github.com/dmorrill/startupgraph/issue
 
 ## License
 
-TBD
+MIT
