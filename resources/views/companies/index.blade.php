@@ -35,13 +35,25 @@
                     @endforeach
                 </select>
             </div>
+            <div class="sm:w-48">
+                <select
+                    name="funded_recent"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                    <option value="">Last Fundraise</option>
+                    <option value="3m" {{ request('funded_recent') == '3m' ? 'selected' : '' }}>Past 3 months</option>
+                    <option value="6m" {{ request('funded_recent') == '6m' ? 'selected' : '' }}>Past 6 months</option>
+                    <option value="1y" {{ request('funded_recent') == '1y' ? 'selected' : '' }}>Past year</option>
+                    <option value="2y" {{ request('funded_recent') == '2y' ? 'selected' : '' }}>Past 2 years</option>
+                </select>
+            </div>
             <button
                 type="submit"
                 class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
                 Filter
             </button>
-            @if(request()->hasAny(['search', 'country']))
+            @if(request()->hasAny(['search', 'country', 'funded_recent', 'funded_after', 'funded_before']))
                 <a
                     href="{{ route('companies.index') }}"
                     class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-center"
@@ -90,7 +102,12 @@
                             </a>
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Last Fundraise
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'latest_funding_date', 'direction' => request('sort') === 'latest_funding_date' && request('direction') !== 'desc' ? 'desc' : 'asc']) }}" class="hover:text-gray-700">
+                                Last Fundraise
+                                @if(request('sort') === 'latest_funding_date')
+                                    <span class="ml-1">{{ request('direction') === 'desc' ? '↓' : '↑' }}</span>
+                                @endif
+                            </a>
                         </th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Employees
