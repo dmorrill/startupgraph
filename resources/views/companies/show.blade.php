@@ -72,9 +72,16 @@
                 </div>
             @endif
             @if($company->fundingRounds->sum('amount'))
+                @php $totalRaised = $company->fundingRounds->sum('amount'); @endphp
                 <div>
                     <p class="text-sm text-gray-500">Total Raised</p>
-                    <p class="text-lg font-semibold text-gray-900">${{ number_format($company->fundingRounds->sum('amount') / 1000000, 1) }}M</p>
+                    <p class="text-lg font-semibold text-gray-900">
+                        @if($totalRaised >= 1000000000)
+                            ${{ number_format($totalRaised / 1000000000, 1) }}B
+                        @else
+                            ${{ number_format($totalRaised / 1000000, 0) }}M
+                        @endif
+                    </p>
                 </div>
             @endif
         </div>
@@ -98,7 +105,13 @@
                         </div>
                         <div class="text-right mt-2 sm:mt-0">
                             @if($round->amount)
-                                <p class="font-semibold text-gray-900">${{ number_format($round->amount / 1000000, 1) }}M</p>
+                                <p class="font-semibold text-gray-900">
+                                    @if($round->amount >= 1000000000)
+                                        ${{ number_format($round->amount / 1000000000, 1) }}B
+                                    @else
+                                        ${{ number_format($round->amount / 1000000, 0) }}M
+                                    @endif
+                                </p>
                             @endif
                             @if($round->announced_date)
                                 <p class="text-sm text-gray-500">{{ $round->announced_date->format('M Y') }}</p>
