@@ -89,6 +89,9 @@
                                 @endif
                             </a>
                         </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Last Fundraise
+                        </th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Employees
                         </th>
@@ -122,6 +125,19 @@
                                     <span class="text-gray-400">—</span>
                                 @endif
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @if($company->latestFundingRound)
+                                    @if($company->latestFundingRound->source_url)
+                                        <a href="{{ $company->latestFundingRound->source_url }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline" onclick="event.stopPropagation()">
+                                            {{ $company->latestFundingRound->announced_date?->format('M Y') }}
+                                        </a>
+                                    @else
+                                        {{ $company->latestFundingRound->announced_date?->format('M Y') ?: '—' }}
+                                    @endif
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
                                 {{ $company->current_headcount ? number_format($company->current_headcount) : '—' }}
                             </td>
@@ -137,7 +153,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                                 No companies found matching your criteria.
                             </td>
                         </tr>

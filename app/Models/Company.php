@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Company extends Model
 {
@@ -32,6 +33,11 @@ class Company extends Model
     public function fundingRounds(): HasMany
     {
         return $this->hasMany(FundingRound::class);
+    }
+
+    public function latestFundingRound(): HasOne
+    {
+        return $this->hasOne(FundingRound::class)->latestOfMany('announced_date');
     }
 
     public function newsMentions(): HasMany

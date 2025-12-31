@@ -11,7 +11,8 @@ class CompanyController extends Controller
     {
         $query = Company::query()
             ->withSum('fundingRounds', 'amount')
-            ->withCount('fundingRounds');
+            ->withCount('fundingRounds')
+            ->with('latestFundingRound');
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
