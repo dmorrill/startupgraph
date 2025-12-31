@@ -103,6 +103,11 @@
                             @if($round->announced_date)
                                 <p class="text-sm text-gray-500">{{ $round->announced_date->format('M Y') }}</p>
                             @endif
+                            @if($round->source_url)
+                                <a href="{{ $round->source_url }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 hover:underline">
+                                    Source
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endforeach
