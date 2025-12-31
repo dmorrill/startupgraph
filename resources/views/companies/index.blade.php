@@ -81,11 +81,16 @@
                                 @endif
                             </a>
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Employees
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'funding_rounds_sum_amount', 'direction' => request('sort') === 'funding_rounds_sum_amount' && request('direction') !== 'desc' ? 'desc' : 'asc']) }}" class="hover:text-gray-700">
+                                Total Raised
+                                @if(request('sort') === 'funding_rounds_sum_amount')
+                                    <span class="ml-1">{{ request('direction') === 'desc' ? '↓' : '↑' }}</span>
+                                @endif
+                            </a>
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
-                            Description
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Employees
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Website
@@ -106,11 +111,19 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $company->founded_date?->format('Y') ?: '—' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $company->current_headcount ? number_format($company->current_headcount) : '—' }}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                                @if($company->funding_rounds_sum_amount)
+                                    @if($company->funding_rounds_sum_amount >= 1000000000)
+                                        ${{ number_format($company->funding_rounds_sum_amount / 1000000000, 1) }}B
+                                    @else
+                                        ${{ number_format($company->funding_rounds_sum_amount / 1000000, 0) }}M
+                                    @endif
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate hidden lg:table-cell">
-                                {{ Str::limit($company->description, 80) ?: '—' }}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                                {{ $company->current_headcount ? number_format($company->current_headcount) : '—' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 @if($company->website)
@@ -118,7 +131,7 @@
                                         {{ parse_url($company->website, PHP_URL_HOST) }}
                                     </a>
                                 @else
-                                    <span class="text-gray-500">—</span>
+                                    <span class="text-gray-400">—</span>
                                 @endif
                             </td>
                         </tr>

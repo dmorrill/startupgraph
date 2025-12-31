@@ -9,7 +9,9 @@ class CompanyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Company::query();
+        $query = Company::query()
+            ->withSum('fundingRounds', 'amount')
+            ->withCount('fundingRounds');
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
@@ -27,12 +29,12 @@ class CompanyController extends Controller
         $sortField = $request->get('sort', 'name');
         $sortDirection = $request->get('direction', 'asc');
 
-        $allowedSorts = ['name', 'founded_date', 'city', 'country'];
+        $allowedSorts = ['name', 'founded_date', 'city', 'country', 'funding_rounds_sum_amount'];
         if (in_array($sortField, $allowedSorts)) {
             $query->orderBy($sortField, $sortDirection === 'desc' ? 'desc' : 'asc');
         }
 
-        $companies = $query->paginate(24)->withQueryString();
+        $companies = $query->paginate(50)->withQueryString();
         $countries = Company::distinct()->pluck('country')->filter()->sort()->values();
 
         return view('companies.index', compact('companies', 'countries'));
