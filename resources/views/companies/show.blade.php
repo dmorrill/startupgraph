@@ -87,6 +87,45 @@
         </div>
     </div>
 
+    @if($company->product_highlights && count($company->product_highlights))
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">About the Product</h2>
+            <ul class="space-y-2">
+                @foreach($company->product_highlights as $highlight)
+                    <li class="flex items-start gap-2">
+                        <span class="text-blue-500 mt-1">&#x2022;</span>
+                        <span class="text-gray-700">{{ $highlight }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if($company->people->count())
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Leadership</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($company->people->where('pivot.is_current', true) as $person)
+                    <a href="{{ route('people.show', $person) }}" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        @if($person->photo_url)
+                            <img src="{{ $person->photo_url }}" alt="{{ $person->name }}" class="w-12 h-12 rounded-full object-cover">
+                        @else
+                            <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
+                                {{ collect(explode(' ', $person->name))->map(fn($n) => substr($n, 0, 1))->join('') }}
+                            </div>
+                        @endif
+                        <div>
+                            <p class="font-semibold text-gray-900 hover:text-blue-600">{{ $person->name }}</p>
+                            @if($person->pivot->role)
+                                <p class="text-sm text-gray-500">{{ $person->pivot->role }}</p>
+                            @endif
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     @if($company->fundingRounds->count())
         <div class="bg-white rounded-lg shadow-sm border p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Funding History</h2>

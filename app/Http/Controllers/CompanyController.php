@@ -79,7 +79,7 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
-        $company->load(['fundingRounds.investors', 'headcountSnapshots', 'newsMentions']);
+        $company->load(['fundingRounds.investors', 'headcountSnapshots', 'newsMentions', 'people']);
 
         return view('companies.show', compact('company'));
     }
