@@ -64,6 +64,30 @@ php artisan db:seed
 php artisan serve
 ```
 
+## Monthly maintenance
+
+To keep the data fresh, run these tasks monthly:
+
+### 1. Update employee headcounts
+
+Fetch latest employee counts from LinkedIn:
+
+```bash
+php artisan headcount:fetch-linkedin --limit=107
+```
+
+This creates new HeadcountSnapshot records when counts change, building historical data for the growth charts.
+
+### 2. Review new funding rounds
+
+Check for recent funding announcements and add new FundingRound records. Sources:
+- [Crunchbase News](https://news.crunchbase.com/)
+- [TechCrunch Fundraising](https://techcrunch.com/tag/fundraising/)
+
+### 3. Update company profiles (quarterly)
+
+Refresh product highlights and leadership data as companies evolve.
+
 ## Status
 
 Early development. See [Issue #1](https://github.com/dmorrill/startupgraph/issues/1) for the full vision and roadmap.
