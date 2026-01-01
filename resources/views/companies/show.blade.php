@@ -210,7 +210,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('headcountChart').getContext('2d');
 
-    const snapshots = @json($company->headcountSnapshots->sortBy('recorded_date')->values());
+    const snapshots = @json($company->headcountSnapshots->sortBy('recorded_date')->values(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 
     const labels = snapshots.map(s => {
         const date = new Date(s.recorded_date);

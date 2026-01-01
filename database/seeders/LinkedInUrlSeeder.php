@@ -65,7 +65,7 @@ class LinkedInUrlSeeder extends Seeder
             'klarna' => 'https://www.linkedin.com/company/klarna/',
             'launchdarkly' => 'https://www.linkedin.com/company/launchdarkly/',
             'linear' => 'https://www.linkedin.com/company/linearapp/',
-            'loom' => 'https://www.linkedin.com/company/laboratum-inc/',
+            'loom' => 'https://www.linkedin.com/company/useloom/',
             'marqeta' => 'https://www.linkedin.com/company/marqeta/',
             'mercury' => 'https://www.linkedin.com/company/mercuryfi/',
             'midjourney' => 'https://www.linkedin.com/company/midjourney/',
