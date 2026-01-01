@@ -21,31 +21,19 @@
                 @endif
             </div>
 
-            <div class="flex flex-wrap gap-2">
-                @if($company->website)
-                    <a
-                        href="{{ $company->website }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        Visit Website
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                        </svg>
-                    </a>
-                @endif
-                @if($company->linkedin_url)
-                    <a
-                        href="{{ $company->linkedin_url }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                    >
-                        LinkedIn
-                    </a>
-                @endif
-            </div>
+            @if($company->website)
+                <a
+                    href="{{ $company->website }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                    Visit Website
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                </a>
+            @endif
         </div>
 
         @if($company->description)
@@ -169,15 +157,18 @@
 
     @if($company->headcountSnapshots->count())
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Headcount History</h2>
-            <div class="space-y-2">
-                @foreach($company->headcountSnapshots->sortByDesc('recorded_date') as $snapshot)
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span class="text-gray-600">{{ $snapshot->recorded_date->format('M Y') }}</span>
-                        <span class="font-semibold text-gray-900">{{ number_format($snapshot->headcount) }} employees</span>
-                    </div>
-                @endforeach
-            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Employee Growth</h2>
+            @if($company->headcountSnapshots->count() >= 2)
+                <div class="h-64">
+                    <canvas id="headcountChart"></canvas>
+                </div>
+            @else
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <span class="text-gray-600">Current</span>
+                    <span class="font-semibold text-gray-900">{{ number_format($company->headcountSnapshots->first()->headcount) }} employees</span>
+                </div>
+                <p class="text-sm text-gray-500 mt-3">More data points needed to show growth chart.</p>
+            @endif
         </div>
     @endif
 
@@ -212,4 +203,66 @@
         </div>
     @endif
 </div>
+
+@if($company->headcountSnapshots->count() >= 2)
+@push('head')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('headcountChart').getContext('2d');
+
+    const snapshots = @json($company->headcountSnapshots->sortBy('recorded_date')->values());
+
+    const labels = snapshots.map(s => {
+        const date = new Date(s.recorded_date);
+        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    });
+
+    const data = snapshots.map(s => s.headcount);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Employees',
+                data: data,
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y.toLocaleString() + ' employees';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+@endpush
+@endif
 @endsection
