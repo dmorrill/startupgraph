@@ -75,6 +75,68 @@
         </div>
     </div>
 
+    @if($company->headcountSnapshots->count() || $company->fundingRounds->count())
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            @if($company->headcountSnapshots->count())
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Employee Growth</h2>
+                    @if($company->headcountSnapshots->count() >= 2)
+                        <div class="h-64">
+                            <canvas id="headcountChart"></canvas>
+                        </div>
+                    @else
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <span class="text-gray-600">Current</span>
+                            <span class="font-semibold text-gray-900">{{ number_format($company->headcountSnapshots->first()->headcount) }} employees</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-3">More data points needed to show growth chart.</p>
+                    @endif
+                </div>
+            @endif
+
+            @if($company->fundingRounds->count())
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Funding History</h2>
+                    <div class="space-y-3 max-h-72 overflow-y-auto">
+                        @foreach($company->fundingRounds->sortByDesc('announced_date') as $round)
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="font-semibold text-gray-900">
+                                        {{ ucfirst(str_replace('_', ' ', $round->round_type ?? 'Funding Round')) }}
+                                    </p>
+                                    @if($round->investors->count())
+                                        <p class="text-sm text-gray-500">
+                                            {{ $round->investors->pluck('name')->join(', ') }}
+                                        </p>
+                                    @endif
+                                </div>
+                                <div class="text-right mt-2 sm:mt-0">
+                                    @if($round->amount)
+                                        <p class="font-semibold text-gray-900">
+                                            @if($round->amount >= 1000000000)
+                                                ${{ number_format($round->amount / 1000000000, 1) }}B
+                                            @else
+                                                ${{ number_format($round->amount / 1000000, 0) }}M
+                                            @endif
+                                        </p>
+                                    @endif
+                                    @if($round->announced_date)
+                                        <p class="text-sm text-gray-500">{{ $round->announced_date->format('M Y') }}</p>
+                                    @endif
+                                    @if($round->source_url)
+                                        <a href="{{ $round->source_url }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 hover:underline">
+                                            Source
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+    @endif
+
     @if($company->product_highlights && count($company->product_highlights))
         <div class="bg-white rounded-lg shadow-sm border p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">About the Product</h2>
@@ -111,64 +173,6 @@
                     </a>
                 @endforeach
             </div>
-        </div>
-    @endif
-
-    @if($company->fundingRounds->count())
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Funding History</h2>
-            <div class="space-y-4">
-                @foreach($company->fundingRounds->sortByDesc('announced_date') as $round)
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                            <p class="font-semibold text-gray-900">
-                                {{ ucfirst(str_replace('_', ' ', $round->round_type ?? 'Funding Round')) }}
-                            </p>
-                            @if($round->investors->count())
-                                <p class="text-sm text-gray-500">
-                                    {{ $round->investors->pluck('name')->join(', ') }}
-                                </p>
-                            @endif
-                        </div>
-                        <div class="text-right mt-2 sm:mt-0">
-                            @if($round->amount)
-                                <p class="font-semibold text-gray-900">
-                                    @if($round->amount >= 1000000000)
-                                        ${{ number_format($round->amount / 1000000000, 1) }}B
-                                    @else
-                                        ${{ number_format($round->amount / 1000000, 0) }}M
-                                    @endif
-                                </p>
-                            @endif
-                            @if($round->announced_date)
-                                <p class="text-sm text-gray-500">{{ $round->announced_date->format('M Y') }}</p>
-                            @endif
-                            @if($round->source_url)
-                                <a href="{{ $round->source_url }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 hover:underline">
-                                    Source
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    @endif
-
-    @if($company->headcountSnapshots->count())
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Employee Growth</h2>
-            @if($company->headcountSnapshots->count() >= 2)
-                <div class="h-64">
-                    <canvas id="headcountChart"></canvas>
-                </div>
-            @else
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <span class="text-gray-600">Current</span>
-                    <span class="font-semibold text-gray-900">{{ number_format($company->headcountSnapshots->first()->headcount) }} employees</span>
-                </div>
-                <p class="text-sm text-gray-500 mt-3">More data points needed to show growth chart.</p>
-            @endif
         </div>
     @endif
 
