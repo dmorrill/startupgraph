@@ -17,11 +17,16 @@ class ScrapeTechCrunchFunding extends Command
 
     public function handle(TechCrunchService $techCrunchService): int
     {
-        $execution = ScheduledTaskExecution::create([
-            'task_type' => 'funding_scrape',
-            'status' => 'running',
-            'started_at' => now(),
-        ]);
+        $isDryRun = $this->option('dry-run');
+
+        $execution = null;
+        if (!$isDryRun) {
+            $execution = ScheduledTaskExecution::create([
+                'task_type' => 'funding_scrape',
+                'status' => 'running',
+                'started_at' => now(),
+            ]);
+        }
 
         try {
             $this->info('Fetching TechCrunch fundraising articles...');
@@ -33,10 +38,10 @@ class ScrapeTechCrunchFunding extends Command
             }
 
             $articles = $result['articles'];
-            $this->info("Found {$this->countArticles($articles)} funding-related articles.");
+            $this->info("Found " . count($articles) . " funding-related articles.");
 
             if (empty($articles)) {
-                $execution->update([
+                $execution?->update([
                     'status' => 'success',
                     'completed_at' => now(),
                     'metadata' => ['articles_found' => 0, 'matches' => 0, 'created' => 0],
@@ -50,7 +55,7 @@ class ScrapeTechCrunchFunding extends Command
             $this->info("Matched {$matches->count()} articles to tracked companies.");
 
             if ($matches->isEmpty()) {
-                $execution->update([
+                $execution?->update([
                     'status' => 'success',
                     'completed_at' => now(),
                     'metadata' => [
@@ -79,7 +84,7 @@ class ScrapeTechCrunchFunding extends Command
                     $this->line("Round: {$fundingInfo['round_type']}");
                 }
 
-                if ($this->option('dry-run')) {
+                if ($isDryRun) {
                     $this->comment('[Dry run - not saving]');
                     continue;
                 }
@@ -109,7 +114,7 @@ class ScrapeTechCrunchFunding extends Command
                 $created++;
             }
 
-            $execution->update([
+            $execution?->update([
                 'status' => 'success',
                 'completed_at' => now(),
                 'metadata' => [
@@ -126,7 +131,7 @@ class ScrapeTechCrunchFunding extends Command
             return self::SUCCESS;
 
         } catch (\Exception $e) {
-            $execution->update([
+            $execution?->update([
                 'status' => 'failed',
                 'completed_at' => now(),
                 'error_message' => $e->getMessage(),
@@ -135,10 +140,5 @@ class ScrapeTechCrunchFunding extends Command
             $this->error("Error: {$e->getMessage()}");
             return self::FAILURE;
         }
-    }
-
-    private function countArticles(array $articles): int
-    {
-        return count($articles);
     }
 }

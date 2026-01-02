@@ -58,8 +58,14 @@ class TechCrunchService
             $text = $title . ' ' . $content;
 
             foreach ($companies as $companyId => $companyName) {
-                // Check if company name appears in article
-                if (stripos($text, $companyName) !== false) {
+                // Skip very short names to avoid false positives
+                if (strlen($companyName) < 3) {
+                    continue;
+                }
+
+                // Check if company name appears as a whole word in article
+                $pattern = '/\b' . preg_quote($companyName, '/') . '\b/i';
+                if (preg_match($pattern, $text)) {
                     $fundingInfo = $this->extractFundingInfo($text);
 
                     if ($fundingInfo) {

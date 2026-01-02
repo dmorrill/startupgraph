@@ -49,9 +49,11 @@ class DispatchDailyHeadcounts extends Command
 
         $this->info("Dispatching headcount jobs for {$companies->count()} companies (day {$dayOfMonth})...");
 
-        foreach ($companies as $company) {
-            FetchCompanyHeadcountJob::dispatch($company);
-            $this->line("  Dispatched: {$company->name}");
+        foreach ($companies as $index => $company) {
+            // Stagger jobs by 3 seconds each to avoid LinkedIn rate limiting
+            $delay = $index * 3;
+            FetchCompanyHeadcountJob::dispatch($company)->delay(now()->addSeconds($delay));
+            $this->line("  Dispatched: {$company->name}" . ($delay > 0 ? " (delay: {$delay}s)" : ''));
         }
 
         $this->newLine();

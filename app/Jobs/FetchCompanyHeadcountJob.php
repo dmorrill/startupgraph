@@ -90,9 +90,6 @@ class FetchCompanyHeadcountJob implements ShouldQueue
 
             throw $e; // Re-throw to trigger retry
         }
-
-        // Rate limiting: 2-second delay after each fetch
-        sleep(2);
     }
 
     public function failed(\Throwable $exception): void
