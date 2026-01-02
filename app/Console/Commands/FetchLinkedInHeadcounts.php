@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\Company;
 use App\Models\HeadcountSnapshot;
+use App\Services\LinkedInService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 
 class FetchLinkedInHeadcounts extends Command
 {
@@ -16,7 +16,7 @@ class FetchLinkedInHeadcounts extends Command
 
     protected $description = 'Fetch employee headcounts from LinkedIn company pages';
 
-    public function handle(): int
+    public function handle(LinkedInService $linkedInService): int
     {
         $query = Company::whereNotNull('linkedin_url');
 
@@ -40,14 +40,15 @@ class FetchLinkedInHeadcounts extends Command
         foreach ($companies as $company) {
             $this->line("Fetching: {$company->name}");
 
-            $headcount = $this->fetchHeadcount($company->linkedin_url);
+            $result = $linkedInService->fetchHeadcount($company->linkedin_url);
 
-            if ($headcount === null) {
-                $this->error("  Failed to extract headcount");
+            if (!$result['success']) {
+                $this->error("  Failed: {$result['error']}");
                 $failed++;
                 continue;
             }
 
+            $headcount = $result['headcount'];
             $this->info("  Found: {$headcount} employees");
 
             if ($this->option('dry-run')) {
@@ -55,8 +56,11 @@ class FetchLinkedInHeadcounts extends Command
                 continue;
             }
 
-            // Update current headcount
-            $company->update(['current_headcount' => $headcount]);
+            // Update current headcount and fetch timestamp
+            $company->update([
+                'current_headcount' => $headcount,
+                'headcount_fetched_at' => now(),
+            ]);
 
             // Create snapshot if different from last one
             $lastSnapshot = $company->headcountSnapshots()
@@ -85,38 +89,5 @@ class FetchLinkedInHeadcounts extends Command
         $this->info("Done! Updated: {$updated}, Failed: {$failed}");
 
         return self::SUCCESS;
-    }
-
-    private function fetchHeadcount(string $linkedinUrl): ?int
-    {
-        try {
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language' => 'en-US,en;q=0.5',
-            ])->timeout(30)->get($linkedinUrl);
-
-            if (!$response->successful()) {
-                $this->error("  HTTP {$response->status()}");
-                return null;
-            }
-
-            $html = $response->body();
-
-            // Look for JSON-LD schema with numberOfEmployees
-            if (preg_match('/"numberOfEmployees"\s*:\s*\{\s*"value"\s*:\s*(\d+)/', $html, $matches)) {
-                return (int) $matches[1];
-            }
-
-            // Fallback: look for "X employees" pattern
-            if (preg_match('/(\d{1,3}(?:,\d{3})*)\s+employees/i', $html, $matches)) {
-                return (int) str_replace(',', '', $matches[1]);
-            }
-
-            return null;
-        } catch (\Exception $e) {
-            $this->error("  Error: {$e->getMessage()}");
-            return null;
-        }
     }
 }

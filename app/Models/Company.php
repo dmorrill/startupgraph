@@ -22,12 +22,15 @@ class Company extends Model
         'linkedin_url',
         'current_headcount',
         'profile_refreshed_at',
+        'headcount_fetched_at',
+        'headcount_fetch_day',
     ];
 
     protected $casts = [
         'founded_date' => 'date',
         'product_highlights' => 'array',
         'profile_refreshed_at' => 'datetime',
+        'headcount_fetched_at' => 'datetime',
     ];
 
     public function headcountSnapshots(): HasMany
@@ -55,6 +58,11 @@ class Company extends Model
         return $this->belongsToMany(Person::class, 'company_person')
             ->withPivot('role', 'is_current', 'started_at', 'ended_at')
             ->withTimestamps();
+    }
+
+    public function scheduledTaskExecutions(): HasMany
+    {
+        return $this->hasMany(ScheduledTaskExecution::class);
     }
 
     public function getRouteKeyName(): string
