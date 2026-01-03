@@ -15,11 +15,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+        ]);
+
+        $this->call([
+            // Base company data
+            CompanySeeder::class,
+            TechCrunchCompaniesSeeder::class,
+
+            // Company profiles and people
+            CompanyProfileSeeder::class,
+            ProductHighlightsSeeder::class,
+            PeopleSeeder::class,
+
+            // Categories
+            CompanyCategorySeeder::class,
+
+            // Funding data
+            FundingDataSeeder::class,
+            MoreFundingDataSeeder::class,
+            AdditionalFundingDataSeeder::class,
+
+            // LinkedIn URLs
+            LinkedInUrlSeeder::class,
+
+            // Source URLs for funding rounds
+            FundingSourceUrlSeeder::class,
         ]);
     }
 }
