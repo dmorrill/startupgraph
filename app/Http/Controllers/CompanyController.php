@@ -34,6 +34,10 @@ class CompanyController extends Controller
             $query->where('country', $country);
         }
 
+        if ($category = $request->get('category')) {
+            $query->where('category', $category);
+        }
+
         // Date range filter for last fundraise
         if ($fundedAfter = $request->get('funded_after')) {
             $query->whereHas('fundingRounds', function ($q) use ($fundedAfter) {
@@ -66,15 +70,16 @@ class CompanyController extends Controller
         $sortField = $request->get('sort', 'name');
         $sortDirection = $request->get('direction', 'asc');
 
-        $allowedSorts = ['name', 'founded_date', 'city', 'country', 'funding_rounds_sum_amount', 'latest_funding_date'];
+        $allowedSorts = ['name', 'founded_date', 'city', 'country', 'category', 'funding_rounds_sum_amount', 'latest_funding_date'];
         if (in_array($sortField, $allowedSorts)) {
             $query->orderBy($sortField, $sortDirection === 'desc' ? 'desc' : 'asc');
         }
 
         $companies = $query->paginate(50)->withQueryString();
         $countries = Company::distinct()->pluck('country')->filter()->sort()->values();
+        $categories = Company::CATEGORIES;
 
-        return view('companies.index', compact('companies', 'countries'));
+        return view('companies.index', compact('companies', 'countries', 'categories'));
     }
 
     public function show(Company $company)
