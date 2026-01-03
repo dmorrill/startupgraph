@@ -9,6 +9,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Company extends Model
 {
+    public const CATEGORIES = [
+        'ai_ml' => 'AI/ML',
+        'fintech' => 'Fintech',
+        'enterprise' => 'Enterprise',
+        'healthcare' => 'Healthcare',
+        'robotics' => 'Robotics',
+        'space' => 'Space',
+        'climate' => 'Climate/Energy',
+        'consumer' => 'Consumer',
+        'developer_tools' => 'Developer Tools',
+        'defense' => 'Defense',
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -19,6 +32,7 @@ class Company extends Model
         'city',
         'state',
         'country',
+        'category',
         'linkedin_url',
         'current_headcount',
         'profile_refreshed_at',
@@ -68,5 +82,10 @@ class Company extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    public function getCategoryLabelAttribute(): ?string
+    {
+        return $this->category ? (self::CATEGORIES[$this->category] ?? $this->category) : null;
     }
 }

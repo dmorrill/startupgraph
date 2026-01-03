@@ -24,6 +24,19 @@
             </div>
             <div class="sm:w-48">
                 <select
+                    name="category"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                    <option value="">All Categories</option>
+                    @foreach($categories as $key => $label)
+                        <option value="{{ $key }}" {{ request('category') == $key ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="sm:w-48">
+                <select
                     name="country"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
@@ -53,7 +66,7 @@
             >
                 Filter
             </button>
-            @if(request()->hasAny(['search', 'country', 'funded_recent', 'funded_after', 'funded_before']))
+            @if(request()->hasAny(['search', 'category', 'country', 'funded_recent', 'funded_after', 'funded_before']))
                 <a
                     href="{{ route('companies.index') }}"
                     class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-center"
@@ -73,6 +86,14 @@
                             <a href="{{ request()->fullUrlWithQuery(['sort' => 'name', 'direction' => request('sort') === 'name' && request('direction') !== 'desc' ? 'desc' : 'asc']) }}" class="hover:text-gray-700">
                                 Company
                                 @if(request('sort', 'name') === 'name')
+                                    <span class="ml-1">{{ request('direction') === 'desc' ? '↓' : '↑' }}</span>
+                                @endif
+                            </a>
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'category', 'direction' => request('sort') === 'category' && request('direction') !== 'desc' ? 'desc' : 'asc']) }}" class="hover:text-gray-700">
+                                Category
+                                @if(request('sort') === 'category')
                                     <span class="ml-1">{{ request('direction') === 'desc' ? '↓' : '↑' }}</span>
                                 @endif
                             </a>
@@ -125,6 +146,15 @@
                                     {{ $company->name }}
                                 </a>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                @if($company->category)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ $company->category_label }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ collect([$company->city, $company->country])->filter()->join(', ') ?: '—' }}
                             </td>
@@ -170,7 +200,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                                 No companies found matching your criteria.
                             </td>
                         </tr>

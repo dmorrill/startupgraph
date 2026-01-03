@@ -10,6 +10,9 @@ class TechCrunchCompaniesSeeder extends Seeder
     /**
      * Companies sourced from TechCrunch headlines (Dec 2025 - Jan 2026).
      * Excludes companies already in the database.
+     *
+     * IMPORTANT: When adding new companies, always include the 'category' field.
+     * Valid categories: ai_ml, fintech, enterprise, healthcare, robotics, space, climate, consumer, developer_tools, defense
      */
     public function run(): void
     {
@@ -17,6 +20,7 @@ class TechCrunchCompaniesSeeder extends Seeder
             // AI/ML Companies
             [
                 'name' => 'Applied Intuition',
+                'category' => 'ai_ml',
                 'slug' => 'applied-intuition',
                 'website' => 'https://www.appliedintuition.com',
                 'linkedin_url' => 'https://www.linkedin.com/company/applied-intuition',
