@@ -93,7 +93,7 @@
                     @else
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                             <span class="text-gray-600">Current</span>
-                            <span class="font-semibold text-gray-900">{{ number_format($company->headcountSnapshots->first()->headcount) }} employees</span>
+                            <span class="font-semibold text-gray-900">{{ number_format($company->headcountSnapshots->first()?->headcount ?? 0) }} employees</span>
                         </div>
                         <p class="text-sm text-gray-500 mt-3">More data points needed to show growth chart.</p>
                     @endif
@@ -250,6 +250,14 @@
         return '$' + value.toLocaleString();
     }
 
+    // Sanitize text for display (defense in depth)
+    function sanitizeText(text) {
+        if (typeof text !== 'string') return '';
+        return text.replace(/[<>&"']/g, function(c) {
+            return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c];
+        });
+    }
+
     // Round type colors
     const roundColors = {
         'seed': { bg: 'rgba(34, 197, 94, 0.8)', border: 'rgb(34, 197, 94)' },
@@ -355,7 +363,7 @@
         if (rounds.length < 2) return;
 
         const labels = rounds.map(r => {
-            const type = r.round_type ? r.round_type.replace('_', ' ') : 'Round';
+            const type = r.round_type ? sanitizeText(r.round_type).replace('_', ' ') : 'Round';
             return type.charAt(0).toUpperCase() + type.slice(1);
         });
         const data = rounds.map(r => r.amount);
