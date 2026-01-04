@@ -56,7 +56,7 @@
         <form
             method="POST"
             action="{{ route('admin.companies.destroy', $company) }}"
-            onsubmit="return confirm('Are you sure you want to delete {{ addslashes($company->name) }}? This action cannot be undone.');"
+            onsubmit="return confirm('Are you sure you want to delete ' + @js($company->name) + '? This action cannot be undone.');"
         >
             @csrf
             @method('DELETE')

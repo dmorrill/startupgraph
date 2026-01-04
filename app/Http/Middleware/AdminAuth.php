@@ -24,8 +24,11 @@ class AdminAuth
             return response('Admin credentials not configured.', 503);
         }
 
-        // Check for HTTP Basic Auth credentials
-        if ($request->getUser() !== $username || $request->getPassword() !== $password) {
+        // Check for HTTP Basic Auth credentials using timing-safe comparison
+        $providedUser = $request->getUser() ?? '';
+        $providedPass = $request->getPassword() ?? '';
+
+        if (!hash_equals($username, $providedUser) || !hash_equals($password, $providedPass)) {
             return response('Unauthorized.', 401, ['WWW-Authenticate' => 'Basic realm="Admin Area"']);
         }
 

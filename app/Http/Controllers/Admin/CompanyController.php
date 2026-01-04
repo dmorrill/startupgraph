@@ -96,7 +96,7 @@ class CompanyController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('companies')->ignore($company->id)],
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('companies')->ignore($company->id)],
             'website' => ['nullable', 'url', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'founded_date' => ['nullable', 'date'],
