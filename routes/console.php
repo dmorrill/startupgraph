@@ -31,3 +31,10 @@ Schedule::command('schedule:funding')
     ->withoutOverlapping()
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/schedule-funding.log'));
+
+// Weekly news fetch - runs Monday at 3am
+Schedule::command('news:fetch')
+    ->weeklyOn(1, '03:00')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/news-fetch.log'));
