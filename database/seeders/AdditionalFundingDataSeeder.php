@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\FundingRound;
 use App\Models\Investor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -69,6 +70,7 @@ class AdditionalFundingDataSeeder extends Seeder
             ['name' => 'Radical Ventures', 'type' => 'vc', 'website' => 'https://radicalventures.com'],
             ['name' => 'ASML', 'type' => 'corporate', 'website' => 'https://asml.com'],
             ['name' => 'AMD Ventures', 'type' => 'corporate', 'website' => 'https://amd.com'],
+            ['name' => 'Valor Equity Partners', 'type' => 'vc', 'website' => 'https://valorep.com'],
             ['name' => 'Oracle', 'type' => 'corporate', 'website' => 'https://oracle.com'],
             ['name' => 'Lux Capital', 'type' => 'vc', 'website' => 'https://luxcapital.com'],
             ['name' => 'Sound Ventures', 'type' => 'vc', 'website' => 'https://sound.ventures'],
@@ -100,7 +102,6 @@ class AdditionalFundingDataSeeder extends Seeder
             ['name' => 'Sands Capital', 'type' => 'growth', 'website' => 'https://sandscapital.com'],
             ['name' => 'Meta', 'type' => 'corporate', 'website' => 'https://meta.com'],
             ['name' => 'Cisco Ventures', 'type' => 'corporate', 'website' => 'https://cisco.com'],
-            ['name' => 'AMD', 'type' => 'corporate', 'website' => 'https://amd.com'],
             ['name' => 'ServiceNow Ventures', 'type' => 'corporate', 'website' => 'https://servicenow.com'],
             ['name' => 'DFJ Growth', 'type' => 'vc', 'website' => 'https://dfj.com'],
             ['name' => 'Sutter Hill Ventures', 'type' => 'vc', 'website' => 'https://shv.com'],
@@ -121,11 +122,21 @@ class AdditionalFundingDataSeeder extends Seeder
             ['name' => 'Soroban Capital', 'type' => 'hedge_fund', 'website' => 'https://sorobancap.com'],
             ['name' => 'Centricus', 'type' => 'pe', 'website' => 'https://centricus.com'],
 
+            // Additional VCs referenced in funding rounds
+            ['name' => 'Spark Capital', 'type' => 'vc', 'website' => 'https://sparkcapital.com'],
+            ['name' => 'New Enterprise Associates', 'type' => 'vc', 'website' => 'https://nea.com'],
+            ['name' => 'Playground Global', 'type' => 'vc', 'website' => 'https://playground.global'],
+            ['name' => 'Bond Capital', 'type' => 'vc', 'website' => 'https://bondcap.com'],
+            ['name' => 'Betaworks', 'type' => 'vc', 'website' => 'https://betaworks.com'],
+            ['name' => 'SV Angel', 'type' => 'vc', 'website' => 'https://svangel.com'],
+
             // Notable angels/individuals
             ['name' => 'Eric Schmidt', 'type' => 'angel', 'website' => null],
             ['name' => 'Xavier Niel', 'type' => 'angel', 'website' => null],
             ['name' => 'Mark Cuban', 'type' => 'angel', 'website' => null],
             ['name' => 'Jared Leto', 'type' => 'angel', 'website' => null],
+            ['name' => 'Elad Gil', 'type' => 'angel', 'website' => 'https://eladgil.com'],
+            ['name' => 'Jeff Bezos', 'type' => 'angel', 'website' => null],
         ];
 
         // First get existing investors
@@ -148,7 +159,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedXaiFunding(array $investors): void
     {
         $company = Company::where('slug', 'xai')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: xai');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -191,7 +205,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedScaleAiFunding(array $investors): void
     {
         $company = Company::where('slug', 'scale-ai')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: scale-ai');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -240,7 +257,7 @@ class AdditionalFundingDataSeeder extends Seeder
                 'announced_date' => '2024-05-21',
                 'pre_money_valuation' => 12800000000,
                 'source_url' => 'https://techcrunch.com/2024/05/21/data-labeling-startup-scale-ai-raises-1b-as-valuation-doubles-to-13-8b/',
-                'investors' => ['Accel', 'Amazon', 'Meta', 'Nvidia', 'Cisco Ventures', 'AMD', 'Intel Capital', 'ServiceNow Ventures', 'DFJ Growth', 'Elad Gil'],
+                'investors' => ['Accel', 'Amazon', 'Meta', 'Nvidia', 'Cisco Ventures', 'AMD Ventures', 'Intel Capital', 'ServiceNow Ventures', 'DFJ Growth', 'Elad Gil'],
             ],
         ];
 
@@ -250,7 +267,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedCohereFunding(array $investors): void
     {
         $company = Company::where('slug', 'cohere')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: cohere');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -298,7 +318,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedMistralAiFunding(array $investors): void
     {
         $company = Company::where('slug', 'mistral-ai')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: mistral-ai');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -349,7 +372,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedHuggingFaceFunding(array $investors): void
     {
         $company = Company::where('slug', 'hugging-face')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: hugging-face');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -384,7 +410,7 @@ class AdditionalFundingDataSeeder extends Seeder
                 'announced_date' => '2023-08-24',
                 'pre_money_valuation' => 4265000000,
                 'source_url' => 'https://techcrunch.com/2023/08/24/hugging-face-raises-235m-from-investors-including-salesforce-and-nvidia/',
-                'investors' => ['Salesforce Ventures', 'Google', 'Amazon', 'Nvidia', 'Intel Capital', 'AMD', 'Qualcomm Ventures', 'IBM Ventures', 'Sound Ventures', 'Lux Capital'],
+                'investors' => ['Salesforce Ventures', 'Google', 'Amazon', 'Nvidia', 'Intel Capital', 'AMD Ventures', 'Qualcomm Ventures', 'IBM Ventures', 'Sound Ventures', 'Lux Capital'],
             ],
         ];
 
@@ -394,7 +420,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedRunwayFunding(array $investors): void
     {
         $company = Company::where('slug', 'runway')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: runway');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -440,7 +469,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedHarveyFunding(array $investors): void
     {
         $company = Company::where('slug', 'harvey')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: harvey');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -502,7 +534,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedFigureAiFunding(array $investors): void
     {
         $company = Company::where('slug', 'figure-ai')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: figure-ai');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -536,7 +571,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedPlaidFunding(array $investors): void
     {
         $company = Company::where('slug', 'plaid')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: plaid');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -590,7 +628,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedBrexFunding(array $investors): void
     {
         $company = Company::where('slug', 'brex')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: brex');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -651,7 +692,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedRampFunding(array $investors): void
     {
         $company = Company::where('slug', 'ramp')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: ramp');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -731,7 +775,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedChimeFunding(array $investors): void
     {
         $company = Company::where('slug', 'chime')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: chime');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -800,7 +847,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedWizFunding(array $investors): void
     {
         $company = Company::where('slug', 'wiz')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: wiz');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -856,7 +906,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedAndurilFunding(array $investors): void
     {
         $company = Company::where('slug', 'anduril-industries')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: anduril-industries');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -926,7 +979,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedVercelFunding(array $investors): void
     {
         $company = Company::where('slug', 'vercel')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: vercel');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -987,7 +1043,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedAirtableFunding(array $investors): void
     {
         $company = Company::where('slug', 'airtable')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: airtable');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -1050,7 +1109,10 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedRelativitySpaceFunding(array $investors): void
     {
         $company = Company::where('slug', 'relativity-space')->first();
-        if (!$company) return;
+        if (!$company) {
+            $this->command->warn('Company not found: relativity-space');
+            return;
+        }
         if ($company->fundingRounds()->exists()) return;
 
         $rounds = [
@@ -1118,6 +1180,8 @@ class AdditionalFundingDataSeeder extends Seeder
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+                } else {
+                    $this->command->warn("Investor not found: {$name} (for {$company->name} {$round->round_type})");
                 }
             }
         }
