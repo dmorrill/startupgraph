@@ -79,7 +79,8 @@ class NewsSearchService
 
         foreach ($matches as $match) {
             $url = $match[1];
-            $title = html_entity_decode(trim($match[2]));
+            // Sanitize title: decode HTML entities, strip any remaining tags, and trim
+            $title = trim(strip_tags(html_entity_decode($match[2], ENT_QUOTES | ENT_HTML5, 'UTF-8')));
 
             // Skip if the title doesn't actually mention the company
             if (!$this->titleMentionsCompany($title, $companyName)) {

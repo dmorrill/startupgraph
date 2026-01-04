@@ -33,9 +33,12 @@ class FetchNews extends Command
      */
     private function fetchForSingleCompany(string $identifier): int
     {
+        // Escape LIKE special characters to prevent SQL injection
+        $escapedIdentifier = str_replace(['%', '_'], ['\\%', '\\_'], $identifier);
+
         // Try to find by slug first, then by name
         $company = Company::where('slug', $identifier)
-            ->orWhere('name', 'LIKE', "%{$identifier}%")
+            ->orWhere('name', 'LIKE', "%{$escapedIdentifier}%")
             ->first();
 
         if (!$company) {

@@ -45,25 +45,30 @@ class FetchNewsMentionsJob implements ShouldQueue
             $skipped = 0;
 
             foreach ($articles as $article) {
-                // Check for duplicate by URL (deduplication)
-                $exists = NewsMention::where('url', $article['url'])->exists();
-
-                if ($exists) {
+                // Validate URL before storing
+                if (!filter_var($article['url'], FILTER_VALIDATE_URL)) {
+                    Log::warning("Invalid URL skipped: {$article['url']}");
                     $skipped++;
                     continue;
                 }
 
-                // Create new news mention
-                NewsMention::create([
-                    'company_id' => $this->company->id,
-                    'title' => $article['title'],
-                    'url' => $article['url'],
-                    'source' => $article['source'],
-                    'published_date' => $article['published_date'],
-                    'summary' => $article['summary'],
-                ]);
+                // Use firstOrCreate for atomic deduplication (prevents race conditions)
+                $mention = NewsMention::firstOrCreate(
+                    ['url' => $article['url']], // Unique key
+                    [
+                        'company_id' => $this->company->id,
+                        'title' => $article['title'],
+                        'source' => $article['source'],
+                        'published_date' => $article['published_date'],
+                        'summary' => $article['summary'],
+                    ]
+                );
 
-                $created++;
+                if ($mention->wasRecentlyCreated) {
+                    $created++;
+                } else {
+                    $skipped++;
+                }
             }
 
             $execution->update([
