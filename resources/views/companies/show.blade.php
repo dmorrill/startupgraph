@@ -325,7 +325,20 @@
                                 return context[0].label;
                             },
                             label: function(context) {
-                                return context.parsed.y.toLocaleString() + ' employees';
+                                const current = context.parsed.y;
+                                const lines = [current.toLocaleString() + ' employees'];
+
+                                // Calculate % change from previous data point
+                                const idx = context.dataIndex;
+                                if (idx > 0) {
+                                    const previous = data[idx - 1];
+                                    if (previous > 0) {
+                                        const pctChange = ((current - previous) / previous) * 100;
+                                        const sign = pctChange >= 0 ? '+' : '';
+                                        lines.push(sign + pctChange.toFixed(1) + '% from previous');
+                                    }
+                                }
+                                return lines;
                             }
                         }
                     }
@@ -335,7 +348,7 @@
                         grid: { display: false }
                     },
                     y: {
-                        beginAtZero: false,
+                        beginAtZero: true,
                         ticks: {
                             callback: function(value) {
                                 return value.toLocaleString();
