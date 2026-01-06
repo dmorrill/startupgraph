@@ -377,7 +377,14 @@
 
         const labels = rounds.map(r => {
             const type = r.round_type ? sanitizeText(r.round_type).replace('_', ' ') : 'Round';
-            return type.charAt(0).toUpperCase() + type.slice(1);
+            const typeName = type.charAt(0).toUpperCase() + type.slice(1);
+            // Add date below round type
+            if (r.announced_date) {
+                const date = new Date(r.announced_date);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+                return [typeName, dateStr];
+            }
+            return typeName;
         });
         const data = rounds.map(r => r.amount);
         const backgroundColors = rounds.map(r => getRoundColor(r.round_type).bg);
