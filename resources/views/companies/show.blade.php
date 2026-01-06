@@ -287,7 +287,7 @@
 
         const labels = snapshots.map(s => {
             const date = new Date(s.recorded_date);
-            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
         });
         const data = snapshots.map(s => s.headcount);
 
