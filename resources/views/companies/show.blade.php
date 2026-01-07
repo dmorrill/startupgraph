@@ -78,16 +78,22 @@
     @if($company->headcountSnapshots->count() || $company->fundingRounds->count())
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             @if($company->headcountSnapshots->count())
-                <div class="bg-white rounded-lg shadow-sm border p-6">
+                <div class="bg-white rounded-lg shadow-sm border p-6" id="headcount-section">
                     <h2 class="text-xl font-bold text-gray-900 mb-4">Employee Growth</h2>
                     @if($company->headcountSnapshots->count() >= 2)
-                        <div class="h-64">
-                            <canvas id="headcountChart"></canvas>
+                        <div class="h-64 chart-container" data-chart="headcount">
+                            <div class="chart-loading flex items-center justify-center h-full text-gray-400">
+                                <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                            <canvas id="headcountChart" class="hidden"></canvas>
                         </div>
                     @else
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                             <span class="text-gray-600">Current</span>
-                            <span class="font-semibold text-gray-900">{{ number_format($company->headcountSnapshots->first()->headcount) }} employees</span>
+                            <span class="font-semibold text-gray-900">{{ number_format($company->headcountSnapshots->first()?->headcount ?? 0) }} employees</span>
                         </div>
                         <p class="text-sm text-gray-500 mt-3">More data points needed to show growth chart.</p>
                     @endif
@@ -95,11 +101,22 @@
             @endif
 
             @if($company->fundingRounds->count())
-                <div class="bg-white rounded-lg shadow-sm border p-6">
+                <div class="bg-white rounded-lg shadow-sm border p-6" id="funding-section">
                     <h2 class="text-xl font-bold text-gray-900 mb-4">Funding History</h2>
+                    @if($company->fundingRounds->where('amount', '>', 0)->count() >= 2)
+                        <div class="h-48 mb-4 chart-container" data-chart="funding">
+                            <div class="chart-loading flex items-center justify-center h-full text-gray-400">
+                                <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                            <canvas id="fundingChart" class="hidden"></canvas>
+                        </div>
+                    @endif
                     <div class="space-y-3 max-h-72 overflow-y-auto">
                         @foreach($company->fundingRounds->sortByDesc('announced_date') as $round)
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                                 <div>
                                     <p class="font-semibold text-gray-900">
                                         {{ ucfirst(str_replace('_', ' ', $round->round_type ?? 'Funding Round')) }}
@@ -208,64 +225,270 @@
     @endif
 </div>
 
-@if($company->headcountSnapshots->count() >= 2)
+@if($company->headcountSnapshots->count() >= 2 || $company->fundingRounds->where('amount', '>', 0)->count() >= 2)
 @push('head')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('headcountChart').getContext('2d');
+(function() {
+    // Chart data (embedded to avoid blocking)
+    const chartData = {
+        headcount: @json($company->headcountSnapshots->sortBy('recorded_date')->values(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT),
+        funding: @json($company->fundingRounds->where('amount', '>', 0)->sortBy('announced_date')->values(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT)
+    };
 
-    const snapshots = @json($company->headcountSnapshots->sortBy('recorded_date')->values(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+    // Chart instances to track
+    const chartInstances = {};
 
-    const labels = snapshots.map(s => {
-        const date = new Date(s.recorded_date);
-        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    });
+    // Format currency for display
+    function formatCurrency(value) {
+        if (value >= 1000000000) {
+            return '$' + (value / 1000000000).toFixed(1) + 'B';
+        } else if (value >= 1000000) {
+            return '$' + (value / 1000000).toFixed(0) + 'M';
+        } else if (value >= 1000) {
+            return '$' + (value / 1000).toFixed(0) + 'K';
+        }
+        return '$' + value.toLocaleString();
+    }
 
-    const data = snapshots.map(s => s.headcount);
+    // Sanitize text for display (defense in depth)
+    function sanitizeText(text) {
+        if (typeof text !== 'string') return '';
+        return text.replace(/[<>&"']/g, function(c) {
+            return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c];
+        });
+    }
 
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Employees',
-                data: data,
-                borderColor: 'rgb(59, 130, 246)',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
+    // Round type colors
+    const roundColors = {
+        'seed': { bg: 'rgba(34, 197, 94, 0.8)', border: 'rgb(34, 197, 94)' },
+        'series_a': { bg: 'rgba(59, 130, 246, 0.8)', border: 'rgb(59, 130, 246)' },
+        'series_b': { bg: 'rgba(99, 102, 241, 0.8)', border: 'rgb(99, 102, 241)' },
+        'series_c': { bg: 'rgba(139, 92, 246, 0.8)', border: 'rgb(139, 92, 246)' },
+        'series_d': { bg: 'rgba(168, 85, 247, 0.8)', border: 'rgb(168, 85, 247)' },
+        'series_e': { bg: 'rgba(192, 132, 252, 0.8)', border: 'rgb(192, 132, 252)' },
+        'default': { bg: 'rgba(107, 114, 128, 0.8)', border: 'rgb(107, 114, 128)' }
+    };
+
+    function getRoundColor(roundType) {
+        const type = (roundType || '').toLowerCase().replace(' ', '_');
+        return roundColors[type] || roundColors['default'];
+    }
+
+    // Initialize headcount chart
+    function initHeadcountChart() {
+        const canvas = document.getElementById('headcountChart');
+        if (!canvas || chartInstances.headcount) return;
+
+        const container = canvas.closest('.chart-container');
+        const loading = container.querySelector('.chart-loading');
+
+        const snapshots = chartData.headcount;
+        if (snapshots.length < 2) return;
+
+        const labels = snapshots.map(s => {
+            const date = new Date(s.recorded_date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+        });
+        const data = snapshots.map(s => s.headcount);
+
+        chartInstances.headcount = new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Employees',
+                    data: data,
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.parsed.y.toLocaleString() + ' employees';
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label;
+                            },
+                            label: function(context) {
+                                const current = context.parsed.y;
+                                const lines = [current.toLocaleString() + ' employees'];
+
+                                // Calculate % change from previous data point
+                                const idx = context.dataIndex;
+                                if (idx > 0) {
+                                    const previous = data[idx - 1];
+                                    if (previous > 0) {
+                                        const pctChange = ((current - previous) / previous) * 100;
+                                        const sign = pctChange >= 0 ? '+' : '';
+                                        lines.push(sign + pctChange.toFixed(1) + '% from previous');
+                                    }
+                                }
+                                return lines;
+                            }
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString();
+                },
+                scales: {
+                    x: {
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
                         }
                     }
                 }
             }
+        });
+
+        // Show chart, hide loading
+        if (loading) loading.classList.add('hidden');
+        canvas.classList.remove('hidden');
+    }
+
+    // Initialize funding chart
+    function initFundingChart() {
+        const canvas = document.getElementById('fundingChart');
+        if (!canvas || chartInstances.funding) return;
+
+        const container = canvas.closest('.chart-container');
+        const loading = container.querySelector('.chart-loading');
+
+        const rounds = chartData.funding;
+        if (rounds.length < 2) return;
+
+        const labels = rounds.map(r => {
+            const type = r.round_type ? sanitizeText(r.round_type).replace('_', ' ') : 'Round';
+            const typeName = type.charAt(0).toUpperCase() + type.slice(1);
+            // Add date below round type
+            if (r.announced_date) {
+                const date = new Date(r.announced_date);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+                return [typeName, dateStr];
+            }
+            return typeName;
+        });
+        const data = rounds.map(r => r.amount);
+        const backgroundColors = rounds.map(r => getRoundColor(r.round_type).bg);
+        const borderColors = rounds.map(r => getRoundColor(r.round_type).border);
+
+        chartInstances.funding = new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Amount Raised',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            title: function(context) {
+                                const round = rounds[context[0].dataIndex];
+                                const date = round.announced_date ? new Date(round.announced_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
+                                return context[0].label + (date ? ' - ' + date : '');
+                            },
+                            label: function(context) {
+                                return formatCurrency(context.parsed.y);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Show chart, hide loading
+        if (loading) loading.classList.add('hidden');
+        canvas.classList.remove('hidden');
+    }
+
+    // Lazy load charts using Intersection Observer
+    function setupLazyLoading() {
+        const chartContainers = document.querySelectorAll('.chart-container');
+
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const chartType = entry.target.dataset.chart;
+                        if (chartType === 'headcount') {
+                            initHeadcountChart();
+                        } else if (chartType === 'funding') {
+                            initFundingChart();
+                        }
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                rootMargin: '100px',
+                threshold: 0.1
+            });
+
+            chartContainers.forEach(container => {
+                observer.observe(container);
+            });
+        } else {
+            // Fallback for older browsers
+            initHeadcountChart();
+            initFundingChart();
         }
-    });
-});
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupLazyLoading);
+    } else {
+        setupLazyLoading();
+    }
+})();
 </script>
 @endpush
 @endif
