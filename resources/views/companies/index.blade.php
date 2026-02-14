@@ -9,6 +9,14 @@
             <h1 class="text-2xl font-bold text-gray-900">Companies</h1>
             <p class="text-gray-600">{{ $companies->total() }} startups tracked</p>
         </div>
+        <div class="flex gap-2">
+            <a href="{{ route('companies.export.csv', request()->query()) }}" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                Export CSV
+            </a>
+            <a href="{{ route('companies.export.json', request()->query()) }}" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                Export JSON
+            </a>
+        </div>
     </div>
 
     <form method="GET" action="{{ route('companies.index') }}" class="bg-white p-4 rounded-lg shadow-sm border">

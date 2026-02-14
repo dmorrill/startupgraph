@@ -82,6 +82,105 @@ class CompanyController extends Controller
         return view('companies.index', compact('companies', 'countries', 'categories'));
     }
 
+    public function exportCsv(Request $request)
+    {
+        $companies = $this->getFilteredQuery($request)->limit(1000)->get();
+
+        $callback = function () use ($companies) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Name', 'Website', 'Description', 'Category', 'City', 'State', 'Country', 'Founded', 'Employees', 'Total Funding', 'Funding Rounds']);
+
+            foreach ($companies as $company) {
+                fputcsv($handle, [
+                    $company->name,
+                    $company->website,
+                    $company->description,
+                    $company->category_label,
+                    $company->city,
+                    $company->state,
+                    $company->country,
+                    $company->founded_date?->format('Y-m-d'),
+                    $company->current_headcount,
+                    $company->funding_rounds_sum_amount,
+                    $company->funding_rounds_count,
+                ]);
+            }
+            fclose($handle);
+        };
+
+        $filename = 'startupgraph-export-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload($callback, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    public function exportJson(Request $request)
+    {
+        $companies = $this->getFilteredQuery($request)
+            ->with(['fundingRounds', 'headcountSnapshots'])
+            ->limit(1000)
+            ->get()
+            ->map(function ($company) {
+                return [
+                    'name' => $company->name,
+                    'slug' => $company->slug,
+                    'website' => $company->website,
+                    'description' => $company->description,
+                    'category' => $company->category_label,
+                    'city' => $company->city,
+                    'state' => $company->state,
+                    'country' => $company->country,
+                    'founded_date' => $company->founded_date?->format('Y-m-d'),
+                    'current_headcount' => $company->current_headcount,
+                    'total_funding' => $company->funding_rounds_sum_amount,
+                    'funding_rounds' => $company->fundingRounds->map(fn ($r) => [
+                        'round_type' => $r->round_type,
+                        'amount' => $r->amount,
+                        'announced_date' => $r->announced_date?->format('Y-m-d'),
+                    ]),
+                    'headcount_history' => $company->headcountSnapshots->sortBy('recorded_date')->values()->map(fn ($s) => [
+                        'date' => $s->recorded_date->format('Y-m-d'),
+                        'headcount' => $s->headcount,
+                    ]),
+                ];
+            });
+
+        $filename = 'startupgraph-export-' . now()->format('Y-m-d') . '.json';
+
+        return response()->streamDownload(function () use ($companies) {
+            echo json_encode(['companies' => $companies], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        }, $filename, [
+            'Content-Type' => 'application/json',
+        ]);
+    }
+
+    private function getFilteredQuery(Request $request)
+    {
+        $query = Company::query()
+            ->withSum('fundingRounds', 'amount')
+            ->withCount('fundingRounds');
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%")
+                  ->orWhere('country', 'like', "%{$search}%");
+            });
+        }
+
+        if ($country = $request->get('country')) {
+            $query->where('country', $country);
+        }
+
+        if ($category = $request->get('category')) {
+            $query->where('category', $category);
+        }
+
+        return $query->orderBy('name');
+    }
+
     public function show(Company $company)
     {
         $company->load(['fundingRounds.investors', 'headcountSnapshots', 'newsMentions', 'people']);

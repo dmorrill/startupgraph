@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CompanyController::class, 'index'])->name('home');
 Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+Route::get('/companies/export/csv', [CompanyController::class, 'exportCsv'])->name('companies.export.csv');
+Route::get('/companies/export/json', [CompanyController::class, 'exportJson'])->name('companies.export.json');
 Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
 Route::get('/people/{person}', [PersonController::class, 'show'])->name('people.show');
 
