@@ -7,6 +7,7 @@ use App\Models\Company;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -119,18 +120,19 @@ class CompanyController extends Controller
      */
     public function destroy(Company $company): RedirectResponse
     {
-        // Delete related records (cascade)
-        $company->headcountSnapshots()->delete();
-        $company->fundingRounds()->each(function ($round) {
-            $round->investors()->detach();
-            $round->delete();
-        });
-        $company->newsMentions()->delete();
-        $company->people()->detach();
-        $company->scheduledTaskExecutions()->delete();
-
         $companyName = $company->name;
-        $company->delete();
+
+        DB::transaction(function () use ($company) {
+            $company->headcountSnapshots()->delete();
+            $company->fundingRounds()->each(function ($round) {
+                $round->investors()->detach();
+                $round->delete();
+            });
+            $company->newsMentions()->delete();
+            $company->people()->detach();
+            $company->scheduledTaskExecutions()->delete();
+            $company->delete();
+        });
 
         return redirect()
             ->route('admin.companies.index')
