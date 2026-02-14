@@ -289,6 +289,7 @@
 
 @if($company->headcountSnapshots->count() >= 2 || $company->fundingRounds->where('amount', '>', 0)->count() >= 2)
 @push('head')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (function() {
     // Chart data (embedded to avoid blocking)
