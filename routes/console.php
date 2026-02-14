@@ -32,6 +32,13 @@ Schedule::command('schedule:funding')
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/schedule-funding.log'));
 
+// Weekly company discovery - runs Saturday at 4am
+Schedule::command('companies:discover')
+    ->weeklyOn(6, '04:00')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/companies-discover.log'));
+
 // Weekly news fetch - runs Monday at 3am
 Schedule::command('news:fetch')
     ->weeklyOn(1, '03:00')
