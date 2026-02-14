@@ -1,0 +1,46 @@
+{
+  "name": "@startupgraph/mcp",
+  "version": "1.0.0",
+  "description": "MCP server for StartupGraph - query startup traction data from Claude Code",
+  "type": "module",
+  "main": "./build/index.js",
+  "bin": {
+    "startupgraph-mcp": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod 755 build/index.js",
+    "dev": "tsc --watch",
+    "start": "node ./build/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "build"
+  ],
+  "keywords": [
+    "mcp",
+    "claude",
+    "startups",
+    "funding",
+    "crunchbase",
+    "ai",
+    "claude-code"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmorrill/startupgraph.git",
+    "directory": "mcp-server"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

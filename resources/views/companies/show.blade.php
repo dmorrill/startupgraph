@@ -2,6 +2,68 @@
 
 @section('title', $company->name . ' - StartupGraph')
 
+@push('head')
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": @json($company->name),
+    "url": @json($company->website),
+    @if($company->description)
+    "description": @json($company->description),
+    @endif
+    @if($company->founded_date)
+    "foundingDate": "{{ $company->founded_date->format('Y-m-d') }}",
+    @endif
+    @if($company->city || $company->country)
+    "address": {
+        "@type": "PostalAddress"
+        @if($company->city)
+        ,"addressLocality": @json($company->city)
+        @endif
+        @if($company->state)
+        ,"addressRegion": @json($company->state)
+        @endif
+        @if($company->country)
+        ,"addressCountry": @json($company->country)
+        @endif
+    },
+    @endif
+    @if($company->current_headcount)
+    "numberOfEmployees": {
+        "@type": "QuantitativeValue",
+        "value": {{ $company->current_headcount }}
+    },
+    @endif
+    @if($company->linkedin_url)
+    "sameAs": [@json($company->linkedin_url)],
+    @endif
+    "additionalProperty": [
+        @if($company->category)
+        {
+            "@type": "PropertyValue",
+            "name": "category",
+            "value": @json($company->category)
+        },
+        @endif
+        @if($company->fundingRounds->sum('amount'))
+        {
+            "@type": "PropertyValue",
+            "name": "totalFunding",
+            "value": {{ $company->fundingRounds->sum('amount') }},
+            "unitCode": "USD"
+        },
+        @endif
+        {
+            "@type": "PropertyValue",
+            "name": "fundingRoundsCount",
+            "value": {{ $company->fundingRounds->count() }}
+        }
+    ]
+}
+</script>
+@endpush
+
 @section('content')
 <div class="space-y-6">
     <div class="flex items-center gap-2 text-sm">
