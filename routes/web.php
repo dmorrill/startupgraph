@@ -4,6 +4,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\Admin\CompanyController as AdminCompanyController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CompanyController::class, 'index'])->name('home');
@@ -15,7 +16,7 @@ Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('co
 Route::get('/people/{person}', [PersonController::class, 'show'])->name('people.show');
 
 // Admin routes
-Route::prefix('admin')->middleware('admin.auth')->name('admin.')->group(function () {
+Route::prefix('admin')->middleware(['throttle:10,1', 'admin.auth'])->name('admin.')->group(function () {
     Route::get('/companies', [AdminCompanyController::class, 'index'])->name('companies.index');
     Route::get('/companies/create', [AdminCompanyController::class, 'create'])->name('companies.create');
     Route::post('/companies', [AdminCompanyController::class, 'store'])->name('companies.store');
@@ -23,3 +24,12 @@ Route::prefix('admin')->middleware('admin.auth')->name('admin.')->group(function
     Route::put('/companies/{company}', [AdminCompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/{company}', [AdminCompanyController::class, 'destroy'])->name('companies.destroy');
 });
+
+// Authenticated user routes
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';

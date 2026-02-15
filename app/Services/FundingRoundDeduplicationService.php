@@ -37,11 +37,12 @@ class FundingRoundDeduplicationService
      * @param int $companyId The company ID
      * @param string $announcedDate The announced date (YYYY-MM-DD)
      * @param float|null $amount The funding amount in USD
+     * @param Collection|null $existingRounds Pre-loaded rounds to avoid extra queries
      * @return FundingRound|null Returns the potential duplicate round, or null if no duplicate found
      */
-    public function findPotentialDuplicate(int $companyId, string $announcedDate, ?float $amount): ?FundingRound
+    public function findPotentialDuplicate(int $companyId, string $announcedDate, ?float $amount, ?Collection $existingRounds = null): ?FundingRound
     {
-        $existingRounds = FundingRound::where('company_id', $companyId)->get();
+        $existingRounds ??= FundingRound::where('company_id', $companyId)->get();
 
         foreach ($existingRounds as $round) {
             if ($this->isPotentialDuplicate($round, $announcedDate, $amount)) {
@@ -85,16 +86,63 @@ class FundingRoundDeduplicationService
     /**
      * Find all potential duplicate pairs within a company's funding rounds.
      *
+     * Uses eager-loaded fundingRounds relation when a Company model is passed,
+     * avoiding an extra query if the relation is already loaded.
+     *
      * @param Company|int $company The company or company ID
      * @return Collection Collection of arrays with 'round1' and 'round2' keys
      */
     public function findDuplicatesForCompany(Company|int $company): Collection
     {
-        $companyId = $company instanceof Company ? $company->id : $company;
-        $rounds = FundingRound::where('company_id', $companyId)
-            ->orderBy('announced_date')
+        if ($company instanceof Company && $company->relationLoaded('fundingRounds')) {
+            $rounds = $company->fundingRounds->sortBy('announced_date')->values();
+        } else {
+            $companyId = $company instanceof Company ? $company->id : $company;
+            $rounds = FundingRound::where('company_id', $companyId)
+                ->orderBy('announced_date')
+                ->get();
+        }
+
+        return $this->findDuplicatesFromRounds($rounds);
+    }
+
+    /**
+     * Find all potential duplicates across all companies in the database.
+     *
+     * @return Collection Collection of arrays with company and duplicates info
+     */
+    public function findAllDuplicates(): Collection
+    {
+        $results = collect();
+
+        // Get companies that have more than one funding round, eager-load rounds
+        $companyIds = FundingRound::selectRaw('company_id, COUNT(*) as round_count')
+            ->groupBy('company_id')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('company_id');
+
+        $companiesWithRounds = Company::whereIn('id', $companyIds)
+            ->with(['fundingRounds' => fn ($q) => $q->orderBy('announced_date')])
             ->get();
 
+        foreach ($companiesWithRounds as $company) {
+            $duplicates = $this->findDuplicatesFromRounds($company->fundingRounds);
+            if ($duplicates->isNotEmpty()) {
+                $results->push([
+                    'company' => $company,
+                    'duplicates' => $duplicates,
+                ]);
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Find duplicate pairs within a pre-loaded collection of funding rounds.
+     */
+    private function findDuplicatesFromRounds(Collection $rounds): Collection
+    {
         $duplicates = collect();
 
         for ($i = 0; $i < $rounds->count(); $i++) {
@@ -118,36 +166,6 @@ class FundingRoundDeduplicationService
         }
 
         return $duplicates;
-    }
-
-    /**
-     * Find all potential duplicates across all companies in the database.
-     *
-     * @return Collection Collection of arrays with company and duplicates info
-     */
-    public function findAllDuplicates(): Collection
-    {
-        $results = collect();
-
-        // Get companies that have more than one funding round
-        $companyIds = FundingRound::selectRaw('company_id, COUNT(*) as round_count')
-            ->groupBy('company_id')
-            ->havingRaw('COUNT(*) > 1')
-            ->pluck('company_id');
-
-        $companiesWithRounds = Company::whereIn('id', $companyIds)->get();
-
-        foreach ($companiesWithRounds as $company) {
-            $duplicates = $this->findDuplicatesForCompany($company);
-            if ($duplicates->isNotEmpty()) {
-                $results->push([
-                    'company' => $company,
-                    'duplicates' => $duplicates,
-                ]);
-            }
-        }
-
-        return $results;
     }
 
     /**
