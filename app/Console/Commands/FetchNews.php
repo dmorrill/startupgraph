@@ -65,27 +65,32 @@ class FetchNews extends Command
             $query->limit((int) $limit);
         }
 
-        $companies = $query->get();
+        $total = $query->count();
 
-        if ($companies->isEmpty()) {
+        if ($total === 0) {
             $this->info('No companies found.');
             return self::SUCCESS;
         }
 
-        $this->info("Dispatching news fetch jobs for {$companies->count()} companies...");
+        $this->info("Dispatching news fetch jobs for {$total} companies...");
         $this->info("Rate limiting: {$delay} seconds between dispatches");
         $this->newLine();
 
-        foreach ($companies as $index => $company) {
-            // Stagger jobs to avoid rate limiting
-            $delaySeconds = $index * $delay;
-            FetchNewsMentionsJob::dispatch($company)->delay(now()->addSeconds($delaySeconds));
+        $index = 0;
 
-            $this->line("  Dispatched: {$company->name}" . ($delaySeconds > 0 ? " (delay: {$delaySeconds}s)" : ''));
-        }
+        // Use chunking to avoid loading all companies into memory at once
+        $query->chunk(100, function ($companies) use ($delay, &$index) {
+            foreach ($companies as $company) {
+                $delaySeconds = $index * $delay;
+                FetchNewsMentionsJob::dispatch($company)->delay(now()->addSeconds($delaySeconds));
+
+                $this->line("  Dispatched: {$company->name}" . ($delaySeconds > 0 ? " (delay: {$delaySeconds}s)" : ''));
+                $index++;
+            }
+        });
 
         $this->newLine();
-        $this->info("Done! {$companies->count()} jobs dispatched to queue.");
+        $this->info("Done! {$index} jobs dispatched to queue.");
         $this->comment("Run 'php artisan queue:work' to process the jobs.");
 
         return self::SUCCESS;
