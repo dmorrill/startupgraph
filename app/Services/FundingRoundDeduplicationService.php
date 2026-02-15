@@ -18,12 +18,18 @@ class FundingRoundDeduplicationService
     /**
      * Number of days within which rounds are considered potentially duplicate.
      */
-    protected int $dateTolerance = 30;
+    protected int $dateTolerance;
 
     /**
      * Percentage tolerance for amount comparison (0.10 = 10%).
      */
-    protected float $amountTolerance = 0.10;
+    protected float $amountTolerance;
+
+    public function __construct()
+    {
+        $this->dateTolerance = (int) config('startupgraph.deduplication.date_tolerance_days', 30);
+        $this->amountTolerance = (float) config('startupgraph.deduplication.amount_tolerance_percent', 0.10);
+    }
 
     /**
      * Check if a funding round would be a duplicate of an existing round.
