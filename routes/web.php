@@ -3,6 +3,7 @@
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\Admin\CompanyController as AdminCompanyController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CompanyController::class, 'index'])->name('home');
@@ -21,3 +22,12 @@ Route::prefix('admin')->middleware('admin.auth')->name('admin.')->group(function
     Route::put('/companies/{company}', [AdminCompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/{company}', [AdminCompanyController::class, 'destroy'])->name('companies.destroy');
 });
+
+// Authenticated user routes
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
