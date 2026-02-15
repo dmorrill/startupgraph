@@ -114,7 +114,22 @@ class NewsSearchService
     }
 
     /**
+     * Common English words that happen to be company names.
+     * These require stricter matching to avoid false positives from article headlines.
+     */
+    private const AMBIGUOUS_NAMES = [
+        'smooth', 'vibe', 'seed', 'close', 'soon', 'fair', 'open', 'next',
+        'bold', 'flow', 'dash', 'level', 'rise', 'shift', 'spark', 'spring',
+        'wave', 'bright', 'fast', 'clear', 'true', 'pure', 'prime', 'core',
+        'base', 'blend', 'bridge', 'scout', 'notion', 'linear',
+        'pilot', 'ramp', 'harbor', 'path', 'block', 'launch', 'orbit',
+    ];
+
+    /**
      * Check if a title mentions the company name.
+     *
+     * For ambiguous names (common English words), requires the name to appear
+     * in a company-specific context (e.g., near funding verbs or dollar amounts).
      *
      * @param string $title
      * @param string $companyName
@@ -129,7 +144,21 @@ class NewsSearchService
 
         // Check if company name appears as a whole word
         $pattern = '/\b' . preg_quote($companyName, '/') . '\b/i';
-        return (bool) preg_match($pattern, $title);
+        if (!preg_match($pattern, $title)) {
+            return false;
+        }
+
+        // For ambiguous/common-word names, require stronger context
+        if (in_array(strtolower($companyName), self::AMBIGUOUS_NAMES) || strlen($companyName) <= 5) {
+            $fundingContext = '/(' . preg_quote($companyName, '/') . '\s+(raises|raised|secures|secured|closes|closed|lands|announces)'
+                . '|' . preg_quote($companyName, '/') . ',?\s+(a|the|an)\s+\w+\s+(startup|company|platform)'
+                . '|\$[\d.]+\s*(million|billion|M|B)\b.*\b' . preg_quote($companyName, '/')
+                . '|\b' . preg_quote($companyName, '/') . '\b.*\$[\d.]+\s*(million|billion|M|B))/i';
+
+            return (bool) preg_match($fundingContext, $title);
+        }
+
+        return true;
     }
 
     /**
