@@ -56,16 +56,16 @@ class FetchNews extends Command
 
     /**
      * Fetch news for all companies with rate limiting.
+     *
+     * Uses chunked queries to avoid loading all companies into memory.
+     * Note: Laravel's chunk() ignores limit(), so we enforce the limit manually.
      */
     private function fetchForAllCompanies(?string $limit, int $delay): int
     {
-        $query = Company::query();
-
-        if ($limit) {
-            $query->limit((int) $limit);
-        }
-
-        $total = $query->count();
+        $maxCompanies = $limit ? (int) $limit : null;
+        $total = $maxCompanies
+            ? min($maxCompanies, Company::count())
+            : Company::count();
 
         if ($total === 0) {
             $this->info('No companies found.');
@@ -78,14 +78,22 @@ class FetchNews extends Command
 
         $index = 0;
 
-        // Use chunking to avoid loading all companies into memory at once
-        $query->chunk(100, function ($companies) use ($delay, &$index) {
+        Company::chunk(100, function ($companies) use ($delay, $maxCompanies, &$index) {
             foreach ($companies as $company) {
+                if ($maxCompanies !== null && $index >= $maxCompanies) {
+                    return false; // Stop chunking
+                }
+
                 $delaySeconds = $index * $delay;
                 FetchNewsMentionsJob::dispatch($company)->delay(now()->addSeconds($delaySeconds));
 
                 $this->line("  Dispatched: {$company->name}" . ($delaySeconds > 0 ? " (delay: {$delaySeconds}s)" : ''));
                 $index++;
+            }
+
+            // Stop chunking if we've hit the limit
+            if ($maxCompanies !== null && $index >= $maxCompanies) {
+                return false;
             }
         });
 

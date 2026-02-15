@@ -399,8 +399,8 @@ class FundingDataSeeder extends Seeder
             $round = FundingRound::firstOrCreate(
                 [
                     'company_id' => $roundData['company_id'],
+                    'announced_date' => $roundData['announced_date'],
                     'round_type' => $roundData['round_type'] ?? null,
-                    'announced_date' => $roundData['announced_date'] ?? null,
                 ],
                 $roundData
             );

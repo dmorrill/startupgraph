@@ -22,11 +22,12 @@ class CompanyController extends Controller
             ]);
 
         if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('country', 'like', "%{$search}%");
+            $escapedSearch = str_replace(['%', '_'], ['\%', '\_'], $search);
+            $query->where(function ($q) use ($escapedSearch) {
+                $q->where('name', 'like', "%{$escapedSearch}%")
+                  ->orWhere('description', 'like', "%{$escapedSearch}%")
+                  ->orWhere('city', 'like', "%{$escapedSearch}%")
+                  ->orWhere('country', 'like', "%{$escapedSearch}%");
             });
         }
 
@@ -162,11 +163,12 @@ class CompanyController extends Controller
             ->withCount('fundingRounds');
 
         if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('country', 'like', "%{$search}%");
+            $escapedSearch = str_replace(['%', '_'], ['\%', '\_'], $search);
+            $query->where(function ($q) use ($escapedSearch) {
+                $q->where('name', 'like', "%{$escapedSearch}%")
+                  ->orWhere('description', 'like', "%{$escapedSearch}%")
+                  ->orWhere('city', 'like', "%{$escapedSearch}%")
+                  ->orWhere('country', 'like', "%{$escapedSearch}%");
             });
         }
 

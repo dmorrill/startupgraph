@@ -27,8 +27,8 @@ class FundingRoundDeduplicationService
 
     public function __construct()
     {
-        $this->dateTolerance = (int) config('startupgraph.dedup.date_tolerance_days', 30);
-        $this->amountTolerance = (float) config('startupgraph.dedup.amount_tolerance', 0.10);
+        $this->dateTolerance = (int) config('startupgraph.deduplication.date_tolerance_days', 30);
+        $this->amountTolerance = (float) config('startupgraph.deduplication.amount_tolerance_percent', 0.10);
     }
 
     /**
@@ -37,11 +37,12 @@ class FundingRoundDeduplicationService
      * @param int $companyId The company ID
      * @param string $announcedDate The announced date (YYYY-MM-DD)
      * @param float|null $amount The funding amount in USD
+     * @param Collection|null $existingRounds Pre-loaded rounds to avoid extra queries
      * @return FundingRound|null Returns the potential duplicate round, or null if no duplicate found
      */
-    public function findPotentialDuplicate(int $companyId, string $announcedDate, ?float $amount): ?FundingRound
+    public function findPotentialDuplicate(int $companyId, string $announcedDate, ?float $amount, ?Collection $existingRounds = null): ?FundingRound
     {
-        $existingRounds = FundingRound::where('company_id', $companyId)->get();
+        $existingRounds ??= FundingRound::where('company_id', $companyId)->get();
 
         foreach ($existingRounds as $round) {
             if ($this->isPotentialDuplicate($round, $announcedDate, $amount)) {
@@ -85,6 +86,9 @@ class FundingRoundDeduplicationService
     /**
      * Find all potential duplicate pairs within a company's funding rounds.
      *
+     * Uses eager-loaded fundingRounds relation when a Company model is passed,
+     * avoiding an extra query if the relation is already loaded.
+     *
      * @param Company|int $company The company or company ID
      * @return Collection Collection of arrays with 'round1' and 'round2' keys
      */
@@ -99,29 +103,7 @@ class FundingRoundDeduplicationService
                 ->get();
         }
 
-        $duplicates = collect();
-
-        for ($i = 0; $i < $rounds->count(); $i++) {
-            for ($j = $i + 1; $j < $rounds->count(); $j++) {
-                $round1 = $rounds[$i];
-                $round2 = $rounds[$j];
-
-                if ($this->isPotentialDuplicate(
-                    $round1,
-                    $round2->announced_date->format('Y-m-d'),
-                    $round2->amount
-                )) {
-                    $duplicates->push([
-                        'round1' => $round1,
-                        'round2' => $round2,
-                        'date_diff_days' => abs($round1->announced_date->diffInDays($round2->announced_date)),
-                        'amount_diff_percent' => $this->calculateAmountDiffPercent($round1->amount, $round2->amount),
-                    ]);
-                }
-            }
-        }
-
-        return $duplicates;
+        return $this->findDuplicatesFromRounds($rounds);
     }
 
     /**
