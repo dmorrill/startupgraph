@@ -90,10 +90,14 @@ class FundingRoundDeduplicationService
      */
     public function findDuplicatesForCompany(Company|int $company): Collection
     {
-        $companyId = $company instanceof Company ? $company->id : $company;
-        $rounds = FundingRound::where('company_id', $companyId)
-            ->orderBy('announced_date')
-            ->get();
+        if ($company instanceof Company && $company->relationLoaded('fundingRounds')) {
+            $rounds = $company->fundingRounds->sortBy('announced_date')->values();
+        } else {
+            $companyId = $company instanceof Company ? $company->id : $company;
+            $rounds = FundingRound::where('company_id', $companyId)
+                ->orderBy('announced_date')
+                ->get();
+        }
 
         $duplicates = collect();
 
