@@ -288,7 +288,7 @@
 </div>
 
 @if($company->headcountSnapshots->count() >= 2 || $company->fundingRounds->where('amount', '>', 0)->count() >= 2)
-@push('head')
+@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (function() {
