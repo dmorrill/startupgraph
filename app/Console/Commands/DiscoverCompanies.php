@@ -8,11 +8,11 @@ use Illuminate\Console\Command;
 class DiscoverCompanies extends Command
 {
     protected $signature = 'companies:discover
-                            {--source=all : Discovery source (techcrunch, yc, or all)}
+                            {--source=all : Discovery source (techcrunch, yc, crunchbase, wellfound, hackernews, or all)}
                             {--days=7 : How far back to look}
                             {--dry-run : Show what would be added without saving}';
 
-    protected $description = 'Discover and add new companies from external sources (TechCrunch, Y Combinator, etc.)';
+    protected $description = 'Discover and add new companies from external sources (TechCrunch, Y Combinator, Crunchbase, Wellfound)';
 
     public function handle(DiscoverCompaniesService $service): int
     {

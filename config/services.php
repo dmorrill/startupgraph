@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'crunchbase' => [
+        'api_key' => env('CRUNCHBASE_API_KEY'),
+    ],
+
 ];
