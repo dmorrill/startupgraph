@@ -25,23 +25,23 @@ Schedule::command('schedule:headcounts')
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/schedule-headcounts.log'));
 
-// Weekly funding scrape - runs Sunday at 2am
+// Daily funding scrape - runs at 2am
 Schedule::command('schedule:funding')
-    ->weeklyOn(0, '02:00')
+    ->dailyAt('02:00')
     ->withoutOverlapping()
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/schedule-funding.log'));
 
-// Weekly company discovery - runs Saturday at 4am
+// Daily company discovery - runs at 4am
 Schedule::command('companies:discover')
-    ->weeklyOn(6, '04:00')
+    ->dailyAt('04:00')
     ->withoutOverlapping()
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/companies-discover.log'));
 
-// Weekly news fetch - runs Monday at 3am
+// Daily news fetch - runs at 3am
 Schedule::command('news:fetch')
-    ->weeklyOn(1, '03:00')
+    ->dailyAt('03:00')
     ->withoutOverlapping()
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/news-fetch.log'));
