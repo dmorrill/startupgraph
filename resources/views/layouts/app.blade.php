@@ -28,6 +28,9 @@
                     <a href="{{ route('open-source.index') }}" class="text-gray-600 hover:text-gray-900">
                         Open Source
                     </a>
+                    <a href="{{ route('submissions.create') }}" class="text-gray-600 hover:text-gray-900">
+                        Submit a Project
+                    </a>
 
                     @auth
                         <div x-data="{ open: false }" class="relative">

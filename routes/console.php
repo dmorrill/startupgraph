@@ -77,6 +77,12 @@ Schedule::command('app:refresh-oss-stars')
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/oss-refresh-stars.log'));
 
+Schedule::command('companies:discover --source=producthunt')
+    ->dailyAt('05:15')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/companies-discover.log'));
+
 // Daily news fetch - runs at 3am
 Schedule::command('news:fetch')
     ->dailyAt('03:00')

@@ -43,4 +43,8 @@ return [
         'token' => env('GITHUB_TOKEN'),
     ],
 
+    'producthunt' => [
+        'token' => env('PRODUCT_HUNT_TOKEN'),
+    ],
+
 ];
