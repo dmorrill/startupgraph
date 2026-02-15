@@ -22,6 +22,9 @@
                     <a href="{{ route('companies.index') }}" class="text-gray-600 hover:text-gray-900">
                         Companies
                     </a>
+                    <a href="{{ route('companies.compare') }}" class="text-gray-600 hover:text-gray-900">
+                        Compare
+                    </a>
 
                     @auth
                         <div x-data="{ open: false }" class="relative">

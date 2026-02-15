@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompareController;
 use App\Http\Controllers\Admin\CompanyController as AdminCompanyController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
@@ -8,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CompanyController::class, 'index'])->name('home');
 Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+Route::get('/compare', [CompareController::class, 'index'])->name('companies.compare');
 Route::get('/companies/export/csv', [CompanyController::class, 'exportCsv'])->name('companies.export.csv');
 Route::get('/companies/export/json', [CompanyController::class, 'exportJson'])->name('companies.export.json');
 Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
