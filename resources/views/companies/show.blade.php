@@ -150,7 +150,7 @@
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                             </div>
-                            <canvas id="headcountChart" class="hidden"></canvas>
+                            <canvas id="headcountChart" class="hidden" role="img" aria-label="Headcount growth chart for {{ $company->name }}"></canvas>
                         </div>
                     @else
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -173,7 +173,7 @@
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                             </div>
-                            <canvas id="fundingChart" class="hidden"></canvas>
+                            <canvas id="fundingChart" class="hidden" role="img" aria-label="Funding history chart for {{ $company->name }}"></canvas>
                         </div>
                     @endif
                     <div class="space-y-3 max-h-72 overflow-y-auto">
@@ -288,7 +288,7 @@
 </div>
 
 @if($company->headcountSnapshots->count() >= 2 || $company->fundingRounds->where('amount', '>', 0)->count() >= 2)
-@push('head')
+@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (function() {

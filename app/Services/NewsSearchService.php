@@ -170,6 +170,14 @@ class NewsSearchService
     private function extractDateFromUrl(string $url): ?string
     {
         if (preg_match('/techcrunch\.com\/(\d{4})\/(\d{2})\/(\d{2})\//', $url, $dateMatch)) {
+            $year = (int) $dateMatch[1];
+            $month = (int) $dateMatch[2];
+            $day = (int) $dateMatch[3];
+
+            if (!checkdate($month, $day, $year)) {
+                return null;
+            }
+
             return "{$dateMatch[1]}-{$dateMatch[2]}-{$dateMatch[3]}";
         }
         return null;

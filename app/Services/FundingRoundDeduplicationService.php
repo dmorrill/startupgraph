@@ -27,8 +27,8 @@ class FundingRoundDeduplicationService
 
     public function __construct()
     {
-        $this->dateTolerance = (int) config('startupgraph.dedup.date_tolerance_days', 30);
-        $this->amountTolerance = (float) config('startupgraph.dedup.amount_tolerance', 0.10);
+        $this->dateTolerance = (int) config('startupgraph.deduplication.date_tolerance_days', 30);
+        $this->amountTolerance = (float) config('startupgraph.deduplication.amount_tolerance_percent', 0.10);
     }
 
     /**
