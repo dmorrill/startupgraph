@@ -57,6 +57,12 @@ Schedule::command('companies:discover --source=wellfound')
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/companies-discover.log'));
 
+Schedule::command('companies:discover --source=hackernews')
+    ->dailyAt('05:00')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/companies-discover.log'));
+
 // Daily news fetch - runs at 3am
 Schedule::command('news:fetch')
     ->dailyAt('03:00')

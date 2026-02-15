@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Contracts\CompanyDiscoverySource;
 use App\Models\Company;
 use App\Services\Discovery\CrunchbaseDiscoverySource;
+use App\Services\Discovery\HackerNewsDiscoverySource;
 use App\Services\Discovery\TechCrunchDiscoverySource;
 use App\Services\Discovery\WellfoundDiscoverySource;
+use App\Services\Discovery\HackerNewsDiscoverySource;
 use App\Services\Discovery\YCombinatorDiscoverySource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -21,11 +23,13 @@ class DiscoverCompaniesService
         YCombinatorDiscoverySource $yCombinator,
         CrunchbaseDiscoverySource $crunchbase,
         WellfoundDiscoverySource $wellfound,
+        HackerNewsDiscoverySource $hackerNews,
     ) {
         $this->registerSource($techCrunch);
         $this->registerSource($yCombinator);
         $this->registerSource($crunchbase);
         $this->registerSource($wellfound);
+        $this->registerSource($hackerNews);
     }
 
     public function registerSource(CompanyDiscoverySource $source): void

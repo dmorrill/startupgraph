@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 class DiscoverCompanies extends Command
 {
     protected $signature = 'companies:discover
-                            {--source=all : Discovery source (techcrunch, yc, crunchbase, wellfound, or all)}
+                            {--source=all : Discovery source (techcrunch, yc, crunchbase, wellfound, hackernews, or all)}
                             {--days=7 : How far back to look}
                             {--dry-run : Show what would be added without saving}';
 
