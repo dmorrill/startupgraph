@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Company;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -170,7 +171,13 @@ class NewsSearchService
     private function extractDateFromUrl(string $url): ?string
     {
         if (preg_match('/techcrunch\.com\/(\d{4})\/(\d{2})\/(\d{2})\//', $url, $dateMatch)) {
-            return "{$dateMatch[1]}-{$dateMatch[2]}-{$dateMatch[3]}";
+            try {
+                return Carbon::createSafe((int) $dateMatch[1], (int) $dateMatch[2], (int) $dateMatch[3])
+                    ?->format('Y-m-d');
+            } catch (\Exception $e) {
+                Log::debug("Invalid date in URL {$url}: {$e->getMessage()}");
+                return null;
+            }
         }
         return null;
     }
