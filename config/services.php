@@ -39,4 +39,8 @@ return [
         'api_key' => env('CRUNCHBASE_API_KEY'),
     ],
 
+    'github' => [
+        'token' => env('GITHUB_TOKEN'),
+    ],
+
 ];

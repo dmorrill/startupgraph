@@ -76,6 +76,13 @@ class Company extends Model
             ->withTimestamps();
     }
 
+    public function ossAlternatives(): BelongsToMany
+    {
+        return $this->belongsToMany(OpenSourceProject::class, 'company_oss_alternatives', 'company_id', 'oss_project_id')
+            ->withPivot('relationship_type', 'notes')
+            ->withTimestamps();
+    }
+
     public function scheduledTaskExecutions(): HasMany
     {
         return $this->hasMany(ScheduledTaskExecution::class);
