@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Contracts\CompanyDiscoverySource;
 use App\Models\Company;
+use App\Services\Discovery\CrunchbaseDiscoverySource;
 use App\Services\Discovery\TechCrunchDiscoverySource;
+use App\Services\Discovery\WellfoundDiscoverySource;
 use App\Services\Discovery\YCombinatorDiscoverySource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -17,9 +19,13 @@ class DiscoverCompaniesService
     public function __construct(
         TechCrunchDiscoverySource $techCrunch,
         YCombinatorDiscoverySource $yCombinator,
+        CrunchbaseDiscoverySource $crunchbase,
+        WellfoundDiscoverySource $wellfound,
     ) {
         $this->registerSource($techCrunch);
         $this->registerSource($yCombinator);
+        $this->registerSource($crunchbase);
+        $this->registerSource($wellfound);
     }
 
     public function registerSource(CompanyDiscoverySource $source): void
@@ -68,8 +74,15 @@ class DiscoverCompaniesService
 
                     $results['discovered'][] = array_merge($candidate, ['source' => $name]);
 
-                    // Check if company already exists (case-insensitive)
+                    // Check if company already exists (by name or domain)
                     $existing = Company::whereRaw('LOWER(name) = ?', [strtolower($companyName)])->first();
+
+                    if (!$existing && !empty($candidate['website'])) {
+                        $domain = $this->extractDomain($candidate['website']);
+                        if ($domain) {
+                            $existing = Company::where('website', 'LIKE', "%{$domain}%")->first();
+                        }
+                    }
 
                     if ($existing) {
                         $results['existing'][] = [
@@ -121,6 +134,16 @@ class DiscoverCompaniesService
         }
 
         return $results;
+    }
+
+    private function extractDomain(string $url): ?string
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!$host) {
+            return null;
+        }
+        // Strip www.
+        return preg_replace('/^www\./', '', strtolower($host));
     }
 
     private function generateUniqueSlug(string $name): string

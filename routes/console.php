@@ -32,9 +32,27 @@ Schedule::command('schedule:funding')
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/schedule-funding.log'));
 
-// Daily company discovery - runs at 4am
-Schedule::command('companies:discover')
+// Daily company discovery - staggered by source to spread load
+Schedule::command('companies:discover --source=techcrunch')
     ->dailyAt('04:00')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/companies-discover.log'));
+
+Schedule::command('companies:discover --source=yc')
+    ->dailyAt('04:15')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/companies-discover.log'));
+
+Schedule::command('companies:discover --source=crunchbase')
+    ->dailyAt('04:30')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/companies-discover.log'));
+
+Schedule::command('companies:discover --source=wellfound')
+    ->dailyAt('04:45')
     ->withoutOverlapping()
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/companies-discover.log'));
