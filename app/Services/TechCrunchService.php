@@ -47,6 +47,18 @@ class TechCrunchService
         }
     }
 
+    /**
+     * Common English words that happen to be company names.
+     * These require stricter matching to avoid false positives from article headlines.
+     */
+    private const AMBIGUOUS_NAMES = [
+        'smooth', 'vibe', 'seed', 'close', 'soon', 'fair', 'open', 'next',
+        'bold', 'flow', 'dash', 'level', 'rise', 'shift', 'spark', 'spring',
+        'wave', 'bright', 'fast', 'clear', 'true', 'pure', 'prime', 'core',
+        'base', 'blend', 'bridge', 'scout', 'scout', 'notion', 'linear',
+        'pilot', 'ramp', 'harbor', 'path', 'block', 'launch', 'orbit',
+    ];
+
     public function matchArticlesToCompanies(array $articles): Collection
     {
         $companies = Company::pluck('name', 'id')->toArray();
@@ -63,25 +75,52 @@ class TechCrunchService
                     continue;
                 }
 
-                // Check if company name appears as a whole word in article
-                $pattern = '/\b' . preg_quote($companyName, '/') . '\b/i';
-                if (preg_match($pattern, $text)) {
-                    $fundingInfo = $this->extractFundingInfo($text);
+                if (!$this->isConfidentMatch($companyName, $title, $text)) {
+                    continue;
+                }
 
-                    if ($fundingInfo) {
-                        $matches->push([
-                            'company_id' => $companyId,
-                            'company_name' => $companyName,
-                            'article_title' => $title,
-                            'article_url' => $article['url'] ?? null,
-                            'funding_info' => $fundingInfo,
-                        ]);
-                    }
+                $fundingInfo = $this->extractFundingInfo($text);
+
+                if ($fundingInfo) {
+                    $matches->push([
+                        'company_id' => $companyId,
+                        'company_name' => $companyName,
+                        'article_title' => $title,
+                        'article_url' => $article['url'] ?? null,
+                        'funding_info' => $fundingInfo,
+                    ]);
                 }
             }
         }
 
         return $matches;
+    }
+
+    /**
+     * Determine if a company name match in article text is a confident match
+     * (not a false positive from a common English word appearing in a headline).
+     */
+    private function isConfidentMatch(string $companyName, string $title, string $fullText): bool
+    {
+        $pattern = '/\b' . preg_quote($companyName, '/') . '\b/i';
+
+        // Check if the name appears at all
+        if (!preg_match($pattern, $fullText)) {
+            return false;
+        }
+
+        // For ambiguous/common-word names, require stronger signals
+        if (in_array(strtolower($companyName), self::AMBIGUOUS_NAMES) || strlen($companyName) <= 5) {
+            // Must appear in a funding context: near a dollar amount, "raises", "series", etc.
+            $fundingContext = '/(' . preg_quote($companyName, '/') . '\s+(raises|raised|secures|secured|closes|closed|lands|announces)'
+                . '|' . preg_quote($companyName, '/') . ',?\s+(a|the|an)\s+\w+\s+(startup|company|platform)'
+                . '|\$[\d.]+\s*(million|billion|M|B)\b.*\b' . preg_quote($companyName, '/')
+                . '|\b' . preg_quote($companyName, '/') . '\b.*\$[\d.]+\s*(million|billion|M|B))/i';
+
+            return (bool) preg_match($fundingContext, $fullText);
+        }
+
+        return true;
     }
 
     private function parseArticles(string $html): array
