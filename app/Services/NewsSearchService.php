@@ -4,12 +4,20 @@ namespace App\Services;
 
 use App\Models\Company;
 use Carbon\Carbon;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class NewsSearchService
 {
     private const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+    private HttpFactory $http;
+
+    public function __construct(?HttpFactory $http = null)
+    {
+        $this->http = $http ?? Http::getFacadeRoot();
+    }
 
     /**
      * Search for news articles mentioning a company.
@@ -26,7 +34,7 @@ class NewsSearchService
             $searchQuery = urlencode($company->name);
             $searchUrl = "https://techcrunch.com/?s={$searchQuery}";
 
-            $response = Http::withHeaders([
+            $response = $this->http->withHeaders([
                 'User-Agent' => self::USER_AGENT,
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             ])->timeout(30)->get($searchUrl);
