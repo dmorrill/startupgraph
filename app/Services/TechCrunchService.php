@@ -201,8 +201,8 @@ class TechCrunchService
         // Extract round type
         $roundPatterns = [
             '/series\s+([a-h])/i' => 'series_',
-            '/seed\s+(round|funding)/i' => 'seed',
             '/pre-seed/i' => 'pre_seed',
+            '/seed\s+(round|funding)/i' => 'seed',
         ];
 
         foreach ($roundPatterns as $pattern => $prefix) {
