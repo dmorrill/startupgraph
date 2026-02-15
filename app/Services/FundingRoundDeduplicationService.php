@@ -123,16 +123,18 @@ class FundingRoundDeduplicationService
     {
         $results = collect();
 
-        // Get companies that have more than one funding round
+        // Get companies that have more than one funding round, eager-load rounds
         $companyIds = FundingRound::selectRaw('company_id, COUNT(*) as round_count')
             ->groupBy('company_id')
             ->havingRaw('COUNT(*) > 1')
             ->pluck('company_id');
 
-        $companiesWithRounds = Company::whereIn('id', $companyIds)->get();
+        $companiesWithRounds = Company::whereIn('id', $companyIds)
+            ->with(['fundingRounds' => fn ($q) => $q->orderBy('announced_date')])
+            ->get();
 
         foreach ($companiesWithRounds as $company) {
-            $duplicates = $this->findDuplicatesForCompany($company);
+            $duplicates = $this->findDuplicatesFromRounds($company->fundingRounds);
             if ($duplicates->isNotEmpty()) {
                 $results->push([
                     'company' => $company,
@@ -142,6 +144,36 @@ class FundingRoundDeduplicationService
         }
 
         return $results;
+    }
+
+    /**
+     * Find duplicate pairs within a pre-loaded collection of funding rounds.
+     */
+    private function findDuplicatesFromRounds(Collection $rounds): Collection
+    {
+        $duplicates = collect();
+
+        for ($i = 0; $i < $rounds->count(); $i++) {
+            for ($j = $i + 1; $j < $rounds->count(); $j++) {
+                $round1 = $rounds[$i];
+                $round2 = $rounds[$j];
+
+                if ($this->isPotentialDuplicate(
+                    $round1,
+                    $round2->announced_date->format('Y-m-d'),
+                    $round2->amount
+                )) {
+                    $duplicates->push([
+                        'round1' => $round1,
+                        'round2' => $round2,
+                        'date_diff_days' => abs($round1->announced_date->diffInDays($round2->announced_date)),
+                        'amount_diff_percent' => $this->calculateAmountDiffPercent($round1->amount, $round2->amount),
+                    ]);
+                }
+            }
+        }
+
+        return $duplicates;
     }
 
     /**
