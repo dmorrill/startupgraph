@@ -13,7 +13,7 @@ Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('co
 Route::get('/people/{person}', [PersonController::class, 'show'])->name('people.show');
 
 // Admin routes
-Route::prefix('admin')->middleware('admin.auth')->name('admin.')->group(function () {
+Route::prefix('admin')->middleware(['throttle:10,1', 'admin.auth'])->name('admin.')->group(function () {
     Route::get('/companies', [AdminCompanyController::class, 'index'])->name('companies.index');
     Route::get('/companies/create', [AdminCompanyController::class, 'create'])->name('companies.create');
     Route::post('/companies', [AdminCompanyController::class, 'store'])->name('companies.store');
