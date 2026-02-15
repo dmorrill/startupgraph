@@ -396,7 +396,14 @@ class FundingDataSeeder extends Seeder
 
             $roundData['company_id'] = $company->id;
 
-            $round = FundingRound::create($roundData);
+            $round = FundingRound::firstOrCreate(
+                [
+                    'company_id' => $roundData['company_id'],
+                    'announced_date' => $roundData['announced_date'],
+                    'round_type' => $roundData['round_type'] ?? null,
+                ],
+                $roundData
+            );
 
             foreach ($investorNames as $index => $name) {
                 if (isset($investors[$name])) {

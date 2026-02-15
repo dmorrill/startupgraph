@@ -21,10 +21,11 @@ class CompanyController extends Controller
         $query = Company::query()->orderBy('name');
 
         if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('country', 'like', "%{$search}%");
+            $escapedSearch = str_replace(['%', '_'], ['\%', '\_'], $search);
+            $query->where(function ($q) use ($escapedSearch) {
+                $q->where('name', 'like', "%{$escapedSearch}%")
+                  ->orWhere('city', 'like', "%{$escapedSearch}%")
+                  ->orWhere('country', 'like', "%{$escapedSearch}%");
             });
         }
 

@@ -91,7 +91,7 @@
                     class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     Visit Website
-                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                     </svg>
                 </a>
@@ -143,14 +143,15 @@
                 <div class="bg-white rounded-lg shadow-sm border p-6" id="headcount-section">
                     <h2 class="text-xl font-bold text-gray-900 mb-4">Employee Growth</h2>
                     @if($company->headcountSnapshots->count() >= 2)
-                        <div class="h-64 chart-container" data-chart="headcount">
-                            <div class="chart-loading flex items-center justify-center h-full text-gray-400">
-                                <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <div class="h-64 chart-container" data-chart="headcount" role="figure" aria-label="Employee growth over time for {{ $company->name }}">
+                            <div class="chart-loading flex items-center justify-center h-full text-gray-400" aria-hidden="true">
+                                <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
+                                <span class="sr-only">Loading chart</span>
                             </div>
-                            <canvas id="headcountChart" class="hidden"></canvas>
+                            <canvas id="headcountChart" class="hidden" role="img" aria-label="Line chart showing employee count over time for {{ $company->name }}. From {{ $company->headcountSnapshots->sortBy('recorded_date')->first()?->headcount ?? 0 }} to {{ $company->headcountSnapshots->sortBy('recorded_date')->last()?->headcount ?? 0 }} employees."></canvas>
                         </div>
                     @else
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -166,19 +167,24 @@
                 <div class="bg-white rounded-lg shadow-sm border p-6" id="funding-section">
                     <h2 class="text-xl font-bold text-gray-900 mb-4">Funding History</h2>
                     @if($company->fundingRounds->where('amount', '>', 0)->count() >= 2)
-                        <div class="h-48 mb-4 chart-container" data-chart="funding">
-                            <div class="chart-loading flex items-center justify-center h-full text-gray-400">
-                                <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        @php
+                            $fundedRounds = $company->fundingRounds->where('amount', '>', 0)->sortBy('announced_date');
+                            $totalFunded = $fundedRounds->sum('amount');
+                        @endphp
+                        <div class="h-48 mb-4 chart-container" data-chart="funding" role="figure" aria-label="Funding history for {{ $company->name }}">
+                            <div class="chart-loading flex items-center justify-center h-full text-gray-400" aria-hidden="true">
+                                <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
+                                <span class="sr-only">Loading chart</span>
                             </div>
-                            <canvas id="fundingChart" class="hidden"></canvas>
+                            <canvas id="fundingChart" class="hidden" role="img" aria-label="Bar chart showing {{ $fundedRounds->count() }} funding rounds for {{ $company->name }}, totaling ${{ number_format($totalFunded / 1000000, 0) }}M raised."></canvas>
                         </div>
                     @endif
-                    <div class="space-y-3 max-h-72 overflow-y-auto">
-                        @foreach($company->fundingRounds->sortByDesc('announced_date') as $round)
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div class="space-y-3 max-h-72 overflow-y-auto" role="list" aria-label="Funding rounds for {{ $company->name }}">
+                        @foreach($company->fundingRounds->where('amount', '>', 0)->sortByDesc('announced_date') as $round)
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors" role="listitem">
                                 <div>
                                     <p class="font-semibold text-gray-900">
                                         {{ ucfirst(str_replace('_', ' ', $round->round_type ?? 'Funding Round')) }}
@@ -288,7 +294,7 @@
 </div>
 
 @if($company->headcountSnapshots->count() >= 2 || $company->fundingRounds->where('amount', '>', 0)->count() >= 2)
-@push('head')
+@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (function() {

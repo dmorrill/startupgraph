@@ -139,7 +139,10 @@ class CompanySeeder extends Seeder
 
         foreach ($companies as $companyData) {
             $companyData['slug'] = Str::slug($companyData['name']);
-            Company::create($companyData);
+            Company::firstOrCreate(
+                ['slug' => $companyData['slug']],
+                $companyData
+            );
         }
     }
 }
