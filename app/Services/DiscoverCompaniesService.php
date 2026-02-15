@@ -8,7 +8,6 @@ use App\Services\Discovery\CrunchbaseDiscoverySource;
 use App\Services\Discovery\HackerNewsDiscoverySource;
 use App\Services\Discovery\TechCrunchDiscoverySource;
 use App\Services\Discovery\WellfoundDiscoverySource;
-use App\Services\Discovery\HackerNewsDiscoverySource;
 use App\Services\Discovery\YCombinatorDiscoverySource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
