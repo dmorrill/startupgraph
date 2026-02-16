@@ -8,6 +8,7 @@ use App\Services\Discovery\CrunchbaseDiscoverySource;
 use App\Services\Discovery\HackerNewsDiscoverySource;
 use App\Services\Discovery\TechCrunchDiscoverySource;
 use App\Services\Discovery\WellfoundDiscoverySource;
+use App\Services\Discovery\ProductHuntDiscoverySource;
 use App\Services\Discovery\YCombinatorDiscoverySource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -23,12 +24,14 @@ class DiscoverCompaniesService
         CrunchbaseDiscoverySource $crunchbase,
         WellfoundDiscoverySource $wellfound,
         HackerNewsDiscoverySource $hackerNews,
+        ProductHuntDiscoverySource $productHunt,
     ) {
         $this->registerSource($techCrunch);
         $this->registerSource($yCombinator);
         $this->registerSource($crunchbase);
         $this->registerSource($wellfound);
         $this->registerSource($hackerNews);
+        $this->registerSource($productHunt);
     }
 
     public function registerSource(CompanyDiscoverySource $source): void
@@ -110,6 +113,9 @@ class DiscoverCompaniesService
                         'slug' => $this->generateUniqueSlug($companyName),
                         'description' => $candidate['description'] ?? null,
                         'website' => $candidate['website'] ?? null,
+                        'is_indie' => $candidate['is_indie'] ?? false,
+                        'solo_builder' => $candidate['solo_builder'] ?? false,
+                        'submission_url' => $candidate['source_url'] ?? null,
                     ]);
 
                     // If we have funding info, create a funding round

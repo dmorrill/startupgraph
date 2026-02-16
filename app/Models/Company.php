@@ -40,6 +40,13 @@ class Company extends Model
         'profile_refreshed_at',
         'headcount_fetched_at',
         'headcount_fetch_day',
+        'is_indie',
+        'is_open_source',
+        'github_stars',
+        'solo_builder',
+        'tech_stack',
+        'submitted_by',
+        'submission_url',
     ];
 
     protected $casts = [
@@ -47,6 +54,10 @@ class Company extends Model
         'product_highlights' => 'array',
         'profile_refreshed_at' => 'datetime',
         'headcount_fetched_at' => 'datetime',
+        'is_indie' => 'boolean',
+        'is_open_source' => 'boolean',
+        'solo_builder' => 'boolean',
+        'github_stars' => 'integer',
     ];
 
     public function headcountSnapshots(): HasMany

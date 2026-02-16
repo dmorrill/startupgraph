@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompareController;
+use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\Admin\CompanyController as AdminCompanyController;
+use App\Http\Controllers\Admin\SubmissionController as AdminSubmissionController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\OpenSourceController;
 use App\Http\Controllers\ProfileController;
@@ -18,6 +20,9 @@ Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('co
 Route::get('/people/{person}', [PersonController::class, 'show'])->name('people.show');
 Route::get('/open-source', [OpenSourceController::class, 'index'])->name('open-source.index');
 
+Route::get('/submit', [SubmissionController::class, 'create'])->name('submissions.create');
+Route::post('/submit', [SubmissionController::class, 'store'])->name('submissions.store');
+
 // Admin routes
 Route::prefix('admin')->middleware(['throttle:10,1', 'admin.auth'])->name('admin.')->group(function () {
     Route::get('/companies', [AdminCompanyController::class, 'index'])->name('companies.index');
@@ -31,6 +36,10 @@ Route::prefix('admin')->middleware(['throttle:10,1', 'admin.auth'])->name('admin
     Route::get('/oss-projects/{ossProject}', [AdminOssProjectController::class, 'show'])->name('oss-projects.show');
     Route::post('/oss-projects/{ossProject}/link-company', [AdminOssProjectController::class, 'linkCompany'])->name('oss-projects.link-company');
     Route::delete('/oss-projects/{ossProject}/unlink-company/{company}', [AdminOssProjectController::class, 'unlinkCompany'])->name('oss-projects.unlink-company');
+
+    Route::get('/submissions', [AdminSubmissionController::class, 'index'])->name('submissions.index');
+    Route::post('/submissions/{submission}/approve', [AdminSubmissionController::class, 'approve'])->name('submissions.approve');
+    Route::post('/submissions/{submission}/reject', [AdminSubmissionController::class, 'reject'])->name('submissions.reject');
 });
 
 // Authenticated user routes
