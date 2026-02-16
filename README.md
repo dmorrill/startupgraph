@@ -28,6 +28,12 @@ The database currently includes **107 companies** with:
 - Person profile pages showing career history
 - Filter by funding recency (3 months, 6 months, 1 year, etc.)
 - Sort by total raised, last fundraise date, headcount
+- **Export** — CSV and JSON export with current filters applied
+- **Open source tracking** — GitHub OSS project discovery and star monitoring
+- **Public submissions** — community submission form with admin review
+- **XML Sitemap** — auto-generated at `/sitemap.xml`
+- **Public REST API** — no auth required, designed for AI agents
+- **MCP server** — direct integration with Claude and other AI tools
 
 ## Use cases
 
@@ -92,10 +98,13 @@ Refresh product highlights and leadership data as companies evolve.
 
 Early development. See [Issue #1](https://github.com/dmorrill/startupgraph/issues/1) for the full vision and roadmap.
 
-### Open issues
+### Recent additions
 
-- [#3](https://github.com/dmorrill/startupgraph/issues/3) - Backfill source URLs for funding rounds
-- [#4](https://github.com/dmorrill/startupgraph/issues/4) - Add recurring job to refresh company data
+- OSS project tracking with GitHub star monitoring
+- Indie project tracking with Product Hunt discovery
+- MCP server for AI tool integration
+- Public submission form for community contributions
+- Data audit command for completeness reporting
 
 ## API
 
@@ -114,6 +123,8 @@ StartupGraph provides a public JSON API with no authentication required. Designe
 | `GET /api/companies/{slug}/headcount` | Employee growth |
 | `GET /api/people/{slug}` | Person profile |
 | `GET /api/categories` | List category filters |
+| `GET /api/oss-projects` | List open source projects |
+| `GET /api/oss-projects/{id}` | OSS project details |
 
 ### Query Parameters
 
@@ -143,35 +154,39 @@ curl "http://localhost:8000/api/companies/stripe"
 
 ## MCP Server
 
-Use StartupGraph directly from Claude Code with the MCP server:
+StartupGraph includes a built-in MCP (Model Context Protocol) server for direct AI tool integration:
 
 ```bash
-# Add to Claude Code
-claude mcp add startupgraph -- npx @startupgraph/mcp
+# Run the MCP server
+php artisan mcp:serve
+```
 
-# Or with custom API URL
-claude mcp add startupgraph -- npx @startupgraph/mcp --url http://localhost:8000/api
+Configure in your AI tool using the provided `mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "startupgraph": {
+      "command": "php",
+      "args": ["artisan", "mcp:serve"]
+    }
+  }
+}
 ```
 
 ### Available Tools
 
 | Tool | Description |
 |------|-------------|
-| `search_companies` | Search for companies by name, industry, or location |
-| `get_company` | Get detailed traction data for a specific company |
-| `get_funding_history` | Get complete funding rounds with investors |
-| `get_leadership` | Get company executives and team |
-| `get_headcount_history` | Get employee count over time |
-| `compare_companies` | Compare 2-5 companies side-by-side |
-| `list_categories` | List available category filters |
+| `search_companies` | Search for companies by name, category, or country |
+| `get_company` | Get detailed company info with funding and headcount |
 | `get_stats` | Get database statistics |
+| `search_oss_projects` | Search open source projects by name or language |
 
-Once installed, ask Claude Code questions like:
+Ask your AI tool questions like:
 - "What's Stripe's funding history?"
-- "Compare OpenAI and Anthropic"
 - "Find AI companies in San Francisco"
-
-See [mcp-server/README.md](mcp-server/README.md) for full documentation.
+- "Show me trending open source projects"
 
 ## Future plans
 
