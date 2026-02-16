@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\FundingRound;
+use App\Models\OpenSourceProject;
 use App\Models\Person;
 use Illuminate\Http\JsonResponse;
 
@@ -19,6 +20,7 @@ class StatsController extends Controller
                 'funding_rounds_count' => FundingRound::count(),
                 'total_funding_tracked' => (float) FundingRound::sum('amount'),
                 'total_funding_formatted' => $this->formatAmount(FundingRound::sum('amount')),
+                'oss_projects_count' => OpenSourceProject::count(),
                 'categories' => Company::CATEGORIES,
                 'countries' => Company::distinct()->pluck('country')->filter()->sort()->values(),
             ],
