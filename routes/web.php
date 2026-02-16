@@ -4,7 +4,9 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\Admin\CompanyController as AdminCompanyController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\OpenSourceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\OssProjectController as AdminOssProjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CompanyController::class, 'index'])->name('home');
@@ -14,6 +16,7 @@ Route::get('/companies/export/csv', [CompanyController::class, 'exportCsv'])->na
 Route::get('/companies/export/json', [CompanyController::class, 'exportJson'])->name('companies.export.json');
 Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
 Route::get('/people/{person}', [PersonController::class, 'show'])->name('people.show');
+Route::get('/open-source', [OpenSourceController::class, 'index'])->name('open-source.index');
 
 // Admin routes
 Route::prefix('admin')->middleware(['throttle:10,1', 'admin.auth'])->name('admin.')->group(function () {
@@ -23,6 +26,11 @@ Route::prefix('admin')->middleware(['throttle:10,1', 'admin.auth'])->name('admin
     Route::get('/companies/{company}/edit', [AdminCompanyController::class, 'edit'])->name('companies.edit');
     Route::put('/companies/{company}', [AdminCompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/{company}', [AdminCompanyController::class, 'destroy'])->name('companies.destroy');
+
+    Route::get('/oss-projects', [AdminOssProjectController::class, 'index'])->name('oss-projects.index');
+    Route::get('/oss-projects/{ossProject}', [AdminOssProjectController::class, 'show'])->name('oss-projects.show');
+    Route::post('/oss-projects/{ossProject}/link-company', [AdminOssProjectController::class, 'linkCompany'])->name('oss-projects.link-company');
+    Route::delete('/oss-projects/{ossProject}/unlink-company/{company}', [AdminOssProjectController::class, 'unlinkCompany'])->name('oss-projects.unlink-company');
 });
 
 // Authenticated user routes

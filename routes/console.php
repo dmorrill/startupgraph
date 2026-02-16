@@ -63,6 +63,20 @@ Schedule::command('companies:discover --source=hackernews')
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/companies-discover.log'));
 
+// Nightly OSS project discovery - runs at 5:30am
+Schedule::command('app:discover-oss-projects')
+    ->dailyAt('05:30')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/oss-discover.log'));
+
+// Weekly OSS star refresh - runs Sundays at 6:30am
+Schedule::command('app:refresh-oss-stars')
+    ->weeklyOn(0, '06:30')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/oss-refresh-stars.log'));
+
 // Daily news fetch - runs at 3am
 Schedule::command('news:fetch')
     ->dailyAt('03:00')

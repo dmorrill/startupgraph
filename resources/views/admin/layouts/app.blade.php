@@ -20,6 +20,9 @@
                     <a href="{{ route('admin.companies.index') }}" class="text-gray-300 hover:text-white">
                         Companies
                     </a>
+                    <a href="{{ route('admin.oss-projects.index') }}" class="text-gray-300 hover:text-white">
+                        OSS Projects
+                    </a>
                     <span class="text-gray-600">|</span>
                     <a href="{{ route('home') }}" class="text-gray-300 hover:text-white">
                         View Site
