@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "startupgraph": {
+      "command": "php",
+      "args": ["artisan", "mcp:serve"],
+      "env": {}
+    }
+  }
+}
