@@ -25,6 +25,9 @@
                     <a href="{{ route('companies.compare') }}" class="text-gray-600 hover:text-gray-900">
                         Compare
                     </a>
+                    <a href="{{ route('investors.index') }}" class="text-gray-600 hover:text-gray-900">
+                        Investors
+                    </a>
                     <a href="{{ route('open-source.index') }}" class="text-gray-600 hover:text-gray-900">
                         Open Source
                     </a>

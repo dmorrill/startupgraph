@@ -7,6 +7,7 @@ use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\Admin\CompanyController as AdminCompanyController;
 use App\Http\Controllers\Admin\SubmissionController as AdminSubmissionController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\InvestorController;
 use App\Http\Controllers\OpenSourceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\OssProjectController as AdminOssProjectController;
@@ -20,6 +21,8 @@ Route::get('/companies/export/csv', [CompanyController::class, 'exportCsv'])->na
 Route::get('/companies/export/json', [CompanyController::class, 'exportJson'])->name('companies.export.json');
 Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
 Route::get('/people/{person}', [PersonController::class, 'show'])->name('people.show');
+Route::get('/investors', [InvestorController::class, 'index'])->name('investors.index');
+Route::get('/investors/{investor}', [InvestorController::class, 'show'])->name('investors.show');
 Route::get('/open-source', [OpenSourceController::class, 'index'])->name('open-source.index');
 
 Route::get('/submit', [SubmissionController::class, 'create'])->name('submissions.create');
