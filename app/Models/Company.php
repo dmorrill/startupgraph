@@ -108,4 +108,28 @@ class Company extends Model
     {
         return $this->category ? (self::CATEGORIES[$this->category] ?? $this->category) : null;
     }
+
+    /**
+     * Scope: companies with at least one funding round.
+     */
+    public function scopeFunded($query)
+    {
+        return $query->whereHas('fundingRounds');
+    }
+
+    /**
+     * Scope: companies founded in the last N years.
+     */
+    public function scopeFoundedWithin($query, int $years)
+    {
+        return $query->where('founded_date', '>=', now()->subYears($years));
+    }
+
+    /**
+     * Scope: companies in a specific category.
+     */
+    public function scopeInCategory($query, string $category)
+    {
+        return $query->where('category', $category);
+    }
 }
