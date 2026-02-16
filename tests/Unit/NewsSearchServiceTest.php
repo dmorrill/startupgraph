@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Services\NewsSearchService;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class NewsSearchServiceTest extends TestCase
 {
@@ -12,7 +12,7 @@ class NewsSearchServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new NewsSearchService();
+        $this->service = app(NewsSearchService::class);
     }
 
     public function test_extract_date_from_valid_url(): void
