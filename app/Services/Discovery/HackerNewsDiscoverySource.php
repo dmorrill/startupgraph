@@ -76,10 +76,30 @@ class HackerNewsDiscoverySource implements CompanyDiscoverySource
                 // Extract company name by stripping the prefix
                 $companyName = trim(preg_replace('/^(Show HN|Launch HN)\s*:\s*/i', '', $title));
 
-                // Strip trailing descriptions after dash/em-dash
+                // Strip trailing descriptions after dash/em-dash/comma/colon
                 $companyName = preg_replace('/\s*[\–\—\-]\s+.*$/', '', $companyName);
+                $companyName = preg_replace('/\s*[,:]\s+.*$/', '', $companyName);
+
+                // Strip trailing emoji/special chars
+                $companyName = preg_replace('/\s*[^\w\s.&\'+()-]+\s*$/', '', $companyName);
+                $companyName = trim($companyName);
 
                 if (empty($companyName)) {
+                    continue;
+                }
+
+                // Skip entries that look like descriptions, not company names
+                // Company names are typically 1-4 words; long strings are descriptions
+                $wordCount = str_word_count($companyName);
+                if ($wordCount > 6) {
+                    Log::debug("HackerNews: Skipping likely non-company name: {$companyName}");
+                    continue;
+                }
+
+                // Skip names that contain common description patterns
+                if (preg_match('/\b(that|which|for|with|how|what|this|your|the|and|from|using)\b/i', $companyName)
+                    && $wordCount > 3) {
+                    Log::debug("HackerNews: Skipping descriptive title: {$companyName}");
                     continue;
                 }
 
