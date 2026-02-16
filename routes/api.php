@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\OssProjectController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatsController;
@@ -31,6 +32,10 @@ Route::get('/companies/{company}/headcount', [CompanyController::class, 'headcou
 
 // People
 Route::get('/people/{person}', [PersonController::class, 'show']);
+
+// Open Source Projects
+Route::get('/oss-projects', [OssProjectController::class, 'index']);
+Route::get('/oss-projects/{ossProject}', [OssProjectController::class, 'show']);
 
 // Categories list (for filtering)
 Route::get('/categories', fn () => response()->json([

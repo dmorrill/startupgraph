@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\Admin\CompanyController as AdminCompanyController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\OssProjectController as AdminOssProjectController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/', [CompanyController::class, 'index'])->name('home');
 Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
 Route::get('/compare', [CompareController::class, 'index'])->name('companies.compare');

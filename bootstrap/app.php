@@ -18,9 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.auth' => AdminAuth::class,
         ]);
 
-        // Add CORS middleware to all API routes
+        // Add CORS and rate limiting to all API routes
         $middleware->api(prepend: [
             ApiCors::class,
+            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
