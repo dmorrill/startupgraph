@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Services\BulkImport\CompaniesHouseCsvImporter;
 use App\Services\BulkImport\CrunchbaseCsvImporter;
 use App\Services\BulkImport\EdgarBulkImporter;
+use App\Services\BulkImport\GitHubTrendingImporter;
 use App\Services\BulkImport\OpenCorporatesBulkImporter;
 use App\Services\BulkImport\ProductHuntBulkImporter;
 use App\Services\BulkImport\WikipediaUnicornImporter;
@@ -14,7 +15,7 @@ use Illuminate\Console\Command;
 class BulkImportCompanies extends Command
 {
     protected $signature = 'companies:bulk-import
-        {--source= : Import source (yc, crunchbase, producthunt, edgar, opencorporates, companies-house, wikipedia)}
+        {--source= : Import source (yc, crunchbase, producthunt, edgar, github, opencorporates, companies-house, wikipedia)}
         {--file= : CSV file path (required for crunchbase, optional for companies-house)}
         {--all : Run all sources}
         {--resume : Resume from last checkpoint}
@@ -29,6 +30,7 @@ class BulkImportCompanies extends Command
         'crunchbase' => CrunchbaseCsvImporter::class,
         'producthunt' => ProductHuntBulkImporter::class,
         'edgar' => EdgarBulkImporter::class,
+        'github' => GitHubTrendingImporter::class,
         'opencorporates' => OpenCorporatesBulkImporter::class,
         'companies-house' => CompaniesHouseCsvImporter::class,
         'wikipedia' => WikipediaUnicornImporter::class,
