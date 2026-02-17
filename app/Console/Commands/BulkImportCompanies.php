@@ -5,9 +5,13 @@ namespace App\Console\Commands;
 use App\Services\BulkImport\CompaniesHouseCsvImporter;
 use App\Services\BulkImport\CrunchbaseCsvImporter;
 use App\Services\BulkImport\EdgarBulkImporter;
+use App\Services\BulkImport\GitHubOrgImporter;
 use App\Services\BulkImport\GitHubTrendingImporter;
 use App\Services\BulkImport\OpenCorporatesBulkImporter;
 use App\Services\BulkImport\ProductHuntBulkImporter;
+use App\Services\BulkImport\WikipediaAcquisitionsImporter;
+use App\Services\BulkImport\WikipediaCategoryImporter;
+use App\Services\BulkImport\WikipediaDefunctImporter;
 use App\Services\BulkImport\WikipediaUnicornImporter;
 use App\Services\BulkImport\YCBulkImporter;
 use Illuminate\Console\Command;
@@ -15,7 +19,7 @@ use Illuminate\Console\Command;
 class BulkImportCompanies extends Command
 {
     protected $signature = 'companies:bulk-import
-        {--source= : Import source (yc, crunchbase, producthunt, edgar, github, opencorporates, companies-house, wikipedia)}
+        {--source= : Import source (yc, crunchbase, producthunt, edgar, github, opencorporates, companies-house, wikipedia, wikipedia-acquisitions, wikipedia-defunct, wikipedia-categories, github-orgs)}
         {--file= : CSV file path (required for crunchbase, optional for companies-house)}
         {--all : Run all sources}
         {--resume : Resume from last checkpoint}
@@ -34,6 +38,10 @@ class BulkImportCompanies extends Command
         'opencorporates' => OpenCorporatesBulkImporter::class,
         'companies-house' => CompaniesHouseCsvImporter::class,
         'wikipedia' => WikipediaUnicornImporter::class,
+        'wikipedia-acquisitions' => WikipediaAcquisitionsImporter::class,
+        'wikipedia-defunct' => WikipediaDefunctImporter::class,
+        'wikipedia-categories' => WikipediaCategoryImporter::class,
+        'github-orgs' => GitHubOrgImporter::class,
     ];
 
     public function handle(): int
