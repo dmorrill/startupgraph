@@ -94,6 +94,12 @@ class Company extends Model
             ->withTimestamps();
     }
 
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'company_tag')
+            ->withTimestamps();
+    }
+
     public function ossAlternatives(): BelongsToMany
     {
         return $this->belongsToMany(OpenSourceProject::class, 'company_oss_alternatives', 'company_id', 'oss_project_id')
