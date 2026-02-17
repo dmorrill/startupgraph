@@ -50,25 +50,68 @@ The database currently includes **107 companies** with:
 
 ## Local development
 
+### Prerequisites
+
+- **PHP 8.2+** with extensions: `pdo_sqlite`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`
+- **Composer 2.x** — [Install Composer](https://getcomposer.org/download/)
+- **Node.js 18+** and npm (for frontend assets)
+- **SQLite 3** (included with most PHP installations)
+
+### Quick start
+
 ```bash
-# Install dependencies
+# 1. Clone the repository
+git clone https://github.com/dmorrill/startupgraph.git
+cd startupgraph
+
+# 2. Install PHP dependencies
 composer install
 
-# Copy environment file
+# 3. Copy environment file and generate app key
 cp .env.example .env
-
-# Generate app key
 php artisan key:generate
 
-# Run migrations
+# 4. Create the database and run migrations
+touch database/database.sqlite
 php artisan migrate
 
-# Seed the database
+# 5. Seed with sample data
 php artisan db:seed
 
-# Start the dev server
+# 6. (Optional) Install and build frontend assets
+npm install && npm run build
+
+# 7. Start the dev server
 php artisan serve
 ```
+
+The app will be available at [http://localhost:8000](http://localhost:8000).
+
+### Environment configuration
+
+Key `.env` settings:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_CONNECTION` | `sqlite` | Database driver (`sqlite`, `mysql`, `pgsql`) |
+| `DB_DATABASE` | `database/database.sqlite` | Path to SQLite file |
+| `APP_URL` | `http://localhost:8000` | Application URL |
+
+### Running tests
+
+```bash
+php artisan test
+```
+
+### Useful artisan commands
+
+| Command | Description |
+|---------|-------------|
+| `php artisan companies:batch-tag` | Auto-tag companies from descriptions |
+| `php artisan companies:batch-tag --dry-run` | Preview tagging without changes |
+| `php artisan headcount:fetch-linkedin` | Fetch LinkedIn headcounts |
+| `php artisan companies:audit` | Audit data completeness |
+| `php artisan mcp:serve` | Start the MCP server |
 
 ## Monthly maintenance
 
@@ -117,6 +160,9 @@ StartupGraph provides a public JSON API with no authentication required. Designe
 | `GET /api/stats` | Database statistics |
 | `GET /api/search?q=` | Search companies and people |
 | `GET /api/companies` | List companies with filters |
+| `GET /api/companies/compare?slugs=` | Compare up to 4 companies |
+| `GET /api/companies/trending` | Fastest growing by headcount |
+| `GET /api/companies/export.csv` | Export filtered results as CSV |
 | `GET /api/companies/{slug}` | Full company profile |
 | `GET /api/companies/{slug}/funding` | Funding history |
 | `GET /api/companies/{slug}/people` | Leadership team |
@@ -134,6 +180,8 @@ For `/api/companies`:
 - `country` - Filter by country
 - `funded_after` - Date filter (YYYY-MM-DD)
 - `funded_before` - Date filter (YYYY-MM-DD)
+- `funding_stage` - Filter by round type (e.g., `Series A,Series B`)
+- `min_funding` / `max_funding` - Total funding range in USD
 - `funded_recent` - Preset filter (3m, 6m, 1y, 2y)
 - `sort` - Sort field (name, founded_date, funding_rounds_sum_amount, etc.)
 - `order` - Sort direction (asc, desc)
