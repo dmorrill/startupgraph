@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class EdgarBulkImporter extends BaseBulkImporter
 {
-    private const EFTS_URL = 'https://efts.sec.gov/LATEST/search-index';
-    private const FULL_TEXT_URL = 'https://efts.sec.gov/LATEST/search';
+    private const SEARCH_INDEX_URL = 'https://efts.sec.gov/LATEST/search-index';
     private const PER_PAGE = 100;
 
     public function source(): string
@@ -29,12 +28,12 @@ class EdgarBulkImporter extends BaseBulkImporter
             $response = Http::withHeaders([
                 'User-Agent' => 'StartupGraph research@startupgraph.com',
                 'Accept' => 'application/json',
-            ])->timeout(30)->get(self::FULL_TEXT_URL, [
-                'q' => '"form D" OR "form D/A"',
+            ])->timeout(30)->get(self::SEARCH_INDEX_URL, [
+                'q' => '"form D"',
+                'forms' => 'D',
                 'dateRange' => 'custom',
-                'startdt' => now()->subYear()->format('Y-m-d'),
+                'startdt' => now()->subYears(2)->format('Y-m-d'),
                 'enddt' => now()->format('Y-m-d'),
-                'forms' => 'D,D/A',
                 'from' => $offset,
                 'size' => self::PER_PAGE,
             ]);
@@ -59,7 +58,6 @@ class EdgarBulkImporter extends BaseBulkImporter
                 'last_offset' => (string) $offset,
                 'total_processed' => $this->processed,
                 'companies_created' => $this->created,
-                'metadata' => ['total_available' => $total],
             ]);
 
             $offset += self::PER_PAGE;
@@ -78,28 +76,66 @@ class EdgarBulkImporter extends BaseBulkImporter
     {
         $source = $hit['_source'] ?? [];
 
-        $entityName = $source['entity_name'] ?? ($source['display_names'][0] ?? null);
-        if (!$entityName) return;
+        $displayNames = $source['display_names'] ?? [];
+        if (empty($displayNames)) return;
 
-        // Skip clearly non-startup entities (funds, trusts, etc.)
-        $skipPatterns = ['/\bfund\b/i', '/\btrust\b/i', '/\bLP$/i', '/\bLLC$/i', '/\bpartners?\b/i'];
-        foreach ($skipPatterns as $pattern) {
-            if (preg_match($pattern, $entityName)) {
+        // Each filing can have multiple entities; import each
+        $bizLocations = $source['biz_locations'] ?? [];
+        $bizStates = $source['biz_states'] ?? [];
+        $incStates = $source['inc_states'] ?? [];
+        $filedAt = $source['file_date'] ?? null;
+        $sics = $source['sics'] ?? [];
+
+        foreach ($displayNames as $i => $displayName) {
+            // Extract entity name from format: "Company Name  (CIK 0001234567)"
+            $entityName = preg_replace('/\s*\((?:CIK\s+)?\d+\)\s*$/', '', $displayName);
+            // Also strip ticker symbols: "Company Name  (TICKER)  (CIK ...)" already handled above
+            $entityName = preg_replace('/\s*\([A-Z]+\)\s*/', ' ', $entityName);
+            $entityName = trim($entityName);
+
+            if (!$entityName) continue;
+
+            // Skip clearly non-startup entities (funds, trusts, LPs, etc.)
+            $skipPatterns = [
+                '/\bfund\b/i', '/\btrust\b/i', '/\bLP$/i',
+                '/\bpartners?\b/i', '/\bREIT\b/i', '/\bportfolio\b/i',
+                '/\bholding/i', '/\badvisers?\b/i', '/\badvisors?\b/i',
+                '/\bcapital\b/i', '/\binvestment/i', '/\bventure/i',
+                '/\bhedge\b/i', '/\boffshore\b/i', '/\bonshore\b/i',
+                '/\bL\.?L\.?C\.?\s*$/i',
+            ];
+
+            $skip = false;
+            foreach ($skipPatterns as $pattern) {
+                if (preg_match($pattern, $entityName)) {
+                    $skip = true;
+                    break;
+                }
+            }
+
+            if ($skip) {
                 $this->skipped++;
                 $this->processed++;
-                return;
+                continue;
             }
+
+            $state = $bizStates[$i] ?? ($bizStates[0] ?? null);
+            $location = $bizLocations[$i] ?? ($bizLocations[0] ?? null);
+            $city = null;
+            if ($location) {
+                // Parse "City, ST" format
+                $parts = explode(',', $location);
+                $city = trim($parts[0] ?? '');
+            }
+
+            $this->upsertCompany([
+                'name' => $this->cleanEntityName($entityName),
+                'state' => $state,
+                'city' => $city,
+                'country' => 'US',
+                'founded_date' => $filedAt ? substr($filedAt, 0, 10) : null,
+            ]);
         }
-
-        $state = $source['state_of_incorp'] ?? ($source['entity_state'] ?? null);
-        $filedAt = $source['file_date'] ?? ($source['date_filed'] ?? null);
-
-        $this->upsertCompany([
-            'name' => $this->cleanEntityName($entityName),
-            'state' => $state,
-            'country' => 'US',
-            'founded_date' => $filedAt ? substr($filedAt, 0, 10) : null,
-        ]);
     }
 
     private function cleanEntityName(string $name): string

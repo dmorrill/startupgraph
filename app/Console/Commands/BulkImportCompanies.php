@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\BulkImport\CrunchbaseCsvImporter;
 use App\Services\BulkImport\EdgarBulkImporter;
+use App\Services\BulkImport\GitHubTrendingImporter;
 use App\Services\BulkImport\ProductHuntBulkImporter;
 use App\Services\BulkImport\YCBulkImporter;
 use Illuminate\Console\Command;
@@ -11,7 +12,7 @@ use Illuminate\Console\Command;
 class BulkImportCompanies extends Command
 {
     protected $signature = 'companies:bulk-import
-        {--source= : Import source (yc, crunchbase, producthunt, edgar)}
+        {--source= : Import source (yc, crunchbase, producthunt, edgar, github)}
         {--file= : CSV file path (required for crunchbase)}
         {--all : Run all sources}
         {--resume : Resume from last checkpoint}
@@ -24,6 +25,7 @@ class BulkImportCompanies extends Command
         'crunchbase' => CrunchbaseCsvImporter::class,
         'producthunt' => ProductHuntBulkImporter::class,
         'edgar' => EdgarBulkImporter::class,
+        'github' => GitHubTrendingImporter::class,
     ];
 
     public function handle(): int
