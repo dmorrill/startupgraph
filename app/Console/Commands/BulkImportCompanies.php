@@ -2,20 +2,25 @@
 
 namespace App\Console\Commands;
 
+use App\Services\BulkImport\CompaniesHouseCsvImporter;
 use App\Services\BulkImport\CrunchbaseCsvImporter;
 use App\Services\BulkImport\EdgarBulkImporter;
+use App\Services\BulkImport\OpenCorporatesBulkImporter;
 use App\Services\BulkImport\ProductHuntBulkImporter;
+use App\Services\BulkImport\WikipediaUnicornImporter;
 use App\Services\BulkImport\YCBulkImporter;
 use Illuminate\Console\Command;
 
 class BulkImportCompanies extends Command
 {
     protected $signature = 'companies:bulk-import
-        {--source= : Import source (yc, crunchbase, producthunt, edgar)}
-        {--file= : CSV file path (required for crunchbase)}
+        {--source= : Import source (yc, crunchbase, producthunt, edgar, opencorporates, companies-house, wikipedia)}
+        {--file= : CSV file path (required for crunchbase, optional for companies-house)}
         {--all : Run all sources}
         {--resume : Resume from last checkpoint}
-        {--max-pages=500 : Maximum pages to fetch (API sources)}';
+        {--max-pages=500 : Maximum pages to fetch (API sources)}
+        {--min-year=2015 : Minimum incorporation year (companies-house)}
+        {--tech-only : Only import tech/startup companies (companies-house, default: true)}';
 
     protected $description = 'Bulk import companies from various data sources';
 
@@ -24,6 +29,9 @@ class BulkImportCompanies extends Command
         'crunchbase' => CrunchbaseCsvImporter::class,
         'producthunt' => ProductHuntBulkImporter::class,
         'edgar' => EdgarBulkImporter::class,
+        'opencorporates' => OpenCorporatesBulkImporter::class,
+        'companies-house' => CompaniesHouseCsvImporter::class,
+        'wikipedia' => WikipediaUnicornImporter::class,
     ];
 
     public function handle(): int
@@ -83,6 +91,15 @@ class BulkImportCompanies extends Command
                 throw new \RuntimeException('--file is required for crunchbase source');
             }
             $options['file'] = $file;
+        }
+
+        if ($source === 'companies-house') {
+            $file = $this->option('file');
+            if ($file) {
+                $options['file'] = $file;
+            }
+            $options['min_year'] = (int) $this->option('min-year');
+            $options['tech_only'] = $this->option('tech-only') !== false;
         }
 
         if ($this->option('resume')) {
