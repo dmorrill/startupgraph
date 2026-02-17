@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\CompareController;
 use App\Http\Controllers\Api\OssProjectController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\SearchController;
@@ -28,6 +29,7 @@ Route::get('/companies', [CompanyController::class, 'index']);
 Route::get('/companies/{company}', [CompanyController::class, 'show']);
 Route::get('/companies/{company}/funding', [CompanyController::class, 'funding']);
 Route::get('/companies/{company}/people', [CompanyController::class, 'people']);
+Route::get('/companies/compare', CompareController::class);
 Route::get('/companies/{company}/headcount', [CompanyController::class, 'headcount']);
 
 // People
