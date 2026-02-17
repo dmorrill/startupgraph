@@ -191,7 +191,9 @@
                                     </p>
                                     @if($round->investors->count())
                                         <p class="text-sm text-gray-500">
-                                            {{ $round->investors->pluck('name')->join(', ') }}
+                                            @foreach($round->investors as $inv)
+                                                <a href="{{ route('investors.show', $inv) }}" class="text-blue-600 hover:underline">{{ $inv->name }}</a>@if(!$loop->last), @endif
+                                            @endforeach
                                         </p>
                                     @endif
                                 </div>

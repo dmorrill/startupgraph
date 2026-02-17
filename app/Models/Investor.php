@@ -15,7 +15,29 @@ class Investor extends Model
         'type',
         'website',
         'description',
+        'portfolio_count',
     ];
+
+    public function companies()
+    {
+        return $this->fundingRounds()
+            ->with('company')
+            ->get()
+            ->pluck('company')
+            ->unique('id');
+    }
+
+    public function getTypeLabelAttribute(): string
+    {
+        return match($this->type) {
+            'vc' => 'Venture Capital',
+            'angel' => 'Angel Investor',
+            'corporate' => 'Corporate VC',
+            'accelerator' => 'Accelerator',
+            'pe' => 'Private Equity',
+            default => $this->type ?? 'Unknown',
+        };
+    }
 
     public function fundingRounds(): BelongsToMany
     {
