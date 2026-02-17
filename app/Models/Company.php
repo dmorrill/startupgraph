@@ -121,6 +121,37 @@ class Company extends Model
         return 'slug';
     }
 
+    /**
+     * Get the company's age in years since founding.
+     */
+    public function getAgeYearsAttribute(): ?float
+    {
+        if (!$this->founded_date) {
+            return null;
+        }
+
+        return round($this->founded_date->diffInDays(now()) / 365.25, 1);
+    }
+
+    /**
+     * Get a human-readable age string.
+     */
+    public function getAgeAttribute(): ?string
+    {
+        $years = $this->age_years;
+        if ($years === null) {
+            return null;
+        }
+
+        if ($years < 1) {
+            $months = (int) round($years * 12);
+            return $months . ' ' . ($months === 1 ? 'month' : 'months');
+        }
+
+        $wholeYears = (int) floor($years);
+        return $wholeYears . ' ' . ($wholeYears === 1 ? 'year' : 'years');
+    }
+
     public function getCategoryLabelAttribute(): ?string
     {
         return $this->category ? (self::CATEGORIES[$this->category] ?? $this->category) : null;

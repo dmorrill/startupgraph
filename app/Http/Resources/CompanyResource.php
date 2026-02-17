@@ -18,6 +18,8 @@ class CompanyResource extends JsonResource
             'category' => $this->category,
             'category_label' => $this->category_label,
             'founded_date' => $this->founded_date?->format('Y-m-d'),
+            'age_years' => $this->age_years,
+            'age' => $this->age,
             'location' => [
                 'city' => $this->city,
                 'state' => $this->state,
