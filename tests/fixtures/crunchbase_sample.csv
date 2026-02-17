@@ -1,0 +1,6 @@
+name,short_description,homepage_url,founded_on,status,country,city,employee_count,funding_total_usd,last_funding_type,category_list
+Stripe,"Online payment processing for internet businesses",https://stripe.com,2010-01-01,operating,United States,San Francisco,c_01001_05000,6500000000,Series I,"Financial Services, Fintech"
+Theranos,"Blood testing startup",https://theranos.com,2003-01-01,closed,United States,Palo Alto,c_00051_00100,700000000,Series C,"Health Care, Biotechnology"
+GitHub,"Code hosting and collaboration platform",https://github.com,2008-01-01,acquired,United States,San Francisco,c_01001_05000,350000000,Series B,"Software, Developer Tools"
+Snowflake,"Cloud data warehousing",https://snowflake.com,2012-07-01,ipo,United States,Bozeman,c_01001_05000,1400000000,IPO,"Software, Enterprise Software"
+TestCompanyNoName,,,,operating,,,,,,"Artificial Intelligence"
