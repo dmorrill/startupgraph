@@ -7,9 +7,10 @@ use Illuminate\Support\Facades\Log;
 
 class YCBulkImporter extends BaseBulkImporter
 {
-    private const API_URL = 'https://45bwzj1sgc-dsn.algolia.net/1/indexes/YCCompany_production/query';
-    private const APP_ID = '45bwzj1sgc';
-    private const API_KEY = 'MjBjYjRiMzY0NzdhZWY0NjExY2NhZjYxMGIxYjc2MTAwNWFkNTkwNTc4NjgxYjU0YzFhYTY2ZGQ5OGY5NDMxZnJlc3RyaWN0SW5kaWNlcz0lNUIlMjJZQ0NvbXBhbnlfcHJvZHVjdGlvbiUyMiUyQyUyMllDQ29tcGFueV9CeV9MYXVuY2hfRGF0ZV9wcm9kdWN0aW9uJTIyJTVEJnRhZ0ZpbHRlcnM9JTVCJTIyeWNkY19wdWJsaWMlMjIlNUQmYW5hbHl0aWNzVGFncz0lNUIlMjJ5Y2RjJTIyJTVE';
+    private const BROWSE_URL = 'https://45BWZJ1SGC-dsn.algolia.net/1/indexes/YCCompany_production/browse';
+    private const QUERY_URL = 'https://45BWZJ1SGC-dsn.algolia.net/1/indexes/YCCompany_production/query';
+    private const APP_ID = '45BWZJ1SGC';
+    private const API_KEY = 'ZjA3NWMwMmNhMzEwZmMxOThkZDlkMjFmNDAwNTNjNjdkZjdhNWJkOWRjMThiODQwMjUyZTVkYjA4YjFlMmU2YnJlc3RyaWN0SW5kaWNlcz0lNUIlMjJZQ0NvbXBhbnlfcHJvZHVjdGlvbiUyMiUyQyUyMllDQ29tcGFueV9CeV9MYXVuY2hfRGF0ZV9wcm9kdWN0aW9uJTIyJTVEJnRhZ0ZpbHRlcnM9JTVCJTIyeWNkY19wdWJsaWMlMjIlNUQmYW5hbHl0aWNzVGFncz0lNUIlMjJ5Y2RjJTIyJTVE';
     private const HITS_PER_PAGE = 1000;
 
     public function source(): string
@@ -19,58 +20,96 @@ class YCBulkImporter extends BaseBulkImporter
 
     public function import(array $options = []): void
     {
-        $startPage = $options['resume_page'] ?? 0;
-        $page = $startPage;
+        Log::info("YC bulk import starting — fetching batches");
 
-        Log::info("YC bulk import starting from page {$page}");
+        // First, get all batch facets
+        $batches = $this->fetchBatches();
+        if (empty($batches)) {
+            Log::warning("YC: no batches found");
+            return;
+        }
 
-        while (true) {
-            $response = Http::withHeaders([
-                'X-Algolia-Application-Id' => self::APP_ID,
-                'X-Algolia-API-Key' => self::API_KEY,
-                'Content-Type' => 'application/json',
-            ])->timeout(30)->post(self::API_URL, [
-                'query' => '',
-                'hitsPerPage' => self::HITS_PER_PAGE,
-                'page' => $page,
-            ]);
+        $resumeFrom = $options['resume_cursor'] ?? null; // batch name to resume from
+        $started = $resumeFrom === null;
+        $batchNum = 0;
 
-            if (!$response->successful()) {
-                Log::warning("YC API returned HTTP {$response->status()} on page {$page}");
-                break;
+        foreach ($batches as $batch => $count) {
+            $batchNum++;
+            if (!$started) {
+                if ($batch === $resumeFrom) {
+                    $started = true;
+                } else {
+                    continue;
+                }
             }
 
-            $data = $response->json();
-            $hits = $data['hits'] ?? [];
+            Log::info("YC: importing batch '{$batch}' ({$count} companies, batch {$batchNum}/" . count($batches) . ")");
 
-            if (empty($hits)) {
-                break;
+            $page = 0;
+            while (true) {
+                $response = Http::withHeaders([
+                    'X-Algolia-Application-Id' => self::APP_ID,
+                    'X-Algolia-API-Key' => self::API_KEY,
+                    'Content-Type' => 'application/json',
+                ])->timeout(30)->post(self::QUERY_URL, [
+                    'query' => '',
+                    'hitsPerPage' => self::HITS_PER_PAGE,
+                    'page' => $page,
+                    'facetFilters' => [["batch:{$batch}"]],
+                ]);
+
+                if (!$response->successful()) {
+                    Log::warning("YC API returned HTTP {$response->status()} for batch '{$batch}' page {$page}");
+                    break;
+                }
+
+                $data = $response->json();
+                $hits = $data['hits'] ?? [];
+
+                if (empty($hits)) break;
+
+                foreach ($hits as $hit) {
+                    $this->importHit($hit);
+                }
+
+                $totalPages = $data['nbPages'] ?? 0;
+                $page++;
+
+                if ($page >= $totalPages) break;
+
+                $this->rateLimitSleep(0.3);
             }
 
-            foreach ($hits as $hit) {
-                $this->importHit($hit);
-            }
-
-            // Update resume position
             $this->importLog->update([
-                'last_page' => $page,
+                'last_offset' => $batch,
+                'last_page' => $batchNum,
                 'total_processed' => $this->processed,
                 'companies_created' => $this->created,
             ]);
-
-            $totalPages = $data['nbPages'] ?? 0;
-            $page++;
-
-            Log::info("YC import: page {$page}/{$totalPages}, processed: {$this->processed}");
-
-            if ($page >= $totalPages) {
-                break;
-            }
 
             $this->rateLimitSleep(0.5);
         }
 
         Log::info("YC bulk import complete: {$this->created} created, {$this->updated} updated, {$this->skipped} skipped");
+    }
+
+    private function fetchBatches(): array
+    {
+        $response = Http::withHeaders([
+            'X-Algolia-Application-Id' => self::APP_ID,
+            'X-Algolia-API-Key' => self::API_KEY,
+            'Content-Type' => 'application/json',
+        ])->timeout(30)->post(self::QUERY_URL, [
+            'query' => '',
+            'hitsPerPage' => 0,
+            'facets' => ['batch'],
+        ]);
+
+        if (!$response->successful()) {
+            return [];
+        }
+
+        return $response->json('facets.batch') ?? [];
     }
 
     private function importHit(array $hit): void
