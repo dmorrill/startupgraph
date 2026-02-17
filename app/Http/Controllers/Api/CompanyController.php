@@ -46,6 +46,22 @@ class CompanyController extends Controller
             $query->where('category', $category);
         }
 
+        // Filter by funding stage (latest round type)
+        if ($fundingStage = $request->get('funding_stage')) {
+            $stages = array_map('trim', explode(',', $fundingStage));
+            $query->whereHas('latestFundingRound', function ($q) use ($stages) {
+                $q->whereIn('round_type', $stages);
+            });
+        }
+
+        // Filter by minimum/maximum total funding
+        if ($minFunding = $request->get('min_funding')) {
+            $query->having('funding_rounds_sum_amount', '>=', (float) $minFunding);
+        }
+        if ($maxFunding = $request->get('max_funding')) {
+            $query->having('funding_rounds_sum_amount', '<=', (float) $maxFunding);
+        }
+
         // Date range filter for last fundraise
         if ($fundedAfter = $request->get('funded_after')) {
             $query->whereHas('fundingRounds', function ($q) use ($fundedAfter) {
