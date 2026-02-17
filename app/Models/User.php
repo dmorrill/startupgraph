@@ -38,6 +38,11 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    public function savedSearches()
+    {
+        return $this->hasMany(SavedSearch::class);
+    }
+
     protected function casts(): array
     {
         return [
