@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\CompareController;
+use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\OssProjectController;
 use App\Http\Controllers\Api\TrendingController;
 use App\Http\Controllers\Api\PersonController;
@@ -32,6 +33,7 @@ Route::get('/companies/{company}/funding', [CompanyController::class, 'funding']
 Route::get('/companies/{company}/people', [CompanyController::class, 'people']);
 Route::get('/companies/compare', CompareController::class);
 Route::get('/companies/trending', TrendingController::class);
+Route::get('/companies/export.csv', [ExportController::class, 'csv']);
 Route::get('/companies/{company}/headcount', [CompanyController::class, 'headcount']);
 
 // People
