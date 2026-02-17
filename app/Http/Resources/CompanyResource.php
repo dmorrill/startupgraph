@@ -13,6 +13,7 @@ class CompanyResource extends JsonResource
             'slug' => $this->slug,
             'name' => $this->name,
             'website' => $this->website,
+            'logo_url' => $this->logo_url,
             'description' => $this->description,
             'category' => $this->category,
             'category_label' => $this->category_label,

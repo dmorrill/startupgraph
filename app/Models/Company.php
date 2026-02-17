@@ -28,6 +28,7 @@ class Company extends Model
         'name',
         'slug',
         'website',
+        'logo_url',
         'description',
         'product_highlights',
         'founded_date',
