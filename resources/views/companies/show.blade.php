@@ -113,6 +113,24 @@
                 <div>
                     <p class="text-sm text-gray-500">Employees</p>
                     <p class="text-lg font-semibold text-gray-900">{{ number_format($company->current_headcount) }}</p>
+                    @if($company->headcount_history && count($company->headcount_history) >= 2)
+                        <div class="mt-1" title="Headcount trend">
+                            <svg viewBox="0 0 100 24" class="w-24 h-6" preserveAspectRatio="none">
+                                @php
+                                    $points = collect($company->headcount_history)->pluck('headcount')->values();
+                                    $min = $points->min();
+                                    $max = $points->max();
+                                    $range = max($max - $min, 1);
+                                    $coords = $points->map(function($v, $i) use ($points, $min, $range) {
+                                        $x = $points->count() > 1 ? ($i / ($points->count() - 1)) * 100 : 50;
+                                        $y = 22 - (($v - $min) / $range) * 20;
+                                        return round($x, 1) . ',' . round($y, 1);
+                                    })->join(' ');
+                                @endphp
+                                <polyline points="{{ $coords }}" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    @endif
                 </div>
             @endif
             @if($company->fundingRounds->count())
