@@ -1,0 +1,464 @@
+openapi: 3.0.3
+info:
+  title: StartupGraph API
+  description: |
+    Public API for querying startup company data including funding, headcount, people, and news.
+    No authentication required. Designed for both human and AI agent consumption.
+  version: "1.0.0"
+  contact:
+    name: StartupGraph
+    url: https://github.com/dmorrill/startupgraph
+  license:
+    name: MIT
+
+servers:
+  - url: /api
+    description: Relative to application root
+
+paths:
+  /stats:
+    get:
+      summary: Database statistics
+      operationId: getStats
+      tags: [Stats]
+      responses:
+        "200":
+          description: Current database statistics
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /search:
+    get:
+      summary: Search companies and people
+      operationId: search
+      tags: [Search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (minimum 2 characters)
+          schema:
+            type: string
+            minLength: 2
+        - name: limit
+          in: query
+          description: Maximum results per type (default 10, max 50)
+          schema:
+            type: integer
+            default: 10
+            maximum: 50
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      companies:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CompanySummary"
+                      people:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/PersonSummary"
+
+  /companies:
+    get:
+      summary: List companies
+      operationId: listCompanies
+      tags: [Companies]
+      parameters:
+        - name: q
+          in: query
+          description: Search by name, description, city, or country
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by category key (e.g., ai_ml, fintech)
+          schema:
+            type: string
+        - name: funding_stage
+          in: query
+          description: Filter by latest funding round type (comma-separated)
+          schema:
+            type: string
+            example: "Series A,Series B"
+        - name: min_funding
+          in: query
+          description: Minimum total funding in USD
+          schema:
+            type: number
+        - name: max_funding
+          in: query
+          description: Maximum total funding in USD
+          schema:
+            type: number
+        - name: funded_after
+          in: query
+          description: Companies with funding after this date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: funded_before
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: funded_recent
+          in: query
+          description: Preset filter (3m, 6m, 1y, 2y)
+          schema:
+            type: string
+            enum: [3m, 6m, 1y, 2y]
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [name, founded_date, city, country, category, funding_rounds_sum_amount, latest_funding_date]
+            default: name
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Paginated list of companies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CompanySummary"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+
+  /companies/compare:
+    get:
+      summary: Compare up to 4 companies side by side
+      operationId: compareCompanies
+      tags: [Companies]
+      parameters:
+        - name: slugs
+          in: query
+          required: true
+          description: Comma-separated company slugs (max 4)
+          schema:
+            type: string
+            example: "openai,anthropic,google-deepmind"
+      responses:
+        "200":
+          description: Side-by-side comparison
+        "422":
+          description: Missing slugs parameter
+
+  /companies/trending:
+    get:
+      summary: Fastest growing companies by headcount
+      operationId: trendingCompanies
+      tags: [Companies]
+      parameters:
+        - name: period
+          in: query
+          description: Growth measurement period
+          schema:
+            type: string
+            enum: [1m, 3m, 6m, 1y]
+            default: 3m
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: min_headcount
+          in: query
+          description: Minimum current headcount to include
+          schema:
+            type: integer
+            default: 5
+      responses:
+        "200":
+          description: Trending companies sorted by growth
+
+  /companies/export.csv:
+    get:
+      summary: Export companies as CSV
+      operationId: exportCompaniesCsv
+      tags: [Companies]
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: funding_stage
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /companies/{slug}:
+    get:
+      summary: Get company details
+      operationId: getCompany
+      tags: [Companies]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Company details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Company"
+        "404":
+          description: Company not found
+
+  /companies/{slug}/funding:
+    get:
+      summary: Get company funding history
+      operationId: getCompanyFunding
+      tags: [Companies]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Funding rounds
+
+  /companies/{slug}/people:
+    get:
+      summary: Get company people
+      operationId: getCompanyPeople
+      tags: [Companies]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current and former people
+
+  /companies/{slug}/headcount:
+    get:
+      summary: Get company headcount history
+      operationId: getCompanyHeadcount
+      tags: [Companies]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Headcount snapshots with growth percentage
+
+  /people/{slug}:
+    get:
+      summary: Get person details
+      operationId: getPerson
+      tags: [People]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Person details
+
+  /oss-projects:
+    get:
+      summary: List open source projects
+      operationId: listOssProjects
+      tags: [Open Source]
+      responses:
+        "200":
+          description: List of tracked OSS projects
+
+  /oss-projects/{id}:
+    get:
+      summary: Get OSS project details
+      operationId: getOssProject
+      tags: [Open Source]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OSS project details
+
+  /categories:
+    get:
+      summary: List available company categories
+      operationId: listCategories
+      tags: [Categories]
+      responses:
+        "200":
+          description: List of category keys and labels
+
+components:
+  schemas:
+    CompanySummary:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          nullable: true
+        category_label:
+          type: string
+          nullable: true
+        location:
+          type: object
+          properties:
+            city:
+              type: string
+              nullable: true
+            country:
+              type: string
+              nullable: true
+        current_headcount:
+          type: integer
+          nullable: true
+        total_funding:
+          type: number
+          nullable: true
+        total_funding_formatted:
+          type: string
+          nullable: true
+        latest_funding_date:
+          type: string
+          format: date
+          nullable: true
+        funding_rounds_count:
+          type: integer
+
+    Company:
+      allOf:
+        - $ref: "#/components/schemas/CompanySummary"
+        - type: object
+          properties:
+            website:
+              type: string
+              nullable: true
+            logo_url:
+              type: string
+              nullable: true
+            description:
+              type: string
+              nullable: true
+            founded_date:
+              type: string
+              format: date
+              nullable: true
+            social_links:
+              type: object
+              properties:
+                linkedin_url:
+                  type: string
+                  nullable: true
+                twitter_url:
+                  type: string
+                  nullable: true
+                github_url:
+                  type: string
+                  nullable: true
+                crunchbase_url:
+                  type: string
+                  nullable: true
+            product_highlights:
+              type: array
+              items:
+                type: string
+              nullable: true
+
+    PersonSummary:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        current_company:
+          type: string
+          nullable: true
+        current_role:
+          type: string
+          nullable: true
+        linkedin_url:
+          type: string
+          nullable: true
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+        per_page:
+          type: integer
+        current_page:
+          type: integer
+        last_page:
+          type: integer
