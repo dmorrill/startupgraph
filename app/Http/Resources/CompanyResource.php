@@ -49,6 +49,15 @@ class CompanyResource extends JsonResource
             'people' => PersonSummaryResource::collection($this->whenLoaded('people')),
             'headcount_snapshots' => HeadcountSnapshotResource::collection($this->whenLoaded('headcountSnapshots')),
             'profile_refreshed_at' => $this->profile_refreshed_at?->toIso8601String(),
+            'data_quality' => $this->when(true, function () {
+                $service = app(\App\Services\DataQualityService::class);
+                $result = $service->score($this->resource);
+                return [
+                    'score' => $result['score'],
+                    'grade' => $result['grade'],
+                    'missing_fields' => $result['missing'],
+                ];
+            }),
         ];
     }
 
