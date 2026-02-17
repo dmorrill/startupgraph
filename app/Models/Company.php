@@ -48,6 +48,10 @@ class Company extends Model
         'tech_stack',
         'submitted_by',
         'submission_url',
+        'status',
+        'closed_at',
+        'acquired_by',
+        'import_source',
     ];
 
     protected $casts = [
@@ -60,6 +64,7 @@ class Company extends Model
         'is_open_source' => 'boolean',
         'solo_builder' => 'boolean',
         'github_stars' => 'integer',
+        'closed_at' => 'date',
     ];
 
     public function headcountSnapshots(): HasMany
