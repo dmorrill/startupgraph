@@ -23,7 +23,12 @@ class CompanyResource extends JsonResource
                 'state' => $this->state,
                 'country' => $this->country,
             ],
-            'linkedin_url' => $this->linkedin_url,
+            'social_links' => [
+                'linkedin_url' => $this->linkedin_url,
+                'twitter_url' => $this->twitter_url,
+                'github_url' => $this->github_url,
+                'crunchbase_url' => $this->crunchbase_url,
+            ],
             'current_headcount' => $this->current_headcount,
             'product_highlights' => $this->product_highlights,
             'total_funding' => $this->whenNotNull($this->funding_rounds_sum_amount, fn () => (float) $this->funding_rounds_sum_amount),
