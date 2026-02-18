@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompanySummaryResource;
-use App\Http\Resources\PersonSummaryResource;
 use App\Models\Company;
 use App\Models\FundingRound;
 use App\Models\Person;
