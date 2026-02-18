@@ -28,12 +28,12 @@ Route::get('/search', [SearchController::class, 'index']);
 
 // Companies
 Route::get('/companies', [CompanyController::class, 'index']);
-Route::get('/companies/{company}', [CompanyController::class, 'show']);
-Route::get('/companies/{company}/funding', [CompanyController::class, 'funding']);
-Route::get('/companies/{company}/people', [CompanyController::class, 'people']);
 Route::get('/companies/compare', CompareController::class);
 Route::get('/companies/trending', TrendingController::class);
 Route::get('/companies/export.csv', [ExportController::class, 'csv']);
+Route::get('/companies/{company}', [CompanyController::class, 'show']);
+Route::get('/companies/{company}/funding', [CompanyController::class, 'funding']);
+Route::get('/companies/{company}/people', [CompanyController::class, 'people']);
 Route::get('/companies/{company}/headcount', [CompanyController::class, 'headcount']);
 
 // People
