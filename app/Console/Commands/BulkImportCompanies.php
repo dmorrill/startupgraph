@@ -13,13 +13,15 @@ use App\Services\BulkImport\WikipediaAcquisitionsImporter;
 use App\Services\BulkImport\WikipediaCategoryImporter;
 use App\Services\BulkImport\WikipediaDefunctImporter;
 use App\Services\BulkImport\WikipediaUnicornImporter;
+use App\Services\BulkImport\HackerNewsImporter;
+use App\Services\BulkImport\WikipediaListsImporter;
 use App\Services\BulkImport\YCBulkImporter;
 use Illuminate\Console\Command;
 
 class BulkImportCompanies extends Command
 {
     protected $signature = 'companies:bulk-import
-        {--source= : Import source (yc, crunchbase, producthunt, edgar, github, opencorporates, companies-house, wikipedia, wikipedia-acquisitions, wikipedia-defunct, wikipedia-categories, github-orgs)}
+        {--source= : Import source (yc, crunchbase, producthunt, edgar, github, opencorporates, companies-house, wikipedia, wikipedia-acquisitions, wikipedia-defunct, wikipedia-categories, github-orgs, hackernews)}
         {--file= : CSV file path (required for crunchbase, optional for companies-house)}
         {--all : Run all sources}
         {--resume : Resume from last checkpoint}
@@ -42,6 +44,8 @@ class BulkImportCompanies extends Command
         'wikipedia-defunct' => WikipediaDefunctImporter::class,
         'wikipedia-categories' => WikipediaCategoryImporter::class,
         'github-orgs' => GitHubOrgImporter::class,
+        'hackernews' => HackerNewsImporter::class,
+        'wikipedia-lists' => WikipediaListsImporter::class,
     ];
 
     public function handle(): int
