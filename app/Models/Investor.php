@@ -18,7 +18,7 @@ class Investor extends Model
         'portfolio_count',
     ];
 
-    public function companies()
+    public function companies(): \Illuminate\Support\Collection
     {
         return $this->fundingRounds()
             ->with('company')

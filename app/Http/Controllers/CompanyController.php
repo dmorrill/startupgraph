@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 class CompanyController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): \Illuminate\View\View
     {
         $query = Company::query()
             ->withSum('fundingRounds', 'amount')
@@ -83,7 +83,7 @@ class CompanyController extends Controller
         return view('companies.index', compact('companies', 'countries', 'categories'));
     }
 
-    public function exportCsv(Request $request)
+    public function exportCsv(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         $companies = $this->getFilteredQuery($request)->limit(1000)->get();
 
@@ -116,7 +116,7 @@ class CompanyController extends Controller
         ]);
     }
 
-    public function exportJson(Request $request)
+    public function exportJson(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         $companies = $this->getFilteredQuery($request)
             ->with(['fundingRounds', 'headcountSnapshots'])
@@ -183,7 +183,7 @@ class CompanyController extends Controller
         return $query->orderBy('name');
     }
 
-    public function show(Company $company)
+    public function show(Company $company): \Illuminate\View\View
     {
         $company->load(['fundingRounds.investors', 'headcountSnapshots', 'newsMentions', 'people']);
 

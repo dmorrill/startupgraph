@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SavedSearchController extends Controller
 {
-    public function index()
+    public function index(): \Illuminate\View\View
     {
         $savedSearches = Auth::user()->savedSearches()
             ->orderByDesc('updated_at')
@@ -17,7 +17,7 @@ class SavedSearchController extends Controller
         return view('saved-searches.index', compact('savedSearches'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
     {
         $request->validate([
             'name' => 'nullable|string|max:255',
@@ -45,7 +45,7 @@ class SavedSearchController extends Controller
         return back()->with('success', 'Search saved to your watchlist!');
     }
 
-    public function update(Request $request, SavedSearch $savedSearch)
+    public function update(Request $request, SavedSearch $savedSearch): \Illuminate\Http\RedirectResponse
     {
         $this->authorize('update', $savedSearch);
 
@@ -59,7 +59,7 @@ class SavedSearchController extends Controller
         return back()->with('success', 'Saved search updated.');
     }
 
-    public function destroy(SavedSearch $savedSearch)
+    public function destroy(SavedSearch $savedSearch): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
     {
         $this->authorize('delete', $savedSearch);
 

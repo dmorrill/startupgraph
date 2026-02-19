@@ -30,23 +30,23 @@ class ScheduledTaskExecution extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function scopeRecent($query, int $days = 7)
+    public function scopeRecent($query, int $days = 7): void
     {
-        return $query->where('created_at', '>=', now()->subDays($days));
+        $query->where('created_at', '>=', now()->subDays($days));
     }
 
-    public function scopeFailed($query)
+    public function scopeFailed($query): void
     {
-        return $query->where('status', 'failed');
+        $query->where('status', 'failed');
     }
 
-    public function scopeSuccessful($query)
+    public function scopeSuccessful($query): void
     {
-        return $query->where('status', 'success');
+        $query->where('status', 'success');
     }
 
-    public function scopeForTaskType($query, string $taskType)
+    public function scopeForTaskType($query, string $taskType): void
     {
-        return $query->where('task_type', $taskType);
+        $query->where('task_type', $taskType);
     }
 }

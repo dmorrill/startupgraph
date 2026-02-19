@@ -119,24 +119,24 @@ class Company extends Model
     /**
      * Scope: companies with at least one funding round.
      */
-    public function scopeFunded($query)
+    public function scopeFunded($query): void
     {
-        return $query->whereHas('fundingRounds');
+        $query->whereHas('fundingRounds');
     }
 
     /**
      * Scope: companies founded in the last N years.
      */
-    public function scopeFoundedWithin($query, int $years)
+    public function scopeFoundedWithin($query, int $years): void
     {
-        return $query->where('founded_date', '>=', now()->subYears($years));
+        $query->where('founded_date', '>=', now()->subYears($years));
     }
 
     /**
      * Scope: companies in a specific category.
      */
-    public function scopeInCategory($query, string $category)
+    public function scopeInCategory($query, string $category): void
     {
-        return $query->where('category', $category);
+        $query->where('category', $category);
     }
 }

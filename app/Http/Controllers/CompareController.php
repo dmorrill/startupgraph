@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class CompareController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): \Illuminate\View\View
     {
         $slugs = array_filter(array_slice(
             explode(',', $request->get('companies', '')),

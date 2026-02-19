@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class InvestorController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): \Illuminate\View\View
     {
         $query = Investor::query()
             ->withCount('fundingRounds');
@@ -37,7 +37,7 @@ class InvestorController extends Controller
         return view('investors.index', compact('investors', 'types'));
     }
 
-    public function show(Investor $investor)
+    public function show(Investor $investor): \Illuminate\View\View
     {
         $investor->load(['fundingRounds' => function ($q) {
             $q->with('company')->orderByDesc('announced_date');

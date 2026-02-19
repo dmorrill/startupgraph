@@ -4,7 +4,6 @@ namespace App\Services\Discovery;
 
 use App\Contracts\CompanyDiscoverySource;
 use App\Services\TechCrunchService;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TechCrunchDiscoverySource implements CompanyDiscoverySource

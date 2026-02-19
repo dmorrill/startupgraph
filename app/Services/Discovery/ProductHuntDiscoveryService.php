@@ -2,8 +2,6 @@
 
 namespace App\Services\Discovery;
 
-use App\Models\Company;
-use App\Models\CompanyImport;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
