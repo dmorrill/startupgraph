@@ -43,6 +43,9 @@ class DatabaseSeeder extends Seeder
 
             // Source URLs for funding rounds
             FundingSourceUrlSeeder::class,
+
+            // Wikipedia company imports
+            WikipediaCompaniesSeeder::class,
         ]);
     }
 }
