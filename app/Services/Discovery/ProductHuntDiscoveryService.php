@@ -2,8 +2,6 @@
 
 namespace App\Services\Discovery;
 
-use App\Models\Company;
-use App\Models\CompanyImport;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -22,7 +20,7 @@ class ProductHuntDiscoveryService
      */
     public function discover(int $limit = 50, ?string $cursor = null): array
     {
-        if (!$this->token) {
+        if (! $this->token) {
             throw new \RuntimeException('Product Hunt API token not configured. Set PRODUCTHUNT_TOKEN in .env');
         }
 
@@ -55,8 +53,9 @@ class ProductHuntDiscoveryService
             'variables' => ['first' => $limit, 'after' => $cursor],
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::error('Product Hunt API error', ['status' => $response->status()]);
+
             return ['companies' => [], 'cursor' => null, 'hasMore' => false];
         }
 

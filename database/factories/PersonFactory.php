@@ -15,7 +15,7 @@ class PersonFactory extends Factory
             'name' => fake()->name(),
             'slug' => fake()->unique()->slug(),
             'bio' => fake()->sentence(),
-            'linkedin_url' => 'https://linkedin.com/in/' . fake()->slug(),
+            'linkedin_url' => 'https://linkedin.com/in/'.fake()->slug(),
         ];
     }
 }

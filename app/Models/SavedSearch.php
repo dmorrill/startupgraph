@@ -33,13 +33,21 @@ class SavedSearch extends Model
      */
     public function getDisplayNameAttribute(): string
     {
-        if ($this->name) return $this->name;
+        if ($this->name) {
+            return $this->name;
+        }
 
         $parts = [];
-        if ($this->query) $parts[] = '"' . $this->query . '"';
+        if ($this->query) {
+            $parts[] = '"'.$this->query.'"';
+        }
         if ($filters = $this->filters_json) {
-            if (!empty($filters['category'])) $parts[] = $filters['category'];
-            if (!empty($filters['country'])) $parts[] = $filters['country'];
+            if (! empty($filters['category'])) {
+                $parts[] = $filters['category'];
+            }
+            if (! empty($filters['country'])) {
+                $parts[] = $filters['country'];
+            }
         }
 
         return $parts ? implode(' · ', $parts) : 'All companies';
@@ -51,12 +59,17 @@ class SavedSearch extends Model
     public function getSearchUrlAttribute(): string
     {
         $params = [];
-        if ($this->query) $params['search'] = $this->query;
+        if ($this->query) {
+            $params['search'] = $this->query;
+        }
         if ($filters = $this->filters_json) {
             foreach (['category', 'country', 'funded_recent', 'funded_after', 'funded_before'] as $key) {
-                if (!empty($filters[$key])) $params[$key] = $filters[$key];
+                if (! empty($filters[$key])) {
+                    $params[$key] = $filters[$key];
+                }
             }
         }
+
         return route('companies.index', $params);
     }
 }

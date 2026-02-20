@@ -806,7 +806,7 @@ class ProductHighlightsSeeder extends Seeder
 
         foreach ($highlights as $slug => $productHighlights) {
             $company = Company::where('slug', $slug)->first();
-            if ($company && !$company->product_highlights) {
+            if ($company && ! $company->product_highlights) {
                 $company->update([
                     'product_highlights' => $productHighlights,
                     'profile_refreshed_at' => now(),
@@ -814,6 +814,6 @@ class ProductHighlightsSeeder extends Seeder
             }
         }
 
-        $this->command->info('Updated ' . count($highlights) . ' companies with product highlights.');
+        $this->command->info('Updated '.count($highlights).' companies with product highlights.');
     }
 }

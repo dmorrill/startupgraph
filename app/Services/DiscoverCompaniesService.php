@@ -6,9 +6,9 @@ use App\Contracts\CompanyDiscoverySource;
 use App\Models\Company;
 use App\Services\Discovery\CrunchbaseDiscoverySource;
 use App\Services\Discovery\HackerNewsDiscoverySource;
+use App\Services\Discovery\ProductHuntDiscoverySource;
 use App\Services\Discovery\TechCrunchDiscoverySource;
 use App\Services\Discovery\WellfoundDiscoverySource;
-use App\Services\Discovery\ProductHuntDiscoverySource;
 use App\Services\Discovery\YCombinatorDiscoverySource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -63,18 +63,19 @@ class DiscoverCompaniesService
             : [$sourceName => $this->sources[$sourceName] ?? null];
 
         foreach ($sourcesToRun as $name => $source) {
-            if (!$source) {
+            if (! $source) {
                 $results['errors'][] = "Unknown source: {$name}";
+
                 continue;
             }
 
             try {
                 $candidates = $source->discover($days);
-                Log::info("Discovery [{$name}]: found " . count($candidates) . " candidates");
+                Log::info("Discovery [{$name}]: found ".count($candidates).' candidates');
 
                 foreach ($candidates as $candidate) {
                     $companyName = $candidate['name'] ?? null;
-                    if (!$companyName) {
+                    if (! $companyName) {
                         continue;
                     }
 
@@ -83,7 +84,7 @@ class DiscoverCompaniesService
                     // Check if company already exists (by name or domain)
                     $existing = Company::whereRaw('LOWER(name) = ?', [strtolower($companyName)])->first();
 
-                    if (!$existing && !empty($candidate['website'])) {
+                    if (! $existing && ! empty($candidate['website'])) {
                         $domain = $this->extractDomain($candidate['website']);
                         if ($domain) {
                             $existing = Company::where('website', 'LIKE', "%{$domain}%")->first();
@@ -96,6 +97,7 @@ class DiscoverCompaniesService
                             'source' => $name,
                             'existing_id' => $existing->id,
                         ];
+
                         continue;
                     }
 
@@ -104,6 +106,7 @@ class DiscoverCompaniesService
                             'source' => $name,
                             'dry_run' => true,
                         ]);
+
                         continue;
                     }
 
@@ -148,9 +151,10 @@ class DiscoverCompaniesService
     private function extractDomain(string $url): ?string
     {
         $host = parse_url($url, PHP_URL_HOST);
-        if (!$host) {
+        if (! $host) {
             return null;
         }
+
         // Strip www.
         return preg_replace('/^www\./', '', strtolower($host));
     }

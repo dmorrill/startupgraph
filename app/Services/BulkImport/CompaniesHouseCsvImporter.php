@@ -41,30 +41,30 @@ class CompaniesHouseCsvImporter extends BaseBulkImporter
         $minIncorporationYear = $options['min_year'] ?? 2015;
         $resumeOffset = $options['resume_from'] ?? 0;
 
-        if (!$filePath) {
+        if (! $filePath) {
             $filePath = $this->downloadCsv();
         }
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new \RuntimeException("CSV file not found: {$filePath}");
         }
 
-        Log::info("Companies House CSV import starting", [
+        Log::info('Companies House CSV import starting', [
             'file' => $filePath,
             'tech_only' => $techOnly,
             'min_year' => $minIncorporationYear,
         ]);
 
         $handle = fopen($filePath, 'r');
-        if (!$handle) {
+        if (! $handle) {
             throw new \RuntimeException("Cannot open CSV: {$filePath}");
         }
 
         // Read and normalize header
         $header = fgetcsv($handle);
-        if (!$header) {
+        if (! $header) {
             fclose($handle);
-            throw new \RuntimeException("Empty CSV file");
+            throw new \RuntimeException('Empty CSV file');
         }
 
         // Companies House headers use spaces and dots
@@ -77,28 +77,38 @@ class CompaniesHouseCsvImporter extends BaseBulkImporter
         while (($row = fgetcsv($handle)) !== false) {
             $line++;
 
-            if ($line <= $resumeOffset) continue;
+            if ($line <= $resumeOffset) {
+                continue;
+            }
 
-            if (count($row) !== count($header)) continue;
+            if (count($row) !== count($header)) {
+                continue;
+            }
 
             $data = @array_combine($header, $row);
-            if (!$data) continue;
+            if (! $data) {
+                continue;
+            }
 
             // Filter by incorporation date
             $incDate = $data['incorporationdate'] ?? '';
             if ($incDate && $minIncorporationYear) {
                 $year = (int) substr($incDate, 6, 4); // DD/MM/YYYY format
-                if (!$year) {
+                if (! $year) {
                     $year = (int) substr($incDate, 0, 4); // YYYY-MM-DD format
                 }
-                if ($year > 0 && $year < $minIncorporationYear) continue;
+                if ($year > 0 && $year < $minIncorporationYear) {
+                    continue;
+                }
             }
 
             // Filter by SIC code if tech_only
             if ($techOnly) {
                 $sicCodes = $this->extractSicCodes($data);
                 $category = $this->categorizeBySic($sicCodes);
-                if (!$category) continue;
+                if (! $category) {
+                    continue;
+                }
             }
 
             $this->importRow($data, $category ?? null);
@@ -114,13 +124,15 @@ class CompaniesHouseCsvImporter extends BaseBulkImporter
         }
 
         fclose($handle);
-        Log::info("Companies House CSV import complete", $this->getStats());
+        Log::info('Companies House CSV import complete', $this->getStats());
     }
 
     private function importRow(array $data, ?string $category): void
     {
         $name = $data['companyname'] ?? '';
-        if (!$name || !trim($name)) return;
+        if (! $name || ! trim($name)) {
+            return;
+        }
 
         // Clean ALL CAPS names
         if ($name === strtoupper($name) && strlen($name) > 3) {
@@ -167,6 +179,7 @@ class CompaniesHouseCsvImporter extends BaseBulkImporter
                 }
             }
         }
+
         return $codes;
     }
 
@@ -178,6 +191,7 @@ class CompaniesHouseCsvImporter extends BaseBulkImporter
                 return self::TECH_SIC_PREFIXES[$prefix];
             }
         }
+
         return null;
     }
 
@@ -210,7 +224,7 @@ class CompaniesHouseCsvImporter extends BaseBulkImporter
         ];
 
         $storageDir = storage_path('app/imports/companies-house');
-        if (!is_dir($storageDir)) {
+        if (! is_dir($storageDir)) {
             mkdir($storageDir, 0755, true);
         }
 
@@ -222,32 +236,35 @@ class CompaniesHouseCsvImporter extends BaseBulkImporter
             // If CSV already extracted, use it
             if (file_exists($csvPath)) {
                 Log::info("Using existing Companies House CSV: {$csvPath}");
+
                 return $csvPath;
             }
 
             // Check for any existing CSV
             $existingCsvs = glob("{$storageDir}/*.csv");
-            if (!empty($existingCsvs)) {
+            if (! empty($existingCsvs)) {
                 $latest = end($existingCsvs);
                 Log::info("Using existing Companies House CSV: {$latest}");
+
                 return $latest;
             }
 
             Log::info("Downloading Companies House data from: {$url}");
-            Log::info("This is ~500MB and will take a while...");
+            Log::info('This is ~500MB and will take a while...');
 
             // Download with curl for progress and resume support
             $exitCode = 0;
             $output = [];
-            exec("curl -L -f -o " . escapeshellarg($zipPath) . " " . escapeshellarg($url) . " 2>&1", $output, $exitCode);
+            exec('curl -L -f -o '.escapeshellarg($zipPath).' '.escapeshellarg($url).' 2>&1', $output, $exitCode);
 
             if ($exitCode !== 0) {
                 Log::warning("Failed to download from {$url}");
+
                 continue;
             }
 
             // Extract ZIP
-            $zip = new \ZipArchive();
+            $zip = new \ZipArchive;
             if ($zip->open($zipPath) === true) {
                 $zip->extractTo($storageDir);
                 $zip->close();
@@ -255,16 +272,16 @@ class CompaniesHouseCsvImporter extends BaseBulkImporter
 
                 // Find the extracted CSV
                 $csvFiles = glob("{$storageDir}/*.csv");
-                if (!empty($csvFiles)) {
+                if (! empty($csvFiles)) {
                     return $csvFiles[0];
                 }
             }
         }
 
         throw new \RuntimeException(
-            "Could not download Companies House data. " .
-            "Please download manually from https://download.companieshouse.gov.uk/en_output.html " .
-            "and pass --file=/path/to/csv"
+            'Could not download Companies House data. '.
+            'Please download manually from https://download.companieshouse.gov.uk/en_output.html '.
+            'and pass --file=/path/to/csv'
         );
     }
 }

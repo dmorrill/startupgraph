@@ -1,8 +1,8 @@
 <?php
 
-use App\Services\Discovery\ProductHuntDiscoveryService;
-use App\Services\Discovery\GitHubOrgDiscoveryService;
 use App\Services\Discovery\CompaniesHouseService;
+use App\Services\Discovery\GitHubOrgDiscoveryService;
+use App\Services\Discovery\ProductHuntDiscoveryService;
 
 test('product hunt service throws without token', function () {
     $service = new ProductHuntDiscoveryService(null);

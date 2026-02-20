@@ -17,13 +17,12 @@ class FundingRoundResource extends JsonResource
             'announced_date' => $this->announced_date?->format('Y-m-d'),
             'pre_money_valuation' => $this->pre_money_valuation ? (float) $this->pre_money_valuation : null,
             'source_url' => $this->source_url,
-            'investors' => $this->whenLoaded('investors', fn () =>
-                $this->investors->map(fn ($investor) => [
-                    'name' => $investor->name,
-                    'slug' => $investor->slug,
-                    'type' => $investor->type,
-                    'is_lead' => (bool) $investor->pivot->is_lead,
-                ])
+            'investors' => $this->whenLoaded('investors', fn () => $this->investors->map(fn ($investor) => [
+                'name' => $investor->name,
+                'slug' => $investor->slug,
+                'type' => $investor->type,
+                'is_lead' => (bool) $investor->pivot->is_lead,
+            ])
             ),
         ];
     }
@@ -31,14 +30,15 @@ class FundingRoundResource extends JsonResource
     private function formatAmount(float $amount): string
     {
         if ($amount >= 1_000_000_000) {
-            return '$' . number_format($amount / 1_000_000_000, 1) . 'B';
+            return '$'.number_format($amount / 1_000_000_000, 1).'B';
         }
         if ($amount >= 1_000_000) {
-            return '$' . number_format($amount / 1_000_000, 1) . 'M';
+            return '$'.number_format($amount / 1_000_000, 1).'M';
         }
         if ($amount >= 1_000) {
-            return '$' . number_format($amount / 1_000, 0) . 'K';
+            return '$'.number_format($amount / 1_000, 0).'K';
         }
-        return '$' . number_format($amount, 0);
+
+        return '$'.number_format($amount, 0);
     }
 }

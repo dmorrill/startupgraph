@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\OpenSourceProject;
 use App\Models\Company;
+use App\Models\OpenSourceProject;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class OssProjectController extends Controller
 {
@@ -19,8 +19,8 @@ class OssProjectController extends Controller
             $escaped = str_replace(['%', '_'], ['\%', '\_'], $search);
             $query->where(function ($q) use ($escaped) {
                 $q->where('name', 'like', "%{$escaped}%")
-                  ->orWhere('github_owner', 'like', "%{$escaped}%")
-                  ->orWhere('description', 'like', "%{$escaped}%");
+                    ->orWhere('github_owner', 'like', "%{$escaped}%")
+                    ->orWhere('description', 'like', "%{$escaped}%");
             });
         }
 

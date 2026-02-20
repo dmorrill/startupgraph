@@ -16,7 +16,7 @@ class CompareController extends Controller
         ));
 
         $companies = collect();
-        if (!empty($slugs)) {
+        if (! empty($slugs)) {
             $companies = Company::whereIn('slug', $slugs)
                 ->with(['fundingRounds.investors', 'headcountSnapshots'])
                 ->withSum('fundingRounds', 'amount')

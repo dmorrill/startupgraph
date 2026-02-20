@@ -9,11 +9,24 @@ class BaseBulkImporterTest extends TestCase
 {
     public function test_status_mapping(): void
     {
-        $importer = new class extends BaseBulkImporter {
-            public function source(): string { return 'test'; }
+        $importer = new class extends BaseBulkImporter
+        {
+            public function source(): string
+            {
+                return 'test';
+            }
+
             public function import(array $options = []): void {}
-            public function publicMapStatus(string $s): string { return $this->mapStatus($s); }
-            public function publicExtractDomain(?string $u): ?string { return $this->extractDomain($u); }
+
+            public function publicMapStatus(string $s): string
+            {
+                return $this->mapStatus($s);
+            }
+
+            public function publicExtractDomain(?string $u): ?string
+            {
+                return $this->extractDomain($u);
+            }
         };
 
         $this->assertEquals('operating', $importer->publicMapStatus('Active'));
@@ -29,10 +42,19 @@ class BaseBulkImporterTest extends TestCase
 
     public function test_domain_extraction(): void
     {
-        $importer = new class extends BaseBulkImporter {
-            public function source(): string { return 'test'; }
+        $importer = new class extends BaseBulkImporter
+        {
+            public function source(): string
+            {
+                return 'test';
+            }
+
             public function import(array $options = []): void {}
-            public function publicExtractDomain(?string $u): ?string { return $this->extractDomain($u); }
+
+            public function publicExtractDomain(?string $u): ?string
+            {
+                return $this->extractDomain($u);
+            }
         };
 
         $this->assertEquals('stripe.com', $importer->publicExtractDomain('https://www.stripe.com'));

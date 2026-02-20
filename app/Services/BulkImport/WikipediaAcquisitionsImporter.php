@@ -31,7 +31,7 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
 
     public function import(array $options = []): void
     {
-        Log::info("Wikipedia acquisitions import starting");
+        Log::info('Wikipedia acquisitions import starting');
 
         foreach (self::ACQUIRER_PAGES as $acquirer => $page) {
             Log::info("Importing acquisitions by {$acquirer}");
@@ -39,7 +39,7 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
             $this->rateLimitSleep(1.0);
         }
 
-        Log::info("Wikipedia acquisitions import complete", $this->getStats());
+        Log::info('Wikipedia acquisitions import complete', $this->getStats());
     }
 
     private function importFromPage(string $acquirer, string $pageTitle): void
@@ -53,8 +53,9 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
                 'prop' => 'wikitext',
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::warning("Wikipedia: Failed to fetch {$pageTitle}");
+
             return;
         }
 
@@ -63,6 +64,7 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
 
         if (empty($wikitext)) {
             Log::warning("Wikipedia: Empty wikitext for {$pageTitle}");
+
             return;
         }
 
@@ -79,30 +81,36 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
 
         foreach ($rows as $i => $row) {
             // Look for header rows with ! markers
-            if (!$headerFound && preg_match_all('/\n!\s*(.+)/', "\n" . $row, $headerMatches)) {
+            if (! $headerFound && preg_match_all('/\n!\s*(.+)/', "\n".$row, $headerMatches)) {
                 $headers = $headerMatches[1] ?? [];
                 if (count($headers) >= 2) {
-                    $columns = array_map(fn($h) => strtolower($this->cleanWikiText($h)), $headers);
+                    $columns = array_map(fn ($h) => strtolower($this->cleanWikiText($h)), $headers);
                     // Check if this looks like an acquisitions table
                     $hasCompany = $this->findColumn($columns, ['company', 'acquisition', 'name', 'target']);
                     if ($hasCompany !== null) {
                         $headerFound = true;
+
                         continue;
                     }
                 }
             }
 
-            if (!$headerFound) continue;
+            if (! $headerFound) {
+                continue;
+            }
 
             // End of table
             if (str_contains($row, '|}')) {
                 $headerFound = false;
+
                 continue;
             }
 
             // Parse cells
             $cells = $this->extractCells($row);
-            if (count($cells) < 2) continue;
+            if (count($cells) < 2) {
+                continue;
+            }
 
             $nameCol = $this->findColumn($columns, ['company', 'acquisition', 'name', 'target']);
             $dateCol = $this->findColumn($columns, ['date', 'announced', 'completed', 'year']);
@@ -110,8 +118,12 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
             $descCol = $this->findColumn($columns, ['description', 'business', 'area', 'notes', 'used for', 'products/services']);
 
             $name = $this->cleanWikiText($cells[$nameCol] ?? '');
-            if (!$name || strlen($name) < 2 || is_numeric($name)) continue;
-            if (str_contains(strtolower($name), 'total') || str_contains($name, '=')) continue;
+            if (! $name || strlen($name) < 2 || is_numeric($name)) {
+                continue;
+            }
+            if (str_contains(strtolower($name), 'total') || str_contains($name, '=')) {
+                continue;
+            }
 
             $date = $dateCol !== null ? $this->cleanWikiText($cells[$dateCol] ?? '') : null;
             $description = $descCol !== null ? $this->cleanWikiText($cells[$descCol] ?? '') : null;
@@ -120,7 +132,7 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
             // Build description with price info
             $fullDesc = $description;
             if ($price && $price !== '' && strtolower($price) !== 'n/a' && strtolower($price) !== 'undisclosed') {
-                $fullDesc = ($fullDesc ? $fullDesc . '. ' : '') . "Acquired for {$price}.";
+                $fullDesc = ($fullDesc ? $fullDesc.'. ' : '')."Acquired for {$price}.";
             }
 
             // Parse founded/acquisition date
@@ -128,7 +140,7 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
             if ($date) {
                 // Try to extract a year
                 if (preg_match('/(\d{4})/', $date, $m)) {
-                    $foundedDate = $m[1] . '-01-01';
+                    $foundedDate = $m[1].'-01-01';
                 }
             }
 
@@ -147,7 +159,9 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
         $lines = explode("\n", $row);
         foreach ($lines as $line) {
             $line = trim($line);
-            if ($line === '' || $line === '|-' || $line === '|}') continue;
+            if ($line === '' || $line === '|-' || $line === '|}') {
+                continue;
+            }
             if (str_starts_with($line, '|')) {
                 // Handle multiple cells on one line separated by ||
                 $parts = explode('||', substr($line, 1));
@@ -156,6 +170,7 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
                 }
             }
         }
+
         return $cells;
     }
 
@@ -168,6 +183,7 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
                 }
             }
         }
+
         return null;
     }
 
@@ -179,6 +195,7 @@ class WikipediaAcquisitionsImporter extends BaseBulkImporter
         $text = preg_replace('/<ref[^>]*>.*?<\/ref>/s', '', $text);
         $text = preg_replace('/<ref[^>]*\/?>/s', '', $text);
         $text = trim(preg_replace('/\s+/', ' ', $text));
+
         return $text;
     }
 }

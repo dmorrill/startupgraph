@@ -17,7 +17,7 @@ class OssProjectController extends Controller
             $escaped = str_replace(['%', '_'], ['\%', '\_'], $q);
             $query->where(function ($qb) use ($escaped) {
                 $qb->where('name', 'like', "%{$escaped}%")
-                   ->orWhere('description', 'like', "%{$escaped}%");
+                    ->orWhere('description', 'like', "%{$escaped}%");
             });
         }
 

@@ -12,7 +12,7 @@ class TechCrunchServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new TechCrunchService();
+        $this->service = new TechCrunchService;
     }
 
     public function test_extract_funding_info_with_million_amount(): void

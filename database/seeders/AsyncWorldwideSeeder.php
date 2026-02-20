@@ -83,6 +83,7 @@ class AsyncWorldwideSeeder extends Seeder
             if (Company::where('website', $website)->exists()) {
                 $this->command->info("SKIP: {$name} — already exists");
                 $skipped++;
+
                 continue;
             }
 

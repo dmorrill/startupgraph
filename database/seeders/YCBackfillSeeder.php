@@ -27,7 +27,7 @@ class YCBackfillSeeder extends Seeder
             }
         }
 
-        $this->command->info("YC Backfill - Created: {$created}, Updated: {$updated}, Total companies: " . Company::count());
+        $this->command->info("YC Backfill - Created: {$created}, Updated: {$updated}, Total companies: ".Company::count());
     }
 
     private function getCompanies(): array

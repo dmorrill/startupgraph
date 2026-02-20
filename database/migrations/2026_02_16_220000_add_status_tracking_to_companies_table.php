@@ -9,16 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('companies', function (Blueprint $table) {
-            if (!Schema::hasColumn('companies', 'status')) {
+            if (! Schema::hasColumn('companies', 'status')) {
                 $table->string('status', 20)->default('operating')->after('country');
             }
-            if (!Schema::hasColumn('companies', 'closed_at')) {
+            if (! Schema::hasColumn('companies', 'closed_at')) {
                 $table->date('closed_at')->nullable()->after('status');
             }
-            if (!Schema::hasColumn('companies', 'acquired_by')) {
+            if (! Schema::hasColumn('companies', 'acquired_by')) {
                 $table->string('acquired_by')->nullable()->after('closed_at');
             }
-            if (!Schema::hasColumn('companies', 'import_source')) {
+            if (! Schema::hasColumn('companies', 'import_source')) {
                 $table->string('import_source')->nullable()->after('acquired_by');
             }
         });

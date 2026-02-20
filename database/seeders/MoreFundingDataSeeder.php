@@ -73,8 +73,12 @@ class MoreFundingDataSeeder extends Seeder
     private function seedDatabricksFunding(array $investors): void
     {
         $company = Company::where('slug', 'databricks')->first();
-        if (!$company) return;
-        if ($company->fundingRounds()->exists()) return;
+        if (! $company) {
+            return;
+        }
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -151,8 +155,12 @@ class MoreFundingDataSeeder extends Seeder
     private function seedCanvaFunding(array $investors): void
     {
         $company = Company::where('slug', 'canva')->first();
-        if (!$company) return;
-        if ($company->fundingRounds()->exists()) return;
+        if (! $company) {
+            return;
+        }
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -210,8 +218,12 @@ class MoreFundingDataSeeder extends Seeder
     private function seedFigmaFunding(array $investors): void
     {
         $company = Company::where('slug', 'figma')->first();
-        if (!$company) return;
-        if ($company->fundingRounds()->exists()) return;
+        if (! $company) {
+            return;
+        }
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -268,8 +280,12 @@ class MoreFundingDataSeeder extends Seeder
     private function seedNotionFunding(array $investors): void
     {
         $company = Company::where('slug', 'notion')->first();
-        if (!$company) return;
-        if ($company->fundingRounds()->exists()) return;
+        if (! $company) {
+            return;
+        }
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -314,8 +330,12 @@ class MoreFundingDataSeeder extends Seeder
     private function seedRipplingFunding(array $investors): void
     {
         $company = Company::where('slug', 'rippling')->first();
-        if (!$company) return;
-        if ($company->fundingRounds()->exists()) return;
+        if (! $company) {
+            return;
+        }
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -380,7 +400,7 @@ class MoreFundingDataSeeder extends Seeder
             $roundData['company_id'] = $company->id;
 
             $round = FundingRound::firstOrCreate(
-                ["company_id" => $roundData["company_id"], "announced_date" => $roundData["announced_date"], "round_type" => $roundData["round_type"] ?? null],
+                ['company_id' => $roundData['company_id'], 'announced_date' => $roundData['announced_date'], 'round_type' => $roundData['round_type'] ?? null],
                 $roundData
             );
 

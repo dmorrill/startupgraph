@@ -1,8 +1,7 @@
 <?php
 
-use App\Models\FundingRound;
 use App\Models\Company;
-use App\Models\Investor;
+use App\Models\FundingRound;
 
 test('funding round belongs to a company', function () {
     $company = Company::factory()->create();

@@ -33,14 +33,14 @@ class WikipediaCategoryImporter extends BaseBulkImporter
 
     public function import(array $options = []): void
     {
-        Log::info("Wikipedia category companies import starting");
+        Log::info('Wikipedia category companies import starting');
 
         foreach (self::CATEGORIES as $category => $status) {
             Log::info("Importing from {$category}");
             $this->importCategory($category, $status);
         }
 
-        Log::info("Wikipedia category companies import complete", $this->getStats());
+        Log::info('Wikipedia category companies import complete', $this->getStats());
     }
 
     private function importCategory(string $category, string $status): void
@@ -75,7 +75,7 @@ class WikipediaCategoryImporter extends BaseBulkImporter
                 ->withUserAgent('StartupGraph/1.0 (https://startupgraph.com)')
                 ->get(self::WIKIPEDIA_API, $params);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning("Wikipedia: Failed to fetch category {$category}");
                 break;
             }
@@ -85,7 +85,7 @@ class WikipediaCategoryImporter extends BaseBulkImporter
             $continue = $data['continue']['cmcontinue'] ?? null;
 
             // Batch fetch extracts
-            $titles = array_map(fn($m) => $m['title'], $members);
+            $titles = array_map(fn ($m) => $m['title'], $members);
             $chunks = array_chunk($titles, 50);
 
             foreach ($chunks as $chunk) {
@@ -110,7 +110,7 @@ class WikipediaCategoryImporter extends BaseBulkImporter
                 'format' => 'json',
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             foreach ($titles as $title) {
                 $this->upsertCompany([
                     'name' => $title,
@@ -119,6 +119,7 @@ class WikipediaCategoryImporter extends BaseBulkImporter
                     'country' => $country,
                 ]);
             }
+
             return;
         }
 
@@ -128,11 +129,15 @@ class WikipediaCategoryImporter extends BaseBulkImporter
             $title = $page['title'] ?? '';
             $extract = $page['extract'] ?? '';
 
-            if (!$title || str_starts_with($title, 'Category:')) continue;
+            if (! $title || str_starts_with($title, 'Category:')) {
+                continue;
+            }
 
             // Skip disambiguation and list pages
             if (str_contains(strtolower($extract), 'may refer to') ||
-                str_contains(strtolower($title), 'list of')) continue;
+                str_contains(strtolower($title), 'list of')) {
+                continue;
+            }
 
             $description = $extract ? substr(trim($extract), 0, 500) : null;
 

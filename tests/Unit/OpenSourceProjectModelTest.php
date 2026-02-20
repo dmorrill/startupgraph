@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\OpenSourceProject;
 use App\Models\Company;
+use App\Models\OpenSourceProject;
 
 test('open source project belongs to a company', function () {
     $company = Company::factory()->create();
