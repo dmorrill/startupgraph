@@ -85,7 +85,7 @@
 
             <div class="flex items-center gap-3">
                 @auth
-                    @if(auth()->user()->isFollowing($company))
+                    @if($isFollowing)
                         <form method="POST" action="{{ route('companies.unfollow', $company) }}">
                             @csrf
                             @method('DELETE')

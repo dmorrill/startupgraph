@@ -52,7 +52,8 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Company::class, 'company_views')
             ->withPivot('viewed_at')
-            ->orderByPivot('viewed_at', 'desc');
+            ->orderByPivot('viewed_at', 'desc')
+            ->distinct();
     }
 
     public function isFollowing(Company $company): bool

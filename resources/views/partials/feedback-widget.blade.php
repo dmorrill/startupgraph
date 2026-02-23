@@ -1,6 +1,6 @@
-<div x-data="{ open: false, sent: false }" class="fixed bottom-6 right-6 z-50">
+<div x-data="{ open: false, sent: false, error: false, sending: false }" class="fixed bottom-6 right-6 z-50">
     {{-- Trigger button --}}
-    <button @click="open = !open; sent = false"
+    <button @click="open = !open; sent = false; error = false"
             x-show="!open"
             class="bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg hover:bg-gray-700 text-sm font-medium transition">
         💬 Feedback
@@ -17,7 +17,8 @@
         </div>
 
         <template x-if="!sent">
-            <form method="POST" action="{{ route('feedback.store') }}" @submit.prevent="
+            <form @submit.prevent="
+                sending = true; error = false;
                 fetch('{{ route('feedback.store') }}', {
                     method: 'POST',
                     headers: {
@@ -29,14 +30,18 @@
                         message: $refs.msg.value,
                         page_url: window.location.href
                     })
-                }).then(() => { sent = true })
+                }).then(r => {
+                    sending = false;
+                    if (r.ok) { sent = true } else { error = true }
+                }).catch(() => { sending = false; error = true })
             ">
                 <textarea x-ref="msg" name="message" rows="3" required maxlength="2000"
                           placeholder="What would make StartupGraph more useful for you?"
                           class="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-gray-500 focus:border-gray-500"></textarea>
-                <button type="submit"
-                        class="mt-2 w-full bg-gray-800 text-white text-sm font-medium py-2 rounded-md hover:bg-gray-700">
-                    Send
+                <p x-show="error" class="text-red-500 text-xs mt-1">Something went wrong. Please try again.</p>
+                <button type="submit" :disabled="sending"
+                        class="mt-2 w-full bg-gray-800 text-white text-sm font-medium py-2 rounded-md hover:bg-gray-700 disabled:opacity-50">
+                    <span x-text="sending ? 'Sending...' : 'Send'"></span>
                 </button>
             </form>
         </template>

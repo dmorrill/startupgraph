@@ -9,7 +9,7 @@
     @if($isNewUser)
     <div class="bg-gray-800 text-white rounded-lg p-6 mb-8">
         <h2 class="text-xl font-bold mb-2">Welcome to StartupGraph! 🚀</h2>
-        <p class="text-gray-300 mb-4">You now have access to {{ number_format(\App\Models\Company::count()) }} companies. Here's what you can do:</p>
+        <p class="text-gray-300 mb-4">You now have access to {{ number_format($companyCount) }} companies. Here's what you can do:</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div class="flex items-start space-x-2">
                 <span class="text-green-400">✓</span>

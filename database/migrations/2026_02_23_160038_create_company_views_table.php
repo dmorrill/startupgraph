@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
             $table->timestamp('viewed_at')->useCurrent();
+            $table->unique(['user_id', 'company_id']);
             $table->index(['user_id', 'viewed_at']);
         });
     }
