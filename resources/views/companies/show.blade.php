@@ -83,6 +83,26 @@
                 @endif
             </div>
 
+            <div class="flex items-center gap-3">
+                @auth
+                    @if($isFollowing)
+                        <form method="POST" action="{{ route('companies.unfollow', $company) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                                ✓ Following
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('companies.follow', $company) }}">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium">
+                                + Follow
+                            </button>
+                        </form>
+                    @endif
+                @endauth
+
             @if($company->website)
                 <a
                     href="{{ $company->website }}"
@@ -96,6 +116,7 @@
                     </svg>
                 </a>
             @endif
+            </div>
         </div>
 
         @if($company->description)
