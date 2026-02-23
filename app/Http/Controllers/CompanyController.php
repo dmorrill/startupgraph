@@ -187,6 +187,15 @@ class CompanyController extends Controller
     {
         $company->load(['fundingRounds.investors', 'headcountSnapshots', 'newsMentions', 'people']);
 
+        // Track view for logged-in users
+        if ($user = request()->user()) {
+            \DB::table('company_views')->insert([
+                'user_id' => $user->id,
+                'company_id' => $company->id,
+                'viewed_at' => now(),
+            ]);
+        }
+
         return view('companies.show', compact('company'));
     }
 }
