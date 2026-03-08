@@ -43,6 +43,24 @@ class User extends Authenticatable
         return $this->hasMany(SavedSearch::class);
     }
 
+    public function followedCompanies()
+    {
+        return $this->belongsToMany(Company::class, 'company_follows')->withTimestamps();
+    }
+
+    public function recentlyViewedCompanies()
+    {
+        return $this->belongsToMany(Company::class, 'company_views')
+            ->withPivot('viewed_at')
+            ->orderByPivot('viewed_at', 'desc')
+            ->distinct();
+    }
+
+    public function isFollowing(Company $company): bool
+    {
+        return $this->followedCompanies()->where('company_id', $company->id)->exists();
+    }
+
     protected function casts(): array
     {
         return [

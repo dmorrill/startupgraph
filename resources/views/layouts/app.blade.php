@@ -36,6 +36,7 @@
                     </a>
 
                     @auth
+                        <a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-gray-900">Dashboard</a>
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" class="flex items-center text-gray-600 hover:text-gray-900 text-sm font-medium focus:outline-none">
                                 {{ Auth::user()->name }}
@@ -90,6 +91,7 @@
         </div>
     </footer>
 
+    @include('partials.feedback-widget')
     @stack('scripts')
 </body>
 </html>
