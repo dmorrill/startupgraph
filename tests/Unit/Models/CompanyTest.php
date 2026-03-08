@@ -7,6 +7,10 @@ use App\Models\FundingRound;
 use App\Models\HeadcountSnapshot;
 use App\Models\NewsMention;
 use App\Models\Person;
+<<<<<<< HEAD
+=======
+use App\Models\OpenSourceProject;
+>>>>>>> origin/main
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,6 +18,7 @@ class CompanyTest extends TestCase
 {
     use RefreshDatabase;
 
+<<<<<<< HEAD
     public function test_company_can_be_created_with_factory(): void
     {
         $company = Company::factory()->create();
@@ -54,6 +59,25 @@ class CompanyTest extends TestCase
     }
 
     public function test_has_many_funding_rounds(): void
+=======
+    public function test_can_create_company(): void
+    {
+        $company = Company::factory()->create();
+
+        $this->assertDatabaseHas('companies', ['id' => $company->id]);
+    }
+
+    public function test_category_label_attribute(): void
+    {
+        $company = Company::factory()->create(['category' => 'ai_ml']);
+        $this->assertEquals('AI/ML', $company->category_label);
+
+        $company2 = Company::factory()->create(['category' => null]);
+        $this->assertNull($company2->category_label);
+    }
+
+    public function test_funding_rounds_relationship(): void
+>>>>>>> origin/main
     {
         $company = Company::factory()->create();
         FundingRound::factory()->count(3)->create(['company_id' => $company->id]);
@@ -70,7 +94,11 @@ class CompanyTest extends TestCase
         $this->assertEquals($latest->id, $company->latestFundingRound->id);
     }
 
+<<<<<<< HEAD
     public function test_has_many_headcount_snapshots(): void
+=======
+    public function test_headcount_snapshots_relationship(): void
+>>>>>>> origin/main
     {
         $company = Company::factory()->create();
         HeadcountSnapshot::factory()->count(2)->create(['company_id' => $company->id]);
@@ -78,7 +106,11 @@ class CompanyTest extends TestCase
         $this->assertCount(2, $company->headcountSnapshots);
     }
 
+<<<<<<< HEAD
     public function test_has_many_news_mentions(): void
+=======
+    public function test_news_mentions_relationship(): void
+>>>>>>> origin/main
     {
         $company = Company::factory()->create();
         NewsMention::factory()->count(2)->create(['company_id' => $company->id]);
@@ -86,6 +118,7 @@ class CompanyTest extends TestCase
         $this->assertCount(2, $company->newsMentions);
     }
 
+<<<<<<< HEAD
     public function test_belongs_to_many_people(): void
     {
         $company = Company::factory()->create();
@@ -112,6 +145,26 @@ class CompanyTest extends TestCase
     {
         $company = Company::factory()->create(['category' => null]);
         $this->assertNull($company->category_label);
+=======
+    public function test_people_relationship(): void
+    {
+        $company = Company::factory()->create();
+        $person = Person::factory()->create();
+
+        $company->people()->attach($person->id, ['role' => 'CTO', 'is_current' => true]);
+
+        $this->assertCount(1, $company->people);
+    }
+
+    public function test_oss_alternatives_relationship(): void
+    {
+        $company = Company::factory()->create();
+        $project = OpenSourceProject::factory()->create();
+
+        $company->ossAlternatives()->attach($project->id, ['relationship_type' => 'alternative_to']);
+
+        $this->assertCount(1, $company->ossAlternatives);
+>>>>>>> origin/main
     }
 
     public function test_scope_funded(): void
@@ -121,10 +174,15 @@ class CompanyTest extends TestCase
         $unfunded = Company::factory()->create();
 
         $results = Company::funded()->get();
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
         $this->assertTrue($results->contains($funded));
         $this->assertFalse($results->contains($unfunded));
     }
 
+<<<<<<< HEAD
     public function test_scope_founded_within(): void
     {
         $recent = Company::factory()->create(['founded_date' => now()->subYear()]);
@@ -150,5 +208,35 @@ class CompanyTest extends TestCase
         $this->assertArrayHasKey('ai_ml', Company::CATEGORIES);
         $this->assertArrayHasKey('fintech', Company::CATEGORIES);
         $this->assertCount(10, Company::CATEGORIES);
+=======
+    public function test_scope_in_category(): void
+    {
+        $ai = Company::factory()->create(['category' => 'ai_ml']);
+        $fin = Company::factory()->create(['category' => 'fintech']);
+
+        $results = Company::inCategory('ai_ml')->get();
+
+        $this->assertTrue($results->contains($ai));
+        $this->assertFalse($results->contains($fin));
+    }
+
+    public function test_route_key_name_is_slug(): void
+    {
+        $company = new Company();
+        $this->assertEquals('slug', $company->getRouteKeyName());
+    }
+
+    public function test_casts(): void
+    {
+        $company = Company::factory()->create([
+            'is_indie' => true,
+            'is_open_source' => false,
+            'product_highlights' => ['Fast', 'Reliable'],
+        ]);
+
+        $this->assertIsBool($company->is_indie);
+        $this->assertIsBool($company->is_open_source);
+        $this->assertIsArray($company->product_highlights);
+>>>>>>> origin/main
     }
 }

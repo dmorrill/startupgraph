@@ -2,7 +2,10 @@
 
 namespace Tests\Feature\Api;
 
+<<<<<<< HEAD
 use App\Models\Company;
+=======
+>>>>>>> origin/main
 use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -18,6 +21,7 @@ class PersonApiTest extends TestCase
         $this->withoutMiddleware(ThrottleRequests::class);
     }
 
+<<<<<<< HEAD
     public function test_show_returns_person_with_companies(): void
     {
         $person = Person::factory()->create();
@@ -37,5 +41,14 @@ class PersonApiTest extends TestCase
     {
         $response = $this->getJson('/api/people/nonexistent-slug');
         $response->assertNotFound();
+=======
+    public function test_person_show(): void
+    {
+        $person = Person::factory()->create();
+
+        $response = $this->getJson("/api/people/{$person->slug}");
+
+        $response->assertStatus(200);
+>>>>>>> origin/main
     }
 }

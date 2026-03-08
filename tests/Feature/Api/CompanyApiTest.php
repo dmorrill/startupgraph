@@ -20,6 +20,7 @@ class CompanyApiTest extends TestCase
         $this->withoutMiddleware(ThrottleRequests::class);
     }
 
+<<<<<<< HEAD
     public function test_index_returns_paginated_companies(): void
     {
         Company::factory()->count(5)->create();
@@ -117,10 +118,33 @@ class CompanyApiTest extends TestCase
     }
 
     public function test_show_returns_company_detail(): void
+=======
+    public function test_companies_index(): void
+    {
+        Company::factory()->count(3)->create();
+
+        $response = $this->getJson('/api/companies');
+
+        $response->assertStatus(200);
+    }
+
+    public function test_companies_show(): void
+    {
+        $company = Company::factory()->create();
+        FundingRound::factory()->create(['company_id' => $company->id, 'amount' => 5000000]);
+
+        $response = $this->getJson("/api/companies/{$company->slug}");
+
+        $response->assertStatus(200);
+    }
+
+    public function test_companies_funding(): void
+>>>>>>> origin/main
     {
         $company = Company::factory()->create();
         FundingRound::factory()->create(['company_id' => $company->id]);
 
+<<<<<<< HEAD
         $response = $this->getJson("/api/companies/{$company->slug}");
 
         $response->assertOk()
@@ -203,5 +227,54 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies?funded_recent=3m');
         $response->assertOk();
         $this->assertEquals(1, $response->json('pagination.total'));
+=======
+        $response = $this->getJson("/api/companies/{$company->slug}/funding");
+
+        $response->assertStatus(200);
+    }
+
+    public function test_companies_headcount(): void
+    {
+        $company = Company::factory()->create();
+        HeadcountSnapshot::factory()->create(['company_id' => $company->id]);
+
+        $response = $this->getJson("/api/companies/{$company->slug}/headcount");
+
+        $response->assertStatus(200);
+    }
+
+    public function test_companies_people(): void
+    {
+        $company = Company::factory()->create();
+        $person = Person::factory()->create();
+        $company->people()->attach($person->id, ['role' => 'CEO', 'is_current' => true]);
+
+        $response = $this->getJson("/api/companies/{$company->slug}/people");
+
+        $response->assertStatus(200);
+    }
+
+    public function test_search_endpoint(): void
+    {
+        Company::factory()->create(['name' => 'Acme AI Corp']);
+
+        $response = $this->getJson('/api/search?q=Acme');
+
+        $response->assertStatus(200);
+    }
+
+    public function test_stats_endpoint(): void
+    {
+        $response = $this->getJson('/api/stats');
+
+        $response->assertStatus(200);
+    }
+
+    public function test_categories_endpoint(): void
+    {
+        $response = $this->getJson('/api/categories');
+
+        $response->assertStatus(200);
+>>>>>>> origin/main
     }
 }

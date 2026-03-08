@@ -11,9 +11,16 @@ class PersonTest extends TestCase
 {
     use RefreshDatabase;
 
+<<<<<<< HEAD
     public function test_person_can_be_created_with_factory(): void
     {
         $person = Person::factory()->create();
+=======
+    public function test_can_create_person(): void
+    {
+        $person = Person::factory()->create();
+
+>>>>>>> origin/main
         $this->assertDatabaseHas('people', ['id' => $person->id]);
     }
 
@@ -21,6 +28,7 @@ class PersonTest extends TestCase
     {
         $person = Person::factory()->create([
             'name' => 'Jane Doe',
+<<<<<<< HEAD
             'slug' => 'jane-doe',
             'bio' => 'A great leader',
             'linkedin_url' => 'https://linkedin.com/in/janedoe',
@@ -33,6 +41,31 @@ class PersonTest extends TestCase
     }
 
     public function test_table_name_is_people(): void
+=======
+            'bio' => 'Engineer and entrepreneur',
+        ]);
+
+        $this->assertEquals('Jane Doe', $person->name);
+        $this->assertEquals('Engineer and entrepreneur', $person->bio);
+    }
+
+    public function test_companies_relationship(): void
+    {
+        $person = Person::factory()->create();
+        $company = Company::factory()->create();
+
+        $person->companies()->attach($company->id, [
+            'role' => 'CEO',
+            'is_current' => true,
+        ]);
+
+        $this->assertCount(1, $person->companies);
+        $this->assertEquals('CEO', $person->companies->first()->pivot->role);
+        $this->assertTrue((bool) $person->companies->first()->pivot->is_current);
+    }
+
+    public function test_uses_people_table(): void
+>>>>>>> origin/main
     {
         $person = new Person();
         $this->assertEquals('people', $person->getTable());
@@ -43,6 +76,7 @@ class PersonTest extends TestCase
         $person = new Person();
         $this->assertEquals('slug', $person->getRouteKeyName());
     }
+<<<<<<< HEAD
 
     public function test_belongs_to_many_companies(): void
     {
@@ -70,4 +104,6 @@ class PersonTest extends TestCase
         $this->assertEquals('CTO', $pivot->role);
         $this->assertTrue((bool) $pivot->is_current);
     }
+=======
+>>>>>>> origin/main
 }
