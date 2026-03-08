@@ -187,6 +187,16 @@ class CompanyController extends Controller
     {
         $company->load(['fundingRounds.investors', 'headcountSnapshots', 'newsMentions', 'people']);
 
-        return view('companies.show', compact('company'));
+        // Track view for logged-in users (upsert to avoid duplicates)
+        if ($user = request()->user()) {
+            \DB::table('company_views')->updateOrInsert(
+                ['user_id' => $user->id, 'company_id' => $company->id],
+                ['viewed_at' => now()]
+            );
+        }
+
+        $isFollowing = $user ? $user->isFollowing($company) : false;
+
+        return view('companies.show', compact('company', 'isFollowing'));
     }
 }

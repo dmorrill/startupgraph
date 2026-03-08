@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /profile
+Allow: /companies
+Allow: /investors
+
+Sitemap: https://startupgraph.com/sitemap.xml
