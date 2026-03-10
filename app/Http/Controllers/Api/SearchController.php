@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompanySummaryResource;
-use App\Http\Resources\PersonSummaryResource;
 use App\Models\Company;
 use App\Models\FundingRound;
 use App\Models\Person;
@@ -38,18 +37,18 @@ class SearchController extends Controller
         $companies = Company::query()
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('description', 'like', "%{$query}%")
-                  ->orWhere('city', 'like', "%{$query}%")
-                  ->orWhere('country', 'like', "%{$query}%");
+                    ->orWhere('description', 'like', "%{$query}%")
+                    ->orWhere('city', 'like', "%{$query}%")
+                    ->orWhere('country', 'like', "%{$query}%");
             })
             ->withSum('fundingRounds', 'amount')
             ->withCount('fundingRounds')
             ->addSelect(['latest_funding_date' => FundingRound::select('announced_date')
                 ->whereColumn('company_id', 'companies.id')
                 ->orderBy('announced_date', 'desc')
-                ->limit(1)
+                ->limit(1),
             ])
-            ->orderByRaw("CASE WHEN name LIKE ? THEN 0 ELSE 1 END", ["{$query}%"])
+            ->orderByRaw('CASE WHEN name LIKE ? THEN 0 ELSE 1 END', ["{$query}%"])
             ->orderBy('name')
             ->limit($limit)
             ->get();
@@ -58,10 +57,10 @@ class SearchController extends Controller
         $people = Person::query()
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('bio', 'like', "%{$query}%");
+                    ->orWhere('bio', 'like', "%{$query}%");
             })
             ->with(['companies' => fn ($q) => $q->wherePivot('is_current', true)->limit(1)])
-            ->orderByRaw("CASE WHEN name LIKE ? THEN 0 ELSE 1 END", ["{$query}%"])
+            ->orderByRaw('CASE WHEN name LIKE ? THEN 0 ELSE 1 END', ["{$query}%"])
             ->orderBy('name')
             ->limit($limit)
             ->get();

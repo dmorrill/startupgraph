@@ -20,13 +20,13 @@ class WikipediaUnicornImporter extends BaseBulkImporter
 
     public function import(array $options = []): void
     {
-        Log::info("Wikipedia unicorn import starting");
+        Log::info('Wikipedia unicorn import starting');
 
         foreach (self::PAGES as $page) {
             $this->importFromPage($page);
         }
 
-        Log::info("Wikipedia unicorn import complete", $this->getStats());
+        Log::info('Wikipedia unicorn import complete', $this->getStats());
     }
 
     private function importFromPage(string $pageTitle): void
@@ -39,8 +39,9 @@ class WikipediaUnicornImporter extends BaseBulkImporter
             'prop' => 'wikitext',
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::warning("Wikipedia: Failed to fetch {$pageTitle}");
+
             return;
         }
 
@@ -49,6 +50,7 @@ class WikipediaUnicornImporter extends BaseBulkImporter
 
         if (empty($wikitext)) {
             Log::warning("Wikipedia: Empty wikitext for {$pageTitle}");
+
             return;
         }
 
@@ -68,16 +70,17 @@ class WikipediaUnicornImporter extends BaseBulkImporter
             // Headers use ! prefix on each line
             if (str_contains($row, '!Company') && str_contains($row, '!Industry')) {
                 // Parse header cells: each starts with ! on its own line
-                preg_match_all('/\n!\s*(.+)/', "\n" . $row, $headerMatches);
-                $columns = array_map(fn($h) => strtolower($this->cleanWikiText($h)), $headerMatches[1] ?? []);
+                preg_match_all('/\n!\s*(.+)/', "\n".$row, $headerMatches);
+                $columns = array_map(fn ($h) => strtolower($this->cleanWikiText($h)), $headerMatches[1] ?? []);
                 $headerIdx = $i;
-                Log::info("Wikipedia: Found header at row {$i} with columns: " . implode(', ', $columns));
+                Log::info("Wikipedia: Found header at row {$i} with columns: ".implode(', ', $columns));
                 break;
             }
         }
 
         if ($headerIdx === null || empty($columns)) {
-            Log::warning("Wikipedia: Could not find company table headers");
+            Log::warning('Wikipedia: Could not find company table headers');
+
             return;
         }
 
@@ -87,7 +90,8 @@ class WikipediaUnicornImporter extends BaseBulkImporter
         $industryCol = $this->findColumn($columns, ['industry', 'sector']);
 
         if ($nameCol === null) {
-            Log::warning("Wikipedia: No company column found in: " . implode(', ', $columns));
+            Log::warning('Wikipedia: No company column found in: '.implode(', ', $columns));
+
             return;
         }
 
@@ -96,7 +100,9 @@ class WikipediaUnicornImporter extends BaseBulkImporter
             $row = $rows[$i];
 
             // Stop if we hit end of table or new section
-            if (str_contains($row, '|}')) break;
+            if (str_contains($row, '|}')) {
+                break;
+            }
 
             // Each data cell starts with | on its own line
             // Split by \n| but not \n|- or \n|} or \n||
@@ -104,19 +110,27 @@ class WikipediaUnicornImporter extends BaseBulkImporter
             $lines = explode("\n", $row);
             foreach ($lines as $line) {
                 $line = trim($line);
-                if ($line === '' || $line === '|-' || $line === '|}') continue;
+                if ($line === '' || $line === '|-' || $line === '|}') {
+                    continue;
+                }
                 if (str_starts_with($line, '|')) {
                     $cells[] = substr($line, 1);
                 }
             }
 
-            if (count($cells) < 3) continue;
+            if (count($cells) < 3) {
+                continue;
+            }
 
             $name = $this->cleanWikiText($cells[$nameCol] ?? '');
-            if (!$name || strlen($name) < 2 || is_numeric($name)) continue;
+            if (! $name || strlen($name) < 2 || is_numeric($name)) {
+                continue;
+            }
 
             // Skip non-company entries
-            if (str_contains(strtolower($name), 'total') || str_contains($name, '=')) continue;
+            if (str_contains(strtolower($name), 'total') || str_contains($name, '=')) {
+                continue;
+            }
 
             $country = $countryCol !== null ? $this->cleanWikiText($cells[$countryCol] ?? '') : null;
             // Clean flag template from country: {{flag|United States}} -> United States
@@ -147,6 +161,7 @@ class WikipediaUnicornImporter extends BaseBulkImporter
                 }
             }
         }
+
         return null;
     }
 
@@ -169,7 +184,9 @@ class WikipediaUnicornImporter extends BaseBulkImporter
 
     private function mapCountryName(?string $country): ?string
     {
-        if (!$country) return null;
+        if (! $country) {
+            return null;
+        }
         $country = strtolower(trim($country));
 
         $map = [
@@ -187,7 +204,9 @@ class WikipediaUnicornImporter extends BaseBulkImporter
 
     private function mapIndustry(?string $industry): ?string
     {
-        if (!$industry) return null;
+        if (! $industry) {
+            return null;
+        }
         $industry = strtolower($industry);
 
         $map = [

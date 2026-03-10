@@ -51,6 +51,6 @@ class NewCompaniesSeeder extends Seeder
             );
         }
 
-        $this->command->info('Seeded ' . count($companies) . ' new companies.');
+        $this->command->info('Seeded '.count($companies).' new companies.');
     }
 }

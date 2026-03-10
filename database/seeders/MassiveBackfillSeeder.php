@@ -27,7 +27,7 @@ class MassiveBackfillSeeder extends Seeder
             }
         }
 
-        $this->command->info("MassiveBackfill - Created: {$created}, Updated: {$updated}, Total companies: " . Company::count());
+        $this->command->info("MassiveBackfill - Created: {$created}, Updated: {$updated}, Total companies: ".Company::count());
     }
 
     private function getCompanies(): array

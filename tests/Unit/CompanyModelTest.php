@@ -1,9 +1,6 @@
 <?php
 
 use App\Models\Company;
-use App\Models\FundingRound;
-use App\Models\Person;
-use App\Models\NewsMention;
 
 test('company has many funding rounds', function () {
     $company = Company::factory()->create();

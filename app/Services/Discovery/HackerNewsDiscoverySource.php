@@ -36,10 +36,11 @@ class HackerNewsDiscoverySource implements CompanyDiscoverySource
     private function fetchStoryIds(string $feed): array
     {
         $response = Http::timeout(15)->retry(2, 1000)
-            ->get(self::API_BASE . "/{$feed}.json");
+            ->get(self::API_BASE."/{$feed}.json");
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::warning("HackerNews API error fetching {$feed}: HTTP {$response->status()}");
+
             return [];
         }
 
@@ -56,7 +57,7 @@ class HackerNewsDiscoverySource implements CompanyDiscoverySource
         foreach ($ids as $id) {
             try {
                 $item = $this->fetchItem($id);
-                if (!$item) {
+                if (! $item) {
                     continue;
                 }
 
@@ -69,7 +70,7 @@ class HackerNewsDiscoverySource implements CompanyDiscoverySource
                 $title = $item['title'] ?? '';
 
                 // Filter for Show HN / Launch HN posts
-                if (!preg_match('/^(Show HN|Launch HN)\s*:\s*/i', $title, $matches)) {
+                if (! preg_match('/^(Show HN|Launch HN)\s*:\s*/i', $title, $matches)) {
                     continue;
                 }
 
@@ -93,6 +94,7 @@ class HackerNewsDiscoverySource implements CompanyDiscoverySource
                 $wordCount = str_word_count($companyName);
                 if ($wordCount > 6) {
                     Log::debug("HackerNews: Skipping likely non-company name: {$companyName}");
+
                     continue;
                 }
 
@@ -100,6 +102,7 @@ class HackerNewsDiscoverySource implements CompanyDiscoverySource
                 if (preg_match('/\b(that|which|for|with|how|what|this|your|the|and|from|using)\b/i', $companyName)
                     && $wordCount > 3) {
                     Log::debug("HackerNews: Skipping descriptive title: {$companyName}");
+
                     continue;
                 }
 
@@ -132,9 +135,9 @@ class HackerNewsDiscoverySource implements CompanyDiscoverySource
 
     private function fetchItem(int $id): ?array
     {
-        $response = Http::timeout(10)->get(self::API_BASE . "/item/{$id}.json");
+        $response = Http::timeout(10)->get(self::API_BASE."/item/{$id}.json");
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             return null;
         }
 

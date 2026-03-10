@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Company extends Model
 {
     use HasFactory;
+
     public const CATEGORIES = [
         'ai_ml' => 'AI/ML',
         'fintech' => 'Fintech',

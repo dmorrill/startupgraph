@@ -34,10 +34,10 @@ class FundingRoundDeduplicationService
     /**
      * Check if a funding round would be a duplicate of an existing round.
      *
-     * @param int $companyId The company ID
-     * @param string $announcedDate The announced date (YYYY-MM-DD)
-     * @param float|null $amount The funding amount in USD
-     * @param Collection|null $existingRounds Pre-loaded rounds to avoid extra queries
+     * @param  int  $companyId  The company ID
+     * @param  string  $announcedDate  The announced date (YYYY-MM-DD)
+     * @param  float|null  $amount  The funding amount in USD
+     * @param  Collection|null  $existingRounds  Pre-loaded rounds to avoid extra queries
      * @return FundingRound|null Returns the potential duplicate round, or null if no duplicate found
      */
     public function findPotentialDuplicate(int $companyId, string $announcedDate, ?float $amount, ?Collection $existingRounds = null): ?FundingRound
@@ -56,15 +56,14 @@ class FundingRoundDeduplicationService
     /**
      * Check if a specific round is a potential duplicate of new data.
      *
-     * @param FundingRound $existingRound The existing funding round
-     * @param string $newDate The new announced date (YYYY-MM-DD)
-     * @param float|null $newAmount The new funding amount
-     * @return bool
+     * @param  FundingRound  $existingRound  The existing funding round
+     * @param  string  $newDate  The new announced date (YYYY-MM-DD)
+     * @param  float|null  $newAmount  The new funding amount
      */
     public function isPotentialDuplicate(FundingRound $existingRound, string $newDate, ?float $newAmount): bool
     {
         // Check date proximity
-        if (!$this->areDatesWithinTolerance($existingRound->announced_date, $newDate)) {
+        if (! $this->areDatesWithinTolerance($existingRound->announced_date, $newDate)) {
             return false;
         }
 
@@ -89,7 +88,7 @@ class FundingRoundDeduplicationService
      * Uses eager-loaded fundingRounds relation when a Company model is passed,
      * avoiding an extra query if the relation is already loaded.
      *
-     * @param Company|int $company The company or company ID
+     * @param  Company|int  $company  The company or company ID
      * @return Collection Collection of arrays with 'round1' and 'round2' keys
      */
     public function findDuplicatesForCompany(Company|int $company): Collection
@@ -171,9 +170,7 @@ class FundingRoundDeduplicationService
     /**
      * Check if two dates are within the tolerance window.
      *
-     * @param \Carbon\Carbon|string $date1
-     * @param string $date2
-     * @return bool
+     * @param  \Carbon\Carbon|string  $date1
      */
     protected function areDatesWithinTolerance($date1, string $date2): bool
     {
@@ -185,10 +182,6 @@ class FundingRoundDeduplicationService
 
     /**
      * Check if two amounts are within the tolerance percentage.
-     *
-     * @param float $amount1
-     * @param float $amount2
-     * @return bool
      */
     protected function areAmountsWithinTolerance(float $amount1, float $amount2): bool
     {
@@ -209,10 +202,6 @@ class FundingRoundDeduplicationService
 
     /**
      * Calculate the percentage difference between two amounts.
-     *
-     * @param float|null $amount1
-     * @param float|null $amount2
-     * @return float|null
      */
     protected function calculateAmountDiffPercent(?float $amount1, ?float $amount2): ?float
     {
@@ -236,32 +225,26 @@ class FundingRoundDeduplicationService
 
     /**
      * Set the date tolerance in days.
-     *
-     * @param int $days
-     * @return self
      */
     public function setDateTolerance(int $days): self
     {
         $this->dateTolerance = $days;
+
         return $this;
     }
 
     /**
      * Set the amount tolerance as a decimal (e.g., 0.10 for 10%).
-     *
-     * @param float $tolerance
-     * @return self
      */
     public function setAmountTolerance(float $tolerance): self
     {
         $this->amountTolerance = $tolerance;
+
         return $this;
     }
 
     /**
      * Get the current date tolerance.
-     *
-     * @return int
      */
     public function getDateTolerance(): int
     {
@@ -270,8 +253,6 @@ class FundingRoundDeduplicationService
 
     /**
      * Get the current amount tolerance.
-     *
-     * @return float
      */
     public function getAmountTolerance(): float
     {

@@ -18,16 +18,16 @@ class CompanyController extends Controller
             ->addSelect(['latest_funding_date' => FundingRound::select('announced_date')
                 ->whereColumn('company_id', 'companies.id')
                 ->orderBy('announced_date', 'desc')
-                ->limit(1)
+                ->limit(1),
             ]);
 
         if ($search = $request->get('search')) {
             $escapedSearch = str_replace(['%', '_'], ['\%', '\_'], $search);
             $query->where(function ($q) use ($escapedSearch) {
                 $q->where('name', 'like', "%{$escapedSearch}%")
-                  ->orWhere('description', 'like', "%{$escapedSearch}%")
-                  ->orWhere('city', 'like', "%{$escapedSearch}%")
-                  ->orWhere('country', 'like', "%{$escapedSearch}%");
+                    ->orWhere('description', 'like', "%{$escapedSearch}%")
+                    ->orWhere('city', 'like', "%{$escapedSearch}%")
+                    ->orWhere('country', 'like', "%{$escapedSearch}%");
             });
         }
 
@@ -109,7 +109,7 @@ class CompanyController extends Controller
             fclose($handle);
         };
 
-        $filename = 'startupgraph-export-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'startupgraph-export-'.now()->format('Y-m-d').'.csv';
 
         return response()->streamDownload($callback, $filename, [
             'Content-Type' => 'text/csv',
@@ -147,7 +147,7 @@ class CompanyController extends Controller
                 ];
             });
 
-        $filename = 'startupgraph-export-' . now()->format('Y-m-d') . '.json';
+        $filename = 'startupgraph-export-'.now()->format('Y-m-d').'.json';
 
         return response()->streamDownload(function () use ($companies) {
             echo json_encode(['companies' => $companies], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -166,9 +166,9 @@ class CompanyController extends Controller
             $escapedSearch = str_replace(['%', '_'], ['\%', '\_'], $search);
             $query->where(function ($q) use ($escapedSearch) {
                 $q->where('name', 'like', "%{$escapedSearch}%")
-                  ->orWhere('description', 'like', "%{$escapedSearch}%")
-                  ->orWhere('city', 'like', "%{$escapedSearch}%")
-                  ->orWhere('country', 'like', "%{$escapedSearch}%");
+                    ->orWhere('description', 'like', "%{$escapedSearch}%")
+                    ->orWhere('city', 'like', "%{$escapedSearch}%")
+                    ->orWhere('country', 'like', "%{$escapedSearch}%");
             });
         }
 

@@ -18,18 +18,19 @@ class ImportCsv extends Command
         $path = $this->argument('path');
         $source = $this->option('source');
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->error("File not found: {$path}");
+
             return 1;
         }
 
         $this->info("Importing companies from CSV: {$path} (source: {$source})");
 
-        $importer = new CrunchbaseCsvImporter();
+        $importer = new CrunchbaseCsvImporter;
         $importLog = $importer->start(['file' => $path]);
         $stats = $importer->getStats();
 
-        $this->info("✅ CSV import complete:");
+        $this->info('✅ CSV import complete:');
         $this->table(
             ['Metric', 'Count'],
             [

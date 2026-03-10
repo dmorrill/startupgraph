@@ -125,8 +125,9 @@ class FundingSourceUrlSeeder extends Seeder
 
         foreach ($sourceUrls as $companySlug => $rounds) {
             $company = Company::where('slug', $companySlug)->first();
-            if (!$company) {
+            if (! $company) {
                 $this->command->warn("Company not found: {$companySlug}");
+
                 continue;
             }
 
@@ -141,7 +142,7 @@ class FundingSourceUrlSeeder extends Seeder
 
                 // If announced_date prefix is specified, use it
                 if (isset($roundData['announced_date'])) {
-                    $query->where('announced_date', 'like', $roundData['announced_date'] . '%');
+                    $query->where('announced_date', 'like', $roundData['announced_date'].'%');
                 }
 
                 $round = $query->first();

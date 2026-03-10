@@ -8,9 +8,13 @@ use Illuminate\Support\Facades\Log;
 class YCBulkImporter extends BaseBulkImporter
 {
     private const BROWSE_URL = 'https://45BWZJ1SGC-dsn.algolia.net/1/indexes/YCCompany_production/browse';
+
     private const QUERY_URL = 'https://45BWZJ1SGC-dsn.algolia.net/1/indexes/YCCompany_production/query';
+
     private const APP_ID = '45BWZJ1SGC';
+
     private const API_KEY = 'ZjA3NWMwMmNhMzEwZmMxOThkZDlkMjFmNDAwNTNjNjdkZjdhNWJkOWRjMThiODQwMjUyZTVkYjA4YjFlMmU2YnJlc3RyaWN0SW5kaWNlcz0lNUIlMjJZQ0NvbXBhbnlfcHJvZHVjdGlvbiUyMiUyQyUyMllDQ29tcGFueV9CeV9MYXVuY2hfRGF0ZV9wcm9kdWN0aW9uJTIyJTVEJnRhZ0ZpbHRlcnM9JTVCJTIyeWNkY19wdWJsaWMlMjIlNUQmYW5hbHl0aWNzVGFncz0lNUIlMjJ5Y2RjJTIyJTVE';
+
     private const HITS_PER_PAGE = 1000;
 
     public function source(): string
@@ -20,12 +24,13 @@ class YCBulkImporter extends BaseBulkImporter
 
     public function import(array $options = []): void
     {
-        Log::info("YC bulk import starting — fetching batches");
+        Log::info('YC bulk import starting — fetching batches');
 
         // First, get all batch facets
         $batches = $this->fetchBatches();
         if (empty($batches)) {
-            Log::warning("YC: no batches found");
+            Log::warning('YC: no batches found');
+
             return;
         }
 
@@ -35,7 +40,7 @@ class YCBulkImporter extends BaseBulkImporter
 
         foreach ($batches as $batch => $count) {
             $batchNum++;
-            if (!$started) {
+            if (! $started) {
                 if ($batch === $resumeFrom) {
                     $started = true;
                 } else {
@@ -43,7 +48,7 @@ class YCBulkImporter extends BaseBulkImporter
                 }
             }
 
-            Log::info("YC: importing batch '{$batch}' ({$count} companies, batch {$batchNum}/" . count($batches) . ")");
+            Log::info("YC: importing batch '{$batch}' ({$count} companies, batch {$batchNum}/".count($batches).')');
 
             $page = 0;
             while (true) {
@@ -58,7 +63,7 @@ class YCBulkImporter extends BaseBulkImporter
                     'facetFilters' => [["batch:{$batch}"]],
                 ]);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     Log::warning("YC API returned HTTP {$response->status()} for batch '{$batch}' page {$page}");
                     break;
                 }
@@ -66,7 +71,9 @@ class YCBulkImporter extends BaseBulkImporter
                 $data = $response->json();
                 $hits = $data['hits'] ?? [];
 
-                if (empty($hits)) break;
+                if (empty($hits)) {
+                    break;
+                }
 
                 foreach ($hits as $hit) {
                     $this->importHit($hit);
@@ -75,7 +82,9 @@ class YCBulkImporter extends BaseBulkImporter
                 $totalPages = $data['nbPages'] ?? 0;
                 $page++;
 
-                if ($page >= $totalPages) break;
+                if ($page >= $totalPages) {
+                    break;
+                }
 
                 $this->rateLimitSleep(0.3);
             }
@@ -105,7 +114,7 @@ class YCBulkImporter extends BaseBulkImporter
             'facets' => ['batch'],
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             return [];
         }
 
@@ -115,7 +124,9 @@ class YCBulkImporter extends BaseBulkImporter
     private function importHit(array $hit): void
     {
         $name = $hit['name'] ?? null;
-        if (!$name) return;
+        if (! $name) {
+            return;
+        }
 
         $status = 'operating';
         if (isset($hit['status'])) {
@@ -169,8 +180,10 @@ class YCBulkImporter extends BaseBulkImporter
         // e.g., "W2024" -> 2024-01-01, "S2024" -> 2024-06-01
         if (preg_match('/^([WS])(\d{4})$/', $batch, $m)) {
             $month = $m[1] === 'W' ? '01' : '06';
+
             return "{$m[2]}-{$month}-01";
         }
+
         return null;
     }
 }

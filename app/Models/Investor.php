@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Investor extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
         'slug',
@@ -29,7 +30,7 @@ class Investor extends Model
 
     public function getTypeLabelAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'vc' => 'Venture Capital',
             'angel' => 'Angel Investor',
             'corporate' => 'Corporate VC',

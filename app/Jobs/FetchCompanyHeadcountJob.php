@@ -18,6 +18,7 @@ class FetchCompanyHeadcountJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public array $backoff = [60, 300, 900]; // 1min, 5min, 15min
 
     public function __construct(
@@ -34,13 +35,13 @@ class FetchCompanyHeadcountJob implements ShouldQueue
         ]);
 
         try {
-            if (!$this->company->linkedin_url) {
+            if (! $this->company->linkedin_url) {
                 throw new \RuntimeException('Company has no LinkedIn URL');
             }
 
             $result = $linkedInService->fetchHeadcount($this->company->linkedin_url);
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 throw new \RuntimeException($result['error'] ?? 'Unknown error');
             }
 
@@ -58,7 +59,7 @@ class FetchCompanyHeadcountJob implements ShouldQueue
                 ->first();
 
             $snapshotCreated = false;
-            if (!$lastSnapshot || $lastSnapshot->headcount !== $headcount) {
+            if (! $lastSnapshot || $lastSnapshot->headcount !== $headcount) {
                 HeadcountSnapshot::create([
                     'company_id' => $this->company->id,
                     'headcount' => $headcount,

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class ProductHuntBulkImporter extends BaseBulkImporter
 {
     private const GRAPHQL_URL = 'https://api.producthunt.com/v2/api/graphql';
+
     private const PER_PAGE = 20;
 
     public function source(): string
@@ -18,7 +19,7 @@ class ProductHuntBulkImporter extends BaseBulkImporter
     public function import(array $options = []): void
     {
         $token = config('services.producthunt.token');
-        if (!$token) {
+        if (! $token) {
             throw new \RuntimeException('PRODUCT_HUNT_TOKEN not configured. Set it in .env');
         }
 
@@ -26,7 +27,7 @@ class ProductHuntBulkImporter extends BaseBulkImporter
         $maxPages = $options['max_pages'] ?? 500; // Safety limit
         $page = 0;
 
-        Log::info("Product Hunt bulk import starting" . ($cursor ? " from cursor {$cursor}" : ''));
+        Log::info('Product Hunt bulk import starting'.($cursor ? " from cursor {$cursor}" : ''));
 
         while ($page < $maxPages) {
             $query = $this->buildQuery($cursor);
@@ -37,7 +38,7 @@ class ProductHuntBulkImporter extends BaseBulkImporter
                 'Accept' => 'application/json',
             ])->timeout(30)->post(self::GRAPHQL_URL, ['query' => $query]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning("Product Hunt API returned HTTP {$response->status()}");
                 break;
             }
@@ -45,7 +46,9 @@ class ProductHuntBulkImporter extends BaseBulkImporter
             $data = $response->json();
             $posts = $data['data']['posts']['edges'] ?? [];
 
-            if (empty($posts)) break;
+            if (empty($posts)) {
+                break;
+            }
 
             foreach ($posts as $edge) {
                 $this->importPost($edge['node']);
@@ -65,7 +68,9 @@ class ProductHuntBulkImporter extends BaseBulkImporter
             $page++;
             Log::info("Product Hunt: page {$page}, processed: {$this->processed}, created: {$this->created}");
 
-            if (!$hasNext) break;
+            if (! $hasNext) {
+                break;
+            }
 
             $this->rateLimitSleep(1.0);
         }
@@ -75,7 +80,7 @@ class ProductHuntBulkImporter extends BaseBulkImporter
 
     private function buildQuery(?string $cursor): string
     {
-        $after = $cursor ? ', after: "' . $cursor . '"' : '';
+        $after = $cursor ? ', after: "'.$cursor.'"' : '';
 
         return <<<GRAPHQL
         {
@@ -116,7 +121,9 @@ class ProductHuntBulkImporter extends BaseBulkImporter
         $name = $post['name'] ?? null;
         $website = $post['website'] ?? null;
 
-        if (!$name) return;
+        if (! $name) {
+            return;
+        }
 
         $topics = collect($post['topics']['edges'] ?? [])
             ->pluck('node.name')

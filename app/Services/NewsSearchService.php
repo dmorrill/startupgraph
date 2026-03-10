@@ -24,7 +24,6 @@ class NewsSearchService
      *
      * Uses TechCrunch's search functionality to find articles mentioning the company name.
      *
-     * @param Company $company
      * @return array{success: bool, articles: array, error: string|null}
      */
     public function searchCompanyNews(Company $company): array
@@ -39,7 +38,7 @@ class NewsSearchService
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             ])->timeout(30)->get($searchUrl);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'articles' => [],
@@ -68,10 +67,6 @@ class NewsSearchService
 
     /**
      * Parse TechCrunch search results HTML to extract articles.
-     *
-     * @param string $html
-     * @param string $companyName
-     * @return array
      */
     private function parseSearchResults(string $html, string $companyName): array
     {
@@ -92,7 +87,7 @@ class NewsSearchService
             $title = trim(strip_tags(html_entity_decode($match[2], ENT_QUOTES | ENT_HTML5, 'UTF-8')));
 
             // Skip if the title doesn't actually mention the company
-            if (!$this->titleMentionsCompany($title, $companyName)) {
+            if (! $this->titleMentionsCompany($title, $companyName)) {
                 continue;
             }
 
@@ -112,7 +107,7 @@ class NewsSearchService
         $seen = [];
         $unique = [];
         foreach ($articles as $article) {
-            if (!isset($seen[$article['url']])) {
+            if (! isset($seen[$article['url']])) {
                 $seen[$article['url']] = true;
                 $unique[] = $article;
             }
@@ -139,10 +134,6 @@ class NewsSearchService
      *
      * For ambiguous names (common English words), requires the name to appear
      * in a company-specific context (e.g., near funding verbs or dollar amounts).
-     *
-     * @param string $title
-     * @param string $companyName
-     * @return bool
      */
     private function titleMentionsCompany(string $title, string $companyName): bool
     {
@@ -152,17 +143,17 @@ class NewsSearchService
         }
 
         // Check if company name appears as a whole word
-        $pattern = '/\b' . preg_quote($companyName, '/') . '\b/i';
-        if (!preg_match($pattern, $title)) {
+        $pattern = '/\b'.preg_quote($companyName, '/').'\b/i';
+        if (! preg_match($pattern, $title)) {
             return false;
         }
 
         // For ambiguous/common-word names, require stronger context
         if (in_array(strtolower($companyName), self::AMBIGUOUS_NAMES) || strlen($companyName) <= 5) {
-            $fundingContext = '/(' . preg_quote($companyName, '/') . '\s+(raises|raised|secures|secured|closes|closed|lands|announces)'
-                . '|' . preg_quote($companyName, '/') . ',?\s+(a|the|an)\s+\w+\s+(startup|company|platform)'
-                . '|\$[\d.]+\s*(million|billion|M|B)\b.*\b' . preg_quote($companyName, '/')
-                . '|\b' . preg_quote($companyName, '/') . '\b.*\$[\d.]+\s*(million|billion|M|B))/i';
+            $fundingContext = '/('.preg_quote($companyName, '/').'\s+(raises|raised|secures|secured|closes|closed|lands|announces)'
+                .'|'.preg_quote($companyName, '/').',?\s+(a|the|an)\s+\w+\s+(startup|company|platform)'
+                .'|\$[\d.]+\s*(million|billion|M|B)\b.*\b'.preg_quote($companyName, '/')
+                .'|\b'.preg_quote($companyName, '/').'\b.*\$[\d.]+\s*(million|billion|M|B))/i';
 
             return (bool) preg_match($fundingContext, $title);
         }
@@ -173,7 +164,6 @@ class NewsSearchService
     /**
      * Extract publication date from TechCrunch article URL.
      *
-     * @param string $url
      * @return string|null Date in Y-m-d format
      */
     private function extractDateFromUrl(string $url): ?string
@@ -184,9 +174,11 @@ class NewsSearchService
                     ?->format('Y-m-d');
             } catch (\Exception $e) {
                 Log::debug("Invalid date in URL {$url}: {$e->getMessage()}");
+
                 return null;
             }
         }
+
         return null;
     }
 }

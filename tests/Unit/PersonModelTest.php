@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Person;
 use App\Models\Company;
+use App\Models\Person;
 
 test('person belongs to a company', function () {
     $company = Company::factory()->create();

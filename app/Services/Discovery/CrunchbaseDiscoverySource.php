@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class CrunchbaseDiscoverySource implements CompanyDiscoverySource
 {
     private const API_BASE = 'https://api.crunchbase.com/api/v4';
+
     private const ODM_BASE = 'https://api.crunchbase.com/odm/v4';
 
     public function name(): string
@@ -22,6 +23,7 @@ class CrunchbaseDiscoverySource implements CompanyDiscoverySource
 
         if (empty($apiKey)) {
             Log::info('Crunchbase discovery skipped: CRUNCHBASE_API_KEY not set');
+
             return [];
         }
 
@@ -29,6 +31,7 @@ class CrunchbaseDiscoverySource implements CompanyDiscoverySource
             return $this->discoverViaApi($apiKey, $days);
         } catch (\Exception $e) {
             Log::warning("Crunchbase discovery error: {$e->getMessage()}");
+
             return [];
         }
     }
@@ -41,7 +44,7 @@ class CrunchbaseDiscoverySource implements CompanyDiscoverySource
         $response = Http::withHeaders([
             'X-cb-user-key' => $apiKey,
             'Content-Type' => 'application/json',
-        ])->timeout(30)->retry(2, 1000)->post(self::API_BASE . '/searches/organizations', [
+        ])->timeout(30)->retry(2, 1000)->post(self::API_BASE.'/searches/organizations', [
             'field_ids' => [
                 'identifier',
                 'short_description',
@@ -76,16 +79,19 @@ class CrunchbaseDiscoverySource implements CompanyDiscoverySource
 
         if ($response->status() === 401 || $response->status() === 403) {
             Log::warning('Crunchbase API key invalid or insufficient permissions');
+
             return [];
         }
 
         if ($response->status() === 429) {
             Log::warning('Crunchbase API rate limit hit, backing off');
+
             return [];
         }
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::warning("Crunchbase API error: HTTP {$response->status()}");
+
             return $this->discoverViaOdm($apiKey, $days);
         }
 
@@ -105,13 +111,14 @@ class CrunchbaseDiscoverySource implements CompanyDiscoverySource
 
             $response = Http::withHeaders([
                 'X-cb-user-key' => $apiKey,
-            ])->timeout(30)->get(self::ODM_BASE . '/odm-organizations', [
+            ])->timeout(30)->get(self::ODM_BASE.'/odm-organizations', [
                 'updated_after' => $sinceDate,
                 'sort_order' => 'updated_at DESC',
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning("Crunchbase ODM error: HTTP {$response->status()}");
+
                 return [];
             }
 
@@ -121,6 +128,7 @@ class CrunchbaseDiscoverySource implements CompanyDiscoverySource
             return $this->parseEntities($entities);
         } catch (\Exception $e) {
             Log::warning("Crunchbase ODM error: {$e->getMessage()}");
+
             return [];
         }
     }
@@ -133,7 +141,7 @@ class CrunchbaseDiscoverySource implements CompanyDiscoverySource
             $props = $entity['properties'] ?? [];
             $name = $props['identifier']['value'] ?? ($props['name'] ?? null);
 
-            if (!$name) {
+            if (! $name) {
                 continue;
             }
 
@@ -148,7 +156,7 @@ class CrunchbaseDiscoverySource implements CompanyDiscoverySource
 
             // Extract location
             $locations = $props['location_identifiers'] ?? [];
-            if (!empty($locations)) {
+            if (! empty($locations)) {
                 $locationParts = array_column($locations, 'value');
                 $company['location'] = implode(', ', $locationParts);
             }

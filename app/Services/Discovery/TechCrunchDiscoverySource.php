@@ -4,7 +4,6 @@ namespace App\Services\Discovery;
 
 use App\Contracts\CompanyDiscoverySource;
 use App\Services\TechCrunchService;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TechCrunchDiscoverySource implements CompanyDiscoverySource
@@ -24,8 +23,9 @@ class TechCrunchDiscoverySource implements CompanyDiscoverySource
     {
         $result = $this->techCrunchService->scrapeFundraisingArticles();
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             Log::warning("TechCrunch discovery failed: {$result['error']}");
+
             return [];
         }
 
@@ -72,7 +72,7 @@ class TechCrunchDiscoverySource implements CompanyDiscoverySource
             }
         }
 
-        if (!$companyName || strlen($companyName) < 2 || strlen($companyName) > 100) {
+        if (! $companyName || strlen($companyName) < 2 || strlen($companyName) > 100) {
             return null;
         }
 

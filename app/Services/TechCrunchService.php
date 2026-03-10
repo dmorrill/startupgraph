@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class TechCrunchService
 {
     private const FUNDRAISING_URL = 'https://techcrunch.com/tag/fundraising/';
+
     private const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
     public function scrapeFundraisingArticles(): array
@@ -20,7 +21,7 @@ class TechCrunchService
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             ])->timeout(30)->get(self::FUNDRAISING_URL);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'articles' => [],
@@ -67,7 +68,7 @@ class TechCrunchService
         foreach ($articles as $article) {
             $title = $article['title'] ?? '';
             $content = $article['excerpt'] ?? '';
-            $text = $title . ' ' . $content;
+            $text = $title.' '.$content;
 
             foreach ($companies as $companyId => $companyName) {
                 // Skip very short names to avoid false positives
@@ -75,7 +76,7 @@ class TechCrunchService
                     continue;
                 }
 
-                if (!$this->isConfidentMatch($companyName, $title, $text)) {
+                if (! $this->isConfidentMatch($companyName, $title, $text)) {
                     continue;
                 }
 
@@ -102,20 +103,20 @@ class TechCrunchService
      */
     private function isConfidentMatch(string $companyName, string $title, string $fullText): bool
     {
-        $pattern = '/\b' . preg_quote($companyName, '/') . '\b/i';
+        $pattern = '/\b'.preg_quote($companyName, '/').'\b/i';
 
         // Check if the name appears at all
-        if (!preg_match($pattern, $fullText)) {
+        if (! preg_match($pattern, $fullText)) {
             return false;
         }
 
         // For ambiguous/common-word names, require stronger signals
         if (in_array(strtolower($companyName), self::AMBIGUOUS_NAMES) || strlen($companyName) <= 5) {
             // Must appear in a funding context: near a dollar amount, "raises", "series", etc.
-            $fundingContext = '/(' . preg_quote($companyName, '/') . '\s+(raises|raised|secures|secured|closes|closed|lands|announces)'
-                . '|' . preg_quote($companyName, '/') . ',?\s+(a|the|an)\s+\w+\s+(startup|company|platform)'
-                . '|\$[\d.]+\s*(million|billion|M|B)\b.*\b' . preg_quote($companyName, '/')
-                . '|\b' . preg_quote($companyName, '/') . '\b.*\$[\d.]+\s*(million|billion|M|B))/i';
+            $fundingContext = '/('.preg_quote($companyName, '/').'\s+(raises|raised|secures|secured|closes|closed|lands|announces)'
+                .'|'.preg_quote($companyName, '/').',?\s+(a|the|an)\s+\w+\s+(startup|company|platform)'
+                .'|\$[\d.]+\s*(million|billion|M|B)\b.*\b'.preg_quote($companyName, '/')
+                .'|\b'.preg_quote($companyName, '/').'\b.*\$[\d.]+\s*(million|billion|M|B))/i';
 
             return (bool) preg_match($fundingContext, $fullText);
         }
@@ -154,7 +155,7 @@ class TechCrunchService
         $seen = [];
         $unique = [];
         foreach ($articles as $article) {
-            if (!isset($seen[$article['url']])) {
+            if (! isset($seen[$article['url']])) {
                 $seen[$article['url']] = true;
                 $unique[] = $article;
             }
@@ -208,7 +209,7 @@ class TechCrunchService
         foreach ($roundPatterns as $pattern => $prefix) {
             if (preg_match($pattern, $text, $roundMatch)) {
                 if ($prefix === 'series_') {
-                    $info['round_type'] = 'series_' . strtolower($roundMatch[1]);
+                    $info['round_type'] = 'series_'.strtolower($roundMatch[1]);
                 } else {
                     $info['round_type'] = $prefix;
                 }
@@ -216,6 +217,6 @@ class TechCrunchService
             }
         }
 
-        return !empty($info) ? $info : null;
+        return ! empty($info) ? $info : null;
     }
 }

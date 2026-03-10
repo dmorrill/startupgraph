@@ -29,14 +29,15 @@ class CompanySummaryResource extends JsonResource
     private function formatAmount(float $amount): string
     {
         if ($amount >= 1_000_000_000) {
-            return '$' . number_format($amount / 1_000_000_000, 1) . 'B';
+            return '$'.number_format($amount / 1_000_000_000, 1).'B';
         }
         if ($amount >= 1_000_000) {
-            return '$' . number_format($amount / 1_000_000, 1) . 'M';
+            return '$'.number_format($amount / 1_000_000, 1).'M';
         }
         if ($amount >= 1_000) {
-            return '$' . number_format($amount / 1_000, 0) . 'K';
+            return '$'.number_format($amount / 1_000, 0).'K';
         }
-        return '$' . number_format($amount, 0);
+
+        return '$'.number_format($amount, 0);
     }
 }
