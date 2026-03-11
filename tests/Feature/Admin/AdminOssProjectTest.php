@@ -62,7 +62,7 @@ test('admin can unlink company from oss project', function () use ($admin) {
     $project->companies()->attach($company->id, ['relationship_type' => 'alternative_to']);
 
     $response = $this->withServerVariables($admin)
-        ->delete("/admin/oss-projects/{$project->id}/unlink-company/{$company->id}");
+        ->delete("/admin/oss-projects/{$project->id}/unlink-company/{$company->slug}");
 
     $response->assertRedirect();
     expect($project->companies()->where('company_id', $company->id)->exists())->toBeFalse();

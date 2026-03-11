@@ -70,6 +70,7 @@ test('api companies index respects per_page limit', function () {
 
 test('api companies show returns company detail', function () {
     $company = Company::factory()->create();
+    FundingRound::factory()->create(['company_id' => $company->id, 'amount' => 500000]);
 
     $response = $this->getJson("/api/companies/{$company->slug}");
 
