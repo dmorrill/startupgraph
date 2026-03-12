@@ -73,7 +73,7 @@ class InvestorTest extends TestCase
 
     public function test_route_key_name_is_slug(): void
     {
-        $investor = new Investor();
+        $investor = new Investor;
         $this->assertEquals('slug', $investor->getRouteKeyName());
     }
 }

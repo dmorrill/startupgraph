@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class AuditCompanyData extends Command
 {
     protected $signature = 'companies:audit';
+
     protected $description = 'Audit company data completeness and report missing fields';
 
     public function handle(): int

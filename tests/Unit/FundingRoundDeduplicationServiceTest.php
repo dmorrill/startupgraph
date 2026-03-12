@@ -15,7 +15,8 @@ class FundingRoundDeduplicationServiceTest extends TestCase
     {
         parent::setUp();
         // Bypass config() call in constructor by creating and configuring manually
-        $this->service = new class extends FundingRoundDeduplicationService {
+        $this->service = new class extends FundingRoundDeduplicationService
+        {
             public function __construct()
             {
                 $this->dateTolerance = 30;
@@ -101,7 +102,7 @@ class FundingRoundDeduplicationServiceTest extends TestCase
      */
     private function makeFundingRound(string $date, ?float $amount): FundingRound
     {
-        $round = new FundingRound();
+        $round = new FundingRound;
         $round->announced_date = Carbon::parse($date);
         $round->amount = $amount;
 

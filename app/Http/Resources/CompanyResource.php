@@ -28,13 +28,12 @@ class CompanyResource extends JsonResource
             'total_funding' => $this->whenNotNull($this->funding_rounds_sum_amount, fn () => (float) $this->funding_rounds_sum_amount),
             'total_funding_formatted' => $this->whenNotNull($this->funding_rounds_sum_amount, fn () => $this->formatAmount($this->funding_rounds_sum_amount)),
             'funding_rounds_count' => $this->funding_rounds_count ?? $this->fundingRounds?->count() ?? 0,
-            'latest_funding' => $this->whenLoaded('latestFundingRound', fn () =>
-                $this->latestFundingRound ? [
-                    'round_type' => $this->latestFundingRound->round_type,
-                    'amount' => $this->latestFundingRound->amount ? (float) $this->latestFundingRound->amount : null,
-                    'amount_formatted' => $this->latestFundingRound->amount ? $this->formatAmount($this->latestFundingRound->amount) : null,
-                    'announced_date' => $this->latestFundingRound->announced_date?->format('Y-m-d'),
-                ] : null
+            'latest_funding' => $this->whenLoaded('latestFundingRound', fn () => $this->latestFundingRound ? [
+                'round_type' => $this->latestFundingRound->round_type,
+                'amount' => $this->latestFundingRound->amount ? (float) $this->latestFundingRound->amount : null,
+                'amount_formatted' => $this->latestFundingRound->amount ? $this->formatAmount($this->latestFundingRound->amount) : null,
+                'announced_date' => $this->latestFundingRound->announced_date?->format('Y-m-d'),
+            ] : null
             ),
             'people_count' => $this->people?->count() ?? 0,
             'funding_rounds' => FundingRoundResource::collection($this->whenLoaded('fundingRounds')),
@@ -47,14 +46,15 @@ class CompanyResource extends JsonResource
     private function formatAmount(float $amount): string
     {
         if ($amount >= 1_000_000_000) {
-            return '$' . number_format($amount / 1_000_000_000, 1) . 'B';
+            return '$'.number_format($amount / 1_000_000_000, 1).'B';
         }
         if ($amount >= 1_000_000) {
-            return '$' . number_format($amount / 1_000_000, 1) . 'M';
+            return '$'.number_format($amount / 1_000_000, 1).'M';
         }
         if ($amount >= 1_000) {
-            return '$' . number_format($amount / 1_000, 0) . 'K';
+            return '$'.number_format($amount / 1_000, 0).'K';
         }
-        return '$' . number_format($amount, 0);
+
+        return '$'.number_format($amount, 0);
     }
 }

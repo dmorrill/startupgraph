@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiter;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminAuth
@@ -29,7 +29,7 @@ class AdminAuth
 
         // Rate limit by IP address
         $rateLimiter = app(RateLimiter::class);
-        $key = 'admin-auth:' . $request->ip();
+        $key = 'admin-auth:'.$request->ip();
 
         if ($rateLimiter->tooManyAttempts($key, 5)) {
             $retryAfter = $rateLimiter->availableIn($key);
@@ -43,7 +43,7 @@ class AdminAuth
         $providedUser = $request->getUser() ?? '';
         $providedPass = $request->getPassword() ?? '';
 
-        if (!hash_equals($username, $providedUser) || !hash_equals($password, $providedPass)) {
+        if (! hash_equals($username, $providedUser) || ! hash_equals($password, $providedPass)) {
             $rateLimiter->hit($key, 60);
 
             return response('Unauthorized.', 401, ['WWW-Authenticate' => 'Basic realm="Admin Area"']);

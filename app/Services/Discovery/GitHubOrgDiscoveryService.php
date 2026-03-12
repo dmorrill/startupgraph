@@ -34,8 +34,9 @@ class GitHubOrgDiscoveryService
             'page' => $page,
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::error('GitHub API error', ['status' => $response->status()]);
+
             return ['orgs' => [], 'total' => 0];
         }
 

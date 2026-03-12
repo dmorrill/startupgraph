@@ -10,7 +10,9 @@ class YCombinatorDiscoverySource implements CompanyDiscoverySource
 {
     // YC's Algolia-powered API for their company directory
     private const API_URL = 'https://45bwzj1sgc-dsn.algolia.net/1/indexes/YCCompany_production/query';
+
     private const APP_ID = '45bwzj1sgc';
+
     private const API_KEY = 'MjBjYjRiMzY0NzdhZWY0NjExY2NhZjYxMGIxYjc2MTAwNWFkNTkwNTc4NjgxYjU0YzFhYTY2ZGQ5OGY5NDMxZnJlc3RyaWN0SW5kaWNlcz0lNUIlMjJZQ0NvbXBhbnlfcHJvZHVjdGlvbiUyMiUyQyUyMllDQ29tcGFueV9CeV9MYXVuY2hfRGF0ZV9wcm9kdWN0aW9uJTIyJTVEJnRhZ0ZpbHRlcnM9JTVCJTIyeWNkY19wdWJsaWMlMjIlNUQmYW5hbHl0aWNzVGFncz0lNUIlMjJ5Y2RjJTIyJTVE';
 
     public function name(): string
@@ -34,8 +36,9 @@ class YCombinatorDiscoverySource implements CompanyDiscoverySource
                 'facetFilters' => $this->getRecentBatchFilters(),
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning("YC discovery failed: HTTP {$response->status()}");
+
                 return $this->fallbackScrape();
             }
 
@@ -45,6 +48,7 @@ class YCombinatorDiscoverySource implements CompanyDiscoverySource
             return $this->parseAlgoliaHits($hits);
         } catch (\Exception $e) {
             Log::warning("YC discovery error: {$e->getMessage()}");
+
             return $this->fallbackScrape();
         }
     }
@@ -60,8 +64,8 @@ class YCombinatorDiscoverySource implements CompanyDiscoverySource
         $batches[] = "batch:W{$year}";
         $batches[] = "batch:S{$year}";
         // Previous year's batches
-        $batches[] = "batch:W" . ($year - 1);
-        $batches[] = "batch:S" . ($year - 1);
+        $batches[] = 'batch:W'.($year - 1);
+        $batches[] = 'batch:S'.($year - 1);
 
         return [$batches]; // OR within the array
     }
@@ -72,7 +76,7 @@ class YCombinatorDiscoverySource implements CompanyDiscoverySource
 
         foreach ($hits as $hit) {
             $name = $hit['name'] ?? null;
-            if (!$name) {
+            if (! $name) {
                 continue;
             }
 
@@ -102,7 +106,7 @@ class YCombinatorDiscoverySource implements CompanyDiscoverySource
                 'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
             ])->timeout(30)->get('https://www.ycombinator.com/companies?batch=latest');
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [];
             }
 
@@ -130,6 +134,7 @@ class YCombinatorDiscoverySource implements CompanyDiscoverySource
             return $companies;
         } catch (\Exception $e) {
             Log::warning("YC fallback scrape failed: {$e->getMessage()}");
+
             return [];
         }
     }

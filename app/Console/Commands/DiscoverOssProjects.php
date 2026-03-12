@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class DiscoverOssProjects extends Command
 {
     protected $signature = 'app:discover-oss-projects';
+
     protected $description = 'Discover open-source projects from GitHub topics and awesome-selfhosted';
 
     public function handle(GitHubDiscoveryService $service): int

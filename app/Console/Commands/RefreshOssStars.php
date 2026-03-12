@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class RefreshOssStars extends Command
 {
     protected $signature = 'app:refresh-oss-stars {--limit=0 : Max projects to refresh (0 = all)}';
+
     protected $description = 'Refresh star counts, forks, and last commit dates for all OSS projects';
 
     public function handle(): int
@@ -61,6 +62,7 @@ class RefreshOssStars extends Command
                     $waitSeconds = $resetAt ? max(1, (int) $resetAt - time()) : 60;
                     $this->warn("\nRate limited. Waiting {$waitSeconds}s...");
                     sleep(min($waitSeconds, 300));
+
                     continue;
                 } else {
                     Log::debug("Failed to refresh {$project->github_owner}/{$project->github_repo}: {$response->status()}");

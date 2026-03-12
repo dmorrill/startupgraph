@@ -3,7 +3,6 @@
 namespace Tests\Feature\BulkImport;
 
 use App\Models\Company;
-use App\Models\CompanyImport;
 use App\Services\BulkImport\CrunchbaseCsvImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,7 +13,7 @@ class CrunchbaseCsvImporterTest extends TestCase
 
     public function test_imports_companies_from_csv(): void
     {
-        $importer = new CrunchbaseCsvImporter();
+        $importer = new CrunchbaseCsvImporter;
         $result = $importer->start([
             'file' => base_path('tests/fixtures/crunchbase_sample.csv'),
         ]);
@@ -31,7 +30,7 @@ class CrunchbaseCsvImporterTest extends TestCase
 
     public function test_maps_status_correctly(): void
     {
-        $importer = new CrunchbaseCsvImporter();
+        $importer = new CrunchbaseCsvImporter;
         $importer->start([
             'file' => base_path('tests/fixtures/crunchbase_sample.csv'),
         ]);
@@ -58,7 +57,7 @@ class CrunchbaseCsvImporterTest extends TestCase
             'website' => 'https://stripe.com',
         ]);
 
-        $importer = new CrunchbaseCsvImporter();
+        $importer = new CrunchbaseCsvImporter;
         $result = $importer->start([
             'file' => base_path('tests/fixtures/crunchbase_sample.csv'),
         ]);
@@ -73,7 +72,7 @@ class CrunchbaseCsvImporterTest extends TestCase
 
     public function test_skips_rows_without_name(): void
     {
-        $importer = new CrunchbaseCsvImporter();
+        $importer = new CrunchbaseCsvImporter;
         $result = $importer->start([
             'file' => base_path('tests/fixtures/crunchbase_sample.csv'),
         ]);
@@ -85,7 +84,7 @@ class CrunchbaseCsvImporterTest extends TestCase
 
     public function test_creates_import_log(): void
     {
-        $importer = new CrunchbaseCsvImporter();
+        $importer = new CrunchbaseCsvImporter;
         $result = $importer->start([
             'file' => base_path('tests/fixtures/crunchbase_sample.csv'),
         ]);

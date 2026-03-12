@@ -25,16 +25,16 @@ class CompanyController extends Controller
             ->addSelect(['latest_funding_date' => FundingRound::select('announced_date')
                 ->whereColumn('company_id', 'companies.id')
                 ->orderBy('announced_date', 'desc')
-                ->limit(1)
+                ->limit(1),
             ]);
 
         // Search by name, description, city, country
         if ($search = $request->get('q')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('country', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%");
             });
         }
 
@@ -206,14 +206,15 @@ class CompanyController extends Controller
     private function formatAmount(float $amount): string
     {
         if ($amount >= 1_000_000_000) {
-            return '$' . number_format($amount / 1_000_000_000, 1) . 'B';
+            return '$'.number_format($amount / 1_000_000_000, 1).'B';
         }
         if ($amount >= 1_000_000) {
-            return '$' . number_format($amount / 1_000_000, 1) . 'M';
+            return '$'.number_format($amount / 1_000_000, 1).'M';
         }
         if ($amount >= 1_000) {
-            return '$' . number_format($amount / 1_000, 0) . 'K';
+            return '$'.number_format($amount / 1_000, 0).'K';
         }
-        return '$' . number_format($amount, 0);
+
+        return '$'.number_format($amount, 0);
     }
 }

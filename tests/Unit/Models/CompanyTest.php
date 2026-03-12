@@ -6,8 +6,8 @@ use App\Models\Company;
 use App\Models\FundingRound;
 use App\Models\HeadcountSnapshot;
 use App\Models\NewsMention;
-use App\Models\Person;
 use App\Models\OpenSourceProject;
+use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -109,7 +109,7 @@ class CompanyTest extends TestCase
 
     public function test_route_key_name_is_slug(): void
     {
-        $company = new Company();
+        $company = new Company;
         $this->assertEquals('slug', $company->getRouteKeyName());
     }
 

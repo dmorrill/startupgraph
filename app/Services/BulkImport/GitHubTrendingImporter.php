@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class GitHubTrendingImporter extends BaseBulkImporter
 {
     private const TRENDING_URL = 'https://github.com/trending';
+
     private const API_URL = 'https://api.github.com';
 
     public function source(): string
@@ -17,7 +18,7 @@ class GitHubTrendingImporter extends BaseBulkImporter
 
     public function import(array $options = []): void
     {
-        Log::info("GitHub Trending import starting");
+        Log::info('GitHub Trending import starting');
 
         // Scrape trending repos for different time ranges
         $ranges = ['daily', 'weekly', 'monthly'];
@@ -31,7 +32,7 @@ class GitHubTrendingImporter extends BaseBulkImporter
             $this->rateLimitSleep(1.0);
         }
 
-        Log::info("GitHub Trending: found " . count($repos) . " unique repos");
+        Log::info('GitHub Trending: found '.count($repos).' unique repos');
 
         foreach (array_keys($repos) as $repoPath) {
             $this->processRepo($repoPath);
@@ -52,8 +53,9 @@ class GitHubTrendingImporter extends BaseBulkImporter
             'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         ])->timeout(15)->get(self::TRENDING_URL, ['since' => $since]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::warning("GitHub trending page returned HTTP {$response->status()} for {$since}");
+
             return [];
         }
 
@@ -63,7 +65,7 @@ class GitHubTrendingImporter extends BaseBulkImporter
         preg_match_all('/class="h3 lh-condensed".*?href="([^"]+)"/s', $html, $matches);
 
         $repos = [];
-        if (!empty($matches[1])) {
+        if (! empty($matches[1])) {
             foreach ($matches[1] as $path) {
                 $path = ltrim($path, '/');
                 if (substr_count($path, '/') === 1) {
@@ -80,11 +82,12 @@ class GitHubTrendingImporter extends BaseBulkImporter
         $response = Http::withHeaders([
             'User-Agent' => 'StartupGraph/1.0 research@startupgraph.com',
             'Accept' => 'application/vnd.github.v3+json',
-        ])->timeout(15)->get(self::API_URL . "/repos/{$repoPath}");
+        ])->timeout(15)->get(self::API_URL."/repos/{$repoPath}");
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $this->skipped++;
             $this->processed++;
+
             return;
         }
 
@@ -94,6 +97,7 @@ class GitHubTrendingImporter extends BaseBulkImporter
         if ($repo['fork'] ?? false) {
             $this->skipped++;
             $this->processed++;
+
             return;
         }
 
@@ -110,7 +114,7 @@ class GitHubTrendingImporter extends BaseBulkImporter
             $orgResponse = Http::withHeaders([
                 'User-Agent' => 'StartupGraph/1.0',
                 'Accept' => 'application/vnd.github.v3+json',
-            ])->timeout(10)->get(self::API_URL . "/orgs/{$name}");
+            ])->timeout(10)->get(self::API_URL."/orgs/{$name}");
 
             if ($orgResponse->successful()) {
                 $orgData = $orgResponse->json();
@@ -123,9 +127,10 @@ class GitHubTrendingImporter extends BaseBulkImporter
             $name = $repo['name'] ?? null;
         }
 
-        if (!$name) {
+        if (! $name) {
             $this->skipped++;
             $this->processed++;
+
             return;
         }
 
@@ -135,6 +140,7 @@ class GitHubTrendingImporter extends BaseBulkImporter
             if (preg_match($pattern, $name)) {
                 $this->skipped++;
                 $this->processed++;
+
                 return;
             }
         }

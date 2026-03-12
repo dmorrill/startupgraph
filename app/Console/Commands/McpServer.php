@@ -15,6 +15,7 @@ use Illuminate\Console\Command;
 class McpServer extends Command
 {
     protected $signature = 'mcp:serve';
+
     protected $description = 'Start an MCP (Model Context Protocol) server for AI tool integration';
 
     private array $tools = [
@@ -68,16 +69,21 @@ class McpServer extends Command
 
         while (($line = fgets($stdin)) !== false) {
             $line = trim($line);
-            if (empty($line)) continue;
+            if (empty($line)) {
+                continue;
+            }
 
             $request = json_decode($line, true);
-            if (! $request) continue;
+            if (! $request) {
+                continue;
+            }
 
             $response = $this->handleRequest($request);
-            fwrite(STDOUT, json_encode($response) . "\n");
+            fwrite(STDOUT, json_encode($response)."\n");
         }
 
         fclose($stdin);
+
         return 0;
     }
 
@@ -127,12 +133,16 @@ class McpServer extends Command
             $escaped = str_replace(['%', '_'], ['\%', '\_'], $q);
             $query->where(function ($qb) use ($escaped) {
                 $qb->where('name', 'like', "%{$escaped}%")
-                   ->orWhere('description', 'like', "%{$escaped}%");
+                    ->orWhere('description', 'like', "%{$escaped}%");
             });
         }
 
-        if ($cat = ($args['category'] ?? null)) $query->where('category', $cat);
-        if ($country = ($args['country'] ?? null)) $query->where('country', $country);
+        if ($cat = ($args['category'] ?? null)) {
+            $query->where('category', $cat);
+        }
+        if ($country = ($args['country'] ?? null)) {
+            $query->where('country', $country);
+        }
 
         return $query->orderBy('name')
             ->limit(min($args['limit'] ?? 10, 50))

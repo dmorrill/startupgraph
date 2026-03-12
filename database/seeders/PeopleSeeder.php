@@ -422,7 +422,7 @@ class PeopleSeeder extends Seeder
         $count = 0;
         foreach ($companyPeople as $slug => $people) {
             $company = Company::where('slug', $slug)->first();
-            if (!$company) {
+            if (! $company) {
                 continue;
             }
 

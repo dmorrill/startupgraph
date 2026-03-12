@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Company;
 use App\Models\FundingRound;
 use App\Models\ScheduledTaskExecution;
 use App\Services\TechCrunchService;
@@ -20,7 +19,7 @@ class ScrapeTechCrunchFunding extends Command
         $isDryRun = $this->option('dry-run');
 
         $execution = null;
-        if (!$isDryRun) {
+        if (! $isDryRun) {
             $execution = ScheduledTaskExecution::create([
                 'task_type' => 'funding_scrape',
                 'status' => 'running',
@@ -33,12 +32,12 @@ class ScrapeTechCrunchFunding extends Command
 
             $result = $techCrunchService->scrapeFundraisingArticles();
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 throw new \RuntimeException($result['error'] ?? 'Failed to scrape TechCrunch');
             }
 
             $articles = $result['articles'];
-            $this->info("Found " . count($articles) . " funding-related articles.");
+            $this->info('Found '.count($articles).' funding-related articles.');
 
             if (empty($articles)) {
                 $execution?->update([
@@ -47,6 +46,7 @@ class ScrapeTechCrunchFunding extends Command
                     'metadata' => ['articles_found' => 0, 'matches' => 0, 'created' => 0],
                 ]);
                 $this->info('No articles to process.');
+
                 return self::SUCCESS;
             }
 
@@ -65,6 +65,7 @@ class ScrapeTechCrunchFunding extends Command
                     ],
                 ]);
                 $this->info('No matches found for tracked companies.');
+
                 return self::SUCCESS;
             }
 
@@ -78,7 +79,7 @@ class ScrapeTechCrunchFunding extends Command
 
                 $fundingInfo = $match['funding_info'];
                 if (isset($fundingInfo['amount'])) {
-                    $this->line("Amount: $" . number_format($fundingInfo['amount']));
+                    $this->line('Amount: $'.number_format($fundingInfo['amount']));
                 }
                 if (isset($fundingInfo['round_type'])) {
                     $this->line("Round: {$fundingInfo['round_type']}");
@@ -86,6 +87,7 @@ class ScrapeTechCrunchFunding extends Command
 
                 if ($isDryRun) {
                     $this->comment('[Dry run - not saving]');
+
                     continue;
                 }
 
@@ -97,6 +99,7 @@ class ScrapeTechCrunchFunding extends Command
                 if ($exists) {
                     $this->comment('  Already exists, skipping.');
                     $skipped++;
+
                     continue;
                 }
 
@@ -138,6 +141,7 @@ class ScrapeTechCrunchFunding extends Command
             ]);
 
             $this->error("Error: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }

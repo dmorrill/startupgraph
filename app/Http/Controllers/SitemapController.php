@@ -18,14 +18,14 @@ class SitemapController extends Controller
 
         // Static pages
         foreach (['/', '/companies', '/open-source', '/submit'] as $path) {
-            $xml .= '<url><loc>' . url($path) . '</loc><changefreq>daily</changefreq></url>';
+            $xml .= '<url><loc>'.url($path).'</loc><changefreq>daily</changefreq></url>';
         }
 
         // Company pages
         foreach ($companies as $company) {
             $xml .= '<url>';
-            $xml .= '<loc>' . route('companies.show', $company->slug) . '</loc>';
-            $xml .= '<lastmod>' . $company->updated_at->toW3cString() . '</lastmod>';
+            $xml .= '<loc>'.route('companies.show', $company->slug).'</loc>';
+            $xml .= '<lastmod>'.$company->updated_at->toW3cString().'</lastmod>';
             $xml .= '<changefreq>weekly</changefreq>';
             $xml .= '</url>';
         }

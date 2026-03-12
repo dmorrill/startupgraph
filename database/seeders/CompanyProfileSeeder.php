@@ -24,7 +24,9 @@ class CompanyProfileSeeder extends Seeder
     private function seedAnthropic(): void
     {
         $company = Company::where('slug', 'anthropic')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $company->update([
             'product_highlights' => [
@@ -50,7 +52,9 @@ class CompanyProfileSeeder extends Seeder
     private function seedOpenAI(): void
     {
         $company = Company::where('slug', 'openai')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $company->update([
             'product_highlights' => [
@@ -75,7 +79,9 @@ class CompanyProfileSeeder extends Seeder
     private function seedStripe(): void
     {
         $company = Company::where('slug', 'stripe')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $company->update([
             'product_highlights' => [
@@ -101,7 +107,9 @@ class CompanyProfileSeeder extends Seeder
     private function seedDatabricks(): void
     {
         $company = Company::where('slug', 'databricks')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $company->update([
             'product_highlights' => [
@@ -127,7 +135,9 @@ class CompanyProfileSeeder extends Seeder
     private function seedFigma(): void
     {
         $company = Company::where('slug', 'figma')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $company->update([
             'product_highlights' => [
@@ -152,7 +162,9 @@ class CompanyProfileSeeder extends Seeder
     private function seedNotion(): void
     {
         $company = Company::where('slug', 'notion')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $company->update([
             'product_highlights' => [
@@ -177,7 +189,9 @@ class CompanyProfileSeeder extends Seeder
     private function seedRippling(): void
     {
         $company = Company::where('slug', 'rippling')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $company->update([
             'product_highlights' => [
@@ -201,7 +215,9 @@ class CompanyProfileSeeder extends Seeder
     private function seedCanva(): void
     {
         $company = Company::where('slug', 'canva')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $company->update([
             'product_highlights' => [
@@ -239,7 +255,7 @@ class CompanyProfileSeeder extends Seeder
             );
 
             // Attach to company if not already attached
-            if (!$company->people()->where('person_id', $person->id)->exists()) {
+            if (! $company->people()->where('person_id', $person->id)->exists()) {
                 $company->people()->attach($person->id, [
                     'role' => $personData['role'],
                     'is_current' => $isCurrent,

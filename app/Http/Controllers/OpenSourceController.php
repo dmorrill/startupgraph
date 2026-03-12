@@ -16,8 +16,8 @@ class OpenSourceController extends Controller
             $escaped = str_replace(['%', '_'], ['\%', '\_'], $search);
             $query->where(function ($q) use ($escaped) {
                 $q->where('name', 'like', "%{$escaped}%")
-                  ->orWhere('description', 'like', "%{$escaped}%")
-                  ->orWhere('primary_language', 'like', "%{$escaped}%");
+                    ->orWhere('description', 'like', "%{$escaped}%")
+                    ->orWhere('primary_language', 'like', "%{$escaped}%");
             });
         }
 

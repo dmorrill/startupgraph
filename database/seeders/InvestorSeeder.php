@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Investor;
 use App\Models\FundingRound;
+use App\Models\Investor;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -48,7 +48,9 @@ class InvestorSeeder extends Seeder
         if ($rounds->count() && $allInvestors->count()) {
             foreach ($rounds as $round) {
                 // Skip if already has investors
-                if ($round->investors()->count()) continue;
+                if ($round->investors()->count()) {
+                    continue;
+                }
 
                 // Randomly assign 1-3 investors
                 $count = rand(1, 3);
