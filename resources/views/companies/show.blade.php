@@ -5,7 +5,7 @@
 @push('head')
 <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
+    "@@context": "https://schema.org",
     "@type": "Organization",
     "name": @json($company->name),
     "url": @json($company->website),
@@ -334,8 +334,8 @@
     @endif
 </div>
 
-@if($company->headcountSnapshots->count() >= 2 || $company->fundingRounds->where('amount', '>', 0)->count() >= 2)
 @push('scripts')
+@if($company->headcountSnapshots->count() >= 2 || $company->fundingRounds->where('amount', '>', 0)->count() >= 2)
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (function() {
@@ -600,6 +600,6 @@
     }
 })();
 </script>
-@endpush
 @endif
+@endpush
 @endsection
