@@ -17,5 +17,5 @@ test('funding round has many investors', function () {
 
 test('funding round has amount', function () {
     $round = FundingRound::factory()->create(['amount' => 5000000]);
-    expect($round->amount)->toBe(5000000);
+    expect((float) $round->amount)->toBe(5000000.0);
 });

@@ -12,7 +12,7 @@ test('company has many funding rounds', function () {
 
 test('company has many people', function () {
     $company = Company::factory()->create();
-    expect($company->people())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($company->people())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class);
 });
 
 test('company has many news mentions', function () {

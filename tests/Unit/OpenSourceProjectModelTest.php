@@ -3,10 +3,11 @@
 use App\Models\OpenSourceProject;
 use App\Models\Company;
 
-test('open source project belongs to a company', function () {
+test('open source project belongs to many companies', function () {
+    $project = OpenSourceProject::factory()->create();
     $company = Company::factory()->create();
-    $project = OpenSourceProject::factory()->create(['company_id' => $company->id]);
-    expect($project->company)->toBeInstanceOf(Company::class);
+    $project->companies()->attach($company->id, ['relationship_type' => 'alternative_to']);
+    expect($project->companies->first())->toBeInstanceOf(Company::class);
 });
 
 test('open source project has github url', function () {

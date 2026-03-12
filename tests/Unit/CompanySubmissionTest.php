@@ -1,10 +1,8 @@
 <?php
 
 use App\Models\CompanySubmission;
-use App\Models\User;
 
-test('submission belongs to user', function () {
-    $user = User::factory()->create();
-    $submission = CompanySubmission::factory()->create(['user_id' => $user->id]);
-    expect($submission->user)->toBeInstanceOf(User::class);
+test('submission has pending status by default', function () {
+    $submission = CompanySubmission::factory()->create();
+    expect($submission->status)->toBe('pending');
 });
