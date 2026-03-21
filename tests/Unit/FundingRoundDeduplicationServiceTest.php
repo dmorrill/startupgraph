@@ -2,109 +2,192 @@
 
 namespace Tests\Unit;
 
+use App\Models\Company;
 use App\Models\FundingRound;
 use App\Services\FundingRoundDeduplicationService;
 use Carbon\Carbon;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class FundingRoundDeduplicationServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
     private FundingRoundDeduplicationService $service;
+    private Company $company;
 
     protected function setUp(): void
     {
         parent::setUp();
-        // Bypass config() call in constructor by creating and configuring manually
-        $this->service = new class extends FundingRoundDeduplicationService {
-            public function __construct()
-            {
-                $this->dateTolerance = 30;
-                $this->amountTolerance = 0.10;
-            }
-        };
+        $this->service = new FundingRoundDeduplicationService();
+        $this->company = Company::factory()->create();
     }
 
-    public function test_dates_within_tolerance(): void
+    public function test_detects_duplicate_by_date_within_tolerance()
     {
-        $round = $this->makeFundingRound('2025-01-15', 1_000_000);
+        // Create existing round
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-01-15',
+            'amount' => 1000000.00
+        ]);
 
-        $this->assertTrue(
-            $this->service->isPotentialDuplicate($round, '2025-01-20', 1_000_000)
+        // Test round 20 days later (within 30 day tolerance)
+        $duplicate = $this->service->findPotentialDuplicate(
+            $this->company->id,
+            '2023-02-04', // 20 days later
+            1000000.00
         );
+
+        $this->assertNotNull($duplicate);
     }
 
-    public function test_dates_outside_tolerance(): void
+    public function test_does_not_detect_duplicate_beyond_date_tolerance()
     {
-        $round = $this->makeFundingRound('2025-01-01', 1_000_000);
+        // Create existing round
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-01-15',
+            'amount' => 1000000.00
+        ]);
 
-        $this->assertFalse(
-            $this->service->isPotentialDuplicate($round, '2025-03-15', 1_000_000)
+        // Test round 40 days later (beyond 30 day tolerance)
+        $duplicate = $this->service->findPotentialDuplicate(
+            $this->company->id,
+            '2023-02-24', // 40 days later
+            1000000.00
         );
+
+        $this->assertNull($duplicate);
     }
 
-    public function test_amounts_within_tolerance(): void
+    public function test_detects_duplicate_with_amount_within_tolerance()
     {
-        $round = $this->makeFundingRound('2025-06-01', 10_000_000);
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-01-15',
+            'amount' => 1000000.00
+        ]);
 
-        // 5% difference - within 10% tolerance
-        $this->assertTrue(
-            $this->service->isPotentialDuplicate($round, '2025-06-05', 10_500_000)
+        // Test with 5% amount difference (within 10% tolerance)
+        $duplicate = $this->service->findPotentialDuplicate(
+            $this->company->id,
+            '2023-01-20',
+            1050000.00 // 5% higher
         );
+
+        $this->assertNotNull($duplicate);
     }
 
-    public function test_amounts_outside_tolerance(): void
+    public function test_does_not_detect_duplicate_beyond_amount_tolerance()
     {
-        $round = $this->makeFundingRound('2025-06-01', 10_000_000);
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-01-15',
+            'amount' => 1000000.00
+        ]);
 
-        // 50% difference - outside 10% tolerance
-        $this->assertFalse(
-            $this->service->isPotentialDuplicate($round, '2025-06-05', 15_000_000)
+        // Test with 15% amount difference (beyond 10% tolerance)
+        $duplicate = $this->service->findPotentialDuplicate(
+            $this->company->id,
+            '2023-01-20',
+            1150000.00 // 15% higher
         );
+
+        $this->assertNull($duplicate);
     }
 
-    public function test_both_amounts_null_is_potential_duplicate(): void
+    public function test_handles_null_amounts()
     {
-        $round = $this->makeFundingRound('2025-06-01', null);
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-01-15',
+            'amount' => null
+        ]);
 
-        $this->assertTrue(
-            $this->service->isPotentialDuplicate($round, '2025-06-10', null)
+        // Both null amounts should be considered potential duplicates by date only
+        $duplicate = $this->service->findPotentialDuplicate(
+            $this->company->id,
+            '2023-01-20',
+            null
         );
+
+        $this->assertNotNull($duplicate);
     }
 
-    public function test_one_amount_null_flags_conservatively(): void
+    public function test_does_not_detect_duplicate_for_different_company()
     {
-        $round = $this->makeFundingRound('2025-06-01', 5_000_000);
+        $otherCompany = Company::factory()->create();
+        
+        FundingRound::factory()->create([
+            'company_id' => $otherCompany->id,
+            'announced_date' => '2023-01-15',
+            'amount' => 1000000.00
+        ]);
 
-        $this->assertTrue(
-            $this->service->isPotentialDuplicate($round, '2025-06-05', null)
+        $duplicate = $this->service->findPotentialDuplicate(
+            $this->company->id,
+            '2023-01-20',
+            1000000.00
         );
+
+        $this->assertNull($duplicate);
     }
 
-    public function test_set_custom_tolerances(): void
+    public function test_finds_potential_duplicates_across_multiple_rounds()
     {
-        $this->service->setDateTolerance(7);
-        $this->service->setAmountTolerance(0.05);
+        // Create multiple rounds for same company
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-01-15',
+            'amount' => 1000000.00
+        ]);
 
-        $this->assertEquals(7, $this->service->getDateTolerance());
-        $this->assertEquals(0.05, $this->service->getAmountTolerance());
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-03-15', // Different date range
+            'amount' => 2000000.00
+        ]);
 
-        $round = $this->makeFundingRound('2025-06-01', 10_000_000);
+        $duplicates = $this->service->findDuplicatesForCompany($this->company);
+        
+        // Should find no duplicates since rounds are in different date ranges
+        $this->assertEmpty($duplicates);
+    }
 
-        // 10 days apart - outside 7-day tolerance
-        $this->assertFalse(
-            $this->service->isPotentialDuplicate($round, '2025-06-11', 10_000_000)
+    public function test_edge_case_same_date_same_amount()
+    {
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-01-15',
+            'amount' => 1000000.00
+        ]);
+
+        // Exact same date and amount - definitely a duplicate
+        $duplicate = $this->service->findPotentialDuplicate(
+            $this->company->id,
+            '2023-01-15',
+            1000000.00
         );
+
+        $this->assertNotNull($duplicate);
     }
 
-    /**
-     * Helper to create a mock FundingRound with the needed properties.
-     */
-    private function makeFundingRound(string $date, ?float $amount): FundingRound
+    public function test_handles_very_small_amounts()
     {
-        $round = new FundingRound();
-        $round->announced_date = Carbon::parse($date);
-        $round->amount = $amount;
+        FundingRound::factory()->create([
+            'company_id' => $this->company->id,
+            'announced_date' => '2023-01-15',
+            'amount' => 1000.00 // $1k
+        ]);
 
-        return $round;
+        // 10% of $1k is $100 - test boundary
+        $duplicate = $this->service->findPotentialDuplicate(
+            $this->company->id,
+            '2023-01-20',
+            1100.00 // Exactly 10% higher
+        );
+
+        $this->assertNotNull($duplicate);
     }
 }

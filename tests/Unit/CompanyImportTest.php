@@ -1,13 +1,24 @@
 <?php
 
+namespace Tests\Unit;
+
 use App\Models\CompanyImport;
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-test('company import has source', function () {
-    $import = CompanyImport::factory()->create(['source' => 'wikipedia']);
-    expect($import->source)->toBe('wikipedia');
-});
+class CompanyImportTest extends TestCase
+{
+    use RefreshDatabase;
 
-test('company import tracks count', function () {
-    $import = CompanyImport::factory()->create(['count' => 500]);
-    expect($import->count)->toBe(500);
-});
+    public function test_company_import_has_source()
+    {
+        $import = CompanyImport::factory()->create(['source' => 'wikipedia']);
+        $this->assertEquals('wikipedia', $import->source);
+    }
+
+    public function test_company_import_tracks_count()
+    {
+        $import = CompanyImport::factory()->create(['count' => 500]);
+        $this->assertEquals(500, $import->count);
+    }
+}
