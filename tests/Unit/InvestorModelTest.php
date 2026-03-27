@@ -1,13 +1,25 @@
 <?php
 
+namespace Tests\Unit;
+
 use App\Models\Investor;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-test('investor has a name', function () {
-    $investor = Investor::factory()->create(['name' => 'Sequoia Capital']);
-    expect($investor->name)->toBe('Sequoia Capital');
-});
+class InvestorModelTest extends TestCase
+{
+    use RefreshDatabase;
 
-test('investor has many funding rounds', function () {
-    $investor = Investor::factory()->create();
-    expect($investor->fundingRounds())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class);
-});
+    public function test_investor_has_a_name(): void
+    {
+        $investor = Investor::factory()->create(['name' => 'Sequoia Capital']);
+        $this->assertEquals('Sequoia Capital', $investor->name);
+    }
+
+    public function test_investor_has_many_funding_rounds(): void
+    {
+        $investor = Investor::factory()->create();
+        $this->assertInstanceOf(BelongsToMany::class, $investor->fundingRounds());
+    }
+}
