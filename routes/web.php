@@ -15,8 +15,10 @@ use App\Http\Controllers\CompanyFollowController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\OssProjectController as AdminOssProjectController;
+use App\Http\Controllers\HealthController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/health', HealthController::class)->name('health');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/', [CompanyController::class, 'index'])->name('home');
 Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');

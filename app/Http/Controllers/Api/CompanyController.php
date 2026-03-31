@@ -18,133 +18,195 @@ class CompanyController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Company::query()
-            ->withSum('fundingRounds', 'amount')
-            ->withCount('fundingRounds')
-            ->with('latestFundingRound')
-            ->addSelect(['latest_funding_date' => FundingRound::select('announced_date')
-                ->whereColumn('company_id', 'companies.id')
-                ->orderBy('announced_date', 'desc')
-                ->limit(1)
+        try {
+            // Validate request parameters
+            $validated = $request->validate([
+                'q' => ['nullable', 'string', 'max:255'],
+                'country' => ['nullable', 'string', 'max:100'],
+                'category' => ['nullable', 'string', 'max:100'],
+                'funded_after' => ['nullable', 'date_format:Y-m-d'],
+                'funded_before' => ['nullable', 'date_format:Y-m-d'],
+                'funded_recent' => ['nullable', 'in:3m,6m,1y,2y'],
+                'sort' => ['nullable', 'string', 'in:name,founded_date,city,country,category,funding_rounds_sum_amount,latest_funding_date'],
+                'order' => ['nullable', 'string', 'in:asc,desc'],
+                'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             ]);
 
-        // Search by name, description, city, country
-        if ($search = $request->get('q')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('country', 'like', "%{$search}%");
-            });
-        }
+            $query = Company::query()
+                ->withSum('fundingRounds', 'amount')
+                ->withCount('fundingRounds')
+                ->with('latestFundingRound')
+                ->addSelect(['latest_funding_date' => FundingRound::select('announced_date')
+                    ->whereColumn('company_id', 'companies.id')
+                    ->orderBy('announced_date', 'desc')
+                    ->limit(1)
+                ]);
 
-        if ($country = $request->get('country')) {
-            $query->where('country', $country);
-        }
+            // Search by name, description, city, country
+            if ($search = $validated['q'] ?? null) {
+                // Escape special characters for LIKE query
+                $escapedSearch = str_replace(['%', '_'], ['\%', '\_'], $search);
+                $query->where(function ($q) use ($escapedSearch) {
+                    $q->where('name', 'like', "%{$escapedSearch}%")
+                      ->orWhere('description', 'like', "%{$escapedSearch}%")
+                      ->orWhere('city', 'like', "%{$escapedSearch}%")
+                      ->orWhere('country', 'like', "%{$escapedSearch}%");
+                });
+            }
 
-        if ($category = $request->get('category')) {
-            $query->where('category', $category);
-        }
+            if ($country = $validated['country'] ?? null) {
+                $query->where('country', $country);
+            }
 
-        // Date range filter for last fundraise
-        if ($fundedAfter = $request->get('funded_after')) {
-            $query->whereHas('fundingRounds', function ($q) use ($fundedAfter) {
-                $q->where('announced_date', '>=', $fundedAfter);
-            });
-        }
+            if ($category = $validated['category'] ?? null) {
+                $query->where('category', $category);
+            }
 
-        if ($fundedBefore = $request->get('funded_before')) {
-            $query->whereHas('fundingRounds', function ($q) use ($fundedBefore) {
-                $q->where('announced_date', '<=', $fundedBefore);
-            });
-        }
+            // Date range filter for last fundraise
+            if ($fundedAfter = $validated['funded_after'] ?? null) {
+                $query->whereHas('fundingRounds', function ($q) use ($fundedAfter) {
+                    $q->where('announced_date', '>=', $fundedAfter);
+                });
+            }
 
-        // Preset date filters
-        if ($fundedRecent = $request->get('funded_recent')) {
-            $dateThreshold = match ($fundedRecent) {
-                '3m' => Carbon::now()->subMonths(3),
-                '6m' => Carbon::now()->subMonths(6),
-                '1y' => Carbon::now()->subYear(),
-                '2y' => Carbon::now()->subYears(2),
-                default => null,
-            };
-            if ($dateThreshold) {
+            if ($fundedBefore = $validated['funded_before'] ?? null) {
+                $query->whereHas('fundingRounds', function ($q) use ($fundedBefore) {
+                    $q->where('announced_date', '<=', $fundedBefore);
+                });
+            }
+
+            // Validate date range logic
+            if (isset($validated['funded_after']) && isset($validated['funded_before'])) {
+                $afterDate = Carbon::parse($validated['funded_after']);
+                $beforeDate = Carbon::parse($validated['funded_before']);
+                
+                if ($afterDate->isAfter($beforeDate)) {
+                    return response()->json([
+                        'error' => 'Invalid date range: funded_after must be before funded_before',
+                        'code' => 'INVALID_DATE_RANGE'
+                    ], 400);
+                }
+            }
+
+            // Preset date filters
+            if ($fundedRecent = $validated['funded_recent'] ?? null) {
+                $dateThreshold = match ($fundedRecent) {
+                    '3m' => Carbon::now()->subMonths(3),
+                    '6m' => Carbon::now()->subMonths(6),
+                    '1y' => Carbon::now()->subYear(),
+                    '2y' => Carbon::now()->subYears(2),
+                };
                 $query->whereHas('fundingRounds', function ($q) use ($dateThreshold) {
                     $q->where('announced_date', '>=', $dateThreshold);
                 });
             }
+
+            $sortField = $validated['sort'] ?? 'name';
+            $sortDirection = $validated['order'] ?? 'asc';
+            $query->orderBy($sortField, $sortDirection);
+
+            $perPage = $validated['per_page'] ?? 50;
+            $companies = $query->paginate($perPage);
+
+            return response()->json([
+                'data' => CompanySummaryResource::collection($companies),
+                'meta' => [
+                    'source' => 'startupgraph',
+                    'version' => '1.0',
+                    'generated_at' => now()->toIso8601String(),
+                ],
+                'pagination' => [
+                    'total' => $companies->total(),
+                    'per_page' => $companies->perPage(),
+                    'current_page' => $companies->currentPage(),
+                    'last_page' => $companies->lastPage(),
+                ],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'code' => 'VALIDATION_ERROR',
+                'details' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error in CompanyController@index: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'code' => 'SERVER_ERROR'
+            ], 500);
         }
-
-        $sortField = $request->get('sort', 'name');
-        $sortDirection = $request->get('order', 'asc');
-
-        $allowedSorts = ['name', 'founded_date', 'city', 'country', 'category', 'funding_rounds_sum_amount', 'latest_funding_date'];
-        if (in_array($sortField, $allowedSorts)) {
-            $query->orderBy($sortField, $sortDirection === 'desc' ? 'desc' : 'asc');
-        }
-
-        $perPage = min((int) $request->get('per_page', 50), 100);
-        $companies = $query->paginate($perPage);
-
-        return response()->json([
-            'data' => CompanySummaryResource::collection($companies),
-            'meta' => [
-                'source' => 'startupgraph',
-                'version' => '1.0',
-                'generated_at' => now()->toIso8601String(),
-            ],
-            'pagination' => [
-                'total' => $companies->total(),
-                'per_page' => $companies->perPage(),
-                'current_page' => $companies->currentPage(),
-                'last_page' => $companies->lastPage(),
-            ],
-        ]);
     }
 
     public function show(Company $company): JsonResponse
     {
-        $company->load([
-            'fundingRounds.investors',
-            'latestFundingRound',
-            'headcountSnapshots',
-            'people',
-        ]);
+        try {
+            $company->load([
+                'fundingRounds.investors',
+                'latestFundingRound',
+                'headcountSnapshots',
+                'people',
+            ]);
 
-        $company->loadSum('fundingRounds', 'amount');
-        $company->loadCount('fundingRounds');
+            $company->loadSum('fundingRounds', 'amount');
+            $company->loadCount('fundingRounds');
 
-        return response()->json([
-            'data' => new CompanyResource($company),
-            'meta' => [
-                'source' => 'startupgraph',
-                'version' => '1.0',
-                'generated_at' => now()->toIso8601String(),
-            ],
-        ]);
+            return response()->json([
+                'data' => new CompanyResource($company),
+                'meta' => [
+                    'source' => 'startupgraph',
+                    'version' => '1.0',
+                    'generated_at' => now()->toIso8601String(),
+                ],
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Company not found',
+                'code' => 'COMPANY_NOT_FOUND'
+            ], 404);
+        } catch (\Exception $e) {
+            \Log::error('Error in CompanyController@show: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'code' => 'SERVER_ERROR'
+            ], 500);
+        }
     }
 
     public function funding(Company $company): JsonResponse
     {
-        $company->load('fundingRounds.investors');
+        try {
+            $company->load('fundingRounds.investors');
 
-        $fundingRounds = $company->fundingRounds->sortByDesc('announced_date')->values();
+            $fundingRounds = $company->fundingRounds->sortByDesc('announced_date')->values();
+            $totalAmount = $fundingRounds->sum('amount');
 
-        return response()->json([
-            'data' => [
-                'company_slug' => $company->slug,
-                'company_name' => $company->name,
-                'total_funding' => (float) $fundingRounds->sum('amount'),
-                'total_funding_formatted' => $this->formatAmount($fundingRounds->sum('amount')),
-                'rounds_count' => $fundingRounds->count(),
-                'funding_rounds' => FundingRoundResource::collection($fundingRounds),
-            ],
-            'meta' => [
-                'source' => 'startupgraph',
-                'version' => '1.0',
-                'generated_at' => now()->toIso8601String(),
-            ],
-        ]);
+            return response()->json([
+                'data' => [
+                    'company_slug' => $company->slug,
+                    'company_name' => $company->name,
+                    'total_funding' => (float) $totalAmount,
+                    'total_funding_formatted' => $this->formatAmount($totalAmount),
+                    'rounds_count' => $fundingRounds->count(),
+                    'funding_rounds' => FundingRoundResource::collection($fundingRounds),
+                ],
+                'meta' => [
+                    'source' => 'startupgraph',
+                    'version' => '1.0',
+                    'generated_at' => now()->toIso8601String(),
+                ],
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Company not found',
+                'code' => 'COMPANY_NOT_FOUND'
+            ], 404);
+        } catch (\Exception $e) {
+            \Log::error('Error in CompanyController@funding: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'An unexpected error occurred',
+                'code' => 'SERVER_ERROR'
+            ], 500);
+        }
     }
 
     public function people(Company $company): JsonResponse
