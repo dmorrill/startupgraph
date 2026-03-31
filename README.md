@@ -70,6 +70,52 @@ php artisan db:seed
 php artisan serve
 ```
 
+## Configuration
+
+### API Keys (Optional)
+
+StartupGraph can integrate with external services to automatically discover new companies and track open source projects. All API keys are optional - the app works without them but with reduced functionality.
+
+#### GitHub Token
+
+**Purpose**: Discover and track open source projects with GitHub star monitoring
+
+**Setup**:
+1. Go to [GitHub Settings → Personal Access Tokens](https://github.com/settings/tokens)
+2. Create a new token with `public_repo` scope (for public repositories)
+3. Add to your `.env` file:
+
+```bash
+GITHUB_TOKEN=your_github_token_here
+```
+
+**Features enabled**:
+- Automatic discovery of popular OSS projects by topic (`self-hosted`, `ai`, `llm`, etc.)
+- Star count tracking and updates
+- Integration with awesome-selfhosted list
+- Rate limit improvements (authenticated requests get 5,000/hour vs 60/hour)
+
+**Commands**:
+```bash
+# Discover new OSS projects
+php artisan oss:discover
+
+# Update star counts for existing projects  
+php artisan oss:refresh
+```
+
+#### Other Optional API Keys
+
+Add these to your `.env` file as needed:
+
+```bash
+# Crunchbase API for funding data discovery
+CRUNCHBASE_API_KEY=your_crunchbase_key
+
+# Product Hunt for indie project discovery  
+PRODUCT_HUNT_TOKEN=your_producthunt_token
+```
+
 ## Monthly maintenance
 
 To keep the data fresh, run these tasks monthly:
