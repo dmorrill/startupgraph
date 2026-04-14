@@ -1,21 +1,34 @@
 <?php
 
+namespace Tests\Unit;
+
+use Tests\TestCase;
 use App\Models\FundingRound;
 use App\Models\Company;
 use App\Models\Investor;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-test('funding round belongs to a company', function () {
-    $company = Company::factory()->create();
-    $round = FundingRound::factory()->create(['company_id' => $company->id]);
-    expect($round->company)->toBeInstanceOf(Company::class);
-});
+class FundingRoundModelTest extends TestCase
+{
+    use RefreshDatabase;
 
-test('funding round has many investors', function () {
-    $round = FundingRound::factory()->create();
-    expect($round->investors())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class);
-});
+    public function test_funding_round_belongs_to_a_company(): void
+    {
+        $company = Company::factory()->create();
+        $round = FundingRound::factory()->create(['company_id' => $company->id]);
+        $this->assertInstanceOf(Company::class, $round->company);
+    }
 
-test('funding round has amount', function () {
-    $round = FundingRound::factory()->create(['amount' => 5000000]);
-    expect($round->amount)->toBe(5000000);
-});
+    public function test_funding_round_has_many_investors(): void
+    {
+        $round = FundingRound::factory()->create();
+        $this->assertInstanceOf(BelongsToMany::class, $round->investors());
+    }
+
+    public function test_funding_round_has_amount(): void
+    {
+        $round = FundingRound::factory()->create(['amount' => 5000000]);
+        $this->assertEquals(5000000, $round->amount);
+    }
+}

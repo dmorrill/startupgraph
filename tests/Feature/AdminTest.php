@@ -1,8 +1,18 @@
 <?php
 
-use App\Models\User;
+namespace Tests\Feature;
 
-test('admin area requires auth', function () {
-    $response = $this->get('/admin');
-    $response->assertRedirect('/login');
-});
+use Tests\TestCase;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class AdminTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_admin_area_requires_auth(): void
+    {
+        $response = $this->get('/admin');
+        $response->assertRedirect('/login');
+    }
+}
