@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\CompanyImport;
 use App\Services\BulkImport\CompaniesHouseCsvImporter;
 use App\Services\BulkImport\CrunchbaseCsvImporter;
 use App\Services\BulkImport\EdgarBulkImporter;
@@ -49,17 +50,19 @@ class BulkImportCompanies extends Command
         $source = $this->option('source');
         $all = $this->option('all');
 
-        if (!$source && !$all) {
+        if (! $source && ! $all) {
             $this->error('Specify --source=<name> or --all');
-            $this->line('Available sources: ' . implode(', ', array_keys($this->importers)));
+            $this->line('Available sources: '.implode(', ', array_keys($this->importers)));
+
             return 1;
         }
 
         $sources = $all ? array_keys($this->importers) : [$source];
 
         foreach ($sources as $src) {
-            if (!isset($this->importers[$src])) {
+            if (! isset($this->importers[$src])) {
                 $this->error("Unknown source: {$src}");
+
                 continue;
             }
 
@@ -97,7 +100,7 @@ class BulkImportCompanies extends Command
 
         if ($source === 'crunchbase') {
             $file = $this->option('file');
-            if (!$file) {
+            if (! $file) {
                 throw new \RuntimeException('--file is required for crunchbase source');
             }
             $options['file'] = $file;
@@ -113,7 +116,7 @@ class BulkImportCompanies extends Command
         }
 
         if ($this->option('resume')) {
-            $lastImport = \App\Models\CompanyImport::where('source', $source)
+            $lastImport = CompanyImport::where('source', $source)
                 ->latest()
                 ->first();
 
@@ -122,7 +125,7 @@ class BulkImportCompanies extends Command
                 $options['resume_offset'] = (int) ($lastImport->last_offset ?? 0);
                 $options['resume_cursor'] = $lastImport->last_offset;
                 $options['resume_from'] = (int) ($lastImport->last_offset ?? 0);
-                $this->info("Resuming from last checkpoint");
+                $this->info('Resuming from last checkpoint');
             }
         }
 

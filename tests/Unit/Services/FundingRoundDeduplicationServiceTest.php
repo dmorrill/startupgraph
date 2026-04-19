@@ -15,7 +15,8 @@ class FundingRoundDeduplicationServiceTest extends TestCase
     {
         parent::setUp();
         // Bypass config() in constructor by using anonymous subclass
-        $this->service = new class extends FundingRoundDeduplicationService {
+        $this->service = new class extends FundingRoundDeduplicationService
+        {
             public function __construct()
             {
                 $this->dateTolerance = 30;
@@ -23,17 +24,17 @@ class FundingRoundDeduplicationServiceTest extends TestCase
             }
 
             // Expose protected methods for direct testing
-            public function testAreDatesWithinTolerance($date1, string $date2): bool
+            public function test_are_dates_within_tolerance($date1, string $date2): bool
             {
                 return $this->areDatesWithinTolerance($date1, $date2);
             }
 
-            public function testAreAmountsWithinTolerance(float $a1, float $a2): bool
+            public function test_are_amounts_within_tolerance(float $a1, float $a2): bool
             {
                 return $this->areAmountsWithinTolerance($a1, $a2);
             }
 
-            public function testCalculateAmountDiffPercent(?float $a1, ?float $a2): ?float
+            public function test_calculate_amount_diff_percent(?float $a1, ?float $a2): ?float
             {
                 return $this->calculateAmountDiffPercent($a1, $a2);
             }
@@ -302,7 +303,7 @@ class FundingRoundDeduplicationServiceTest extends TestCase
 
     private function makeFundingRound(string $date, ?float $amount): FundingRound
     {
-        $round = new FundingRound();
+        $round = new FundingRound;
         $round->announced_date = Carbon::parse($date);
         $round->amount = $amount;
 

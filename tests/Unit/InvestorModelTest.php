@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Investor;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 test('investor has a name', function () {
     $investor = Investor::factory()->create(['name' => 'Sequoia Capital']);
@@ -9,5 +10,5 @@ test('investor has a name', function () {
 
 test('investor has many funding rounds', function () {
     $investor = Investor::factory()->create();
-    expect($investor->fundingRounds())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class);
+    expect($investor->fundingRounds())->toBeInstanceOf(BelongsToMany::class);
 });

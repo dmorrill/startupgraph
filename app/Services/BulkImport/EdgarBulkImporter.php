@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class EdgarBulkImporter extends BaseBulkImporter
 {
     private const SEARCH_INDEX_URL = 'https://efts.sec.gov/LATEST/search-index';
+
     private const PER_PAGE = 100;
 
     public function source(): string
@@ -38,7 +39,7 @@ class EdgarBulkImporter extends BaseBulkImporter
                 'size' => self::PER_PAGE,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning("EDGAR API returned HTTP {$response->status()} at offset {$offset}");
                 break;
             }
@@ -46,7 +47,9 @@ class EdgarBulkImporter extends BaseBulkImporter
             $data = $response->json();
             $hits = $data['hits']['hits'] ?? [];
 
-            if (empty($hits)) break;
+            if (empty($hits)) {
+                break;
+            }
 
             foreach ($hits as $hit) {
                 $this->importFiling($hit);
@@ -64,7 +67,9 @@ class EdgarBulkImporter extends BaseBulkImporter
 
             Log::info("EDGAR: offset {$offset}/{$total}, processed: {$this->processed}, created: {$this->created}");
 
-            if ($offset >= $total) break;
+            if ($offset >= $total) {
+                break;
+            }
 
             $this->rateLimitSleep(1.0); // SEC requires polite crawling
         }
@@ -77,7 +82,9 @@ class EdgarBulkImporter extends BaseBulkImporter
         $source = $hit['_source'] ?? [];
 
         $displayNames = $source['display_names'] ?? [];
-        if (empty($displayNames)) return;
+        if (empty($displayNames)) {
+            return;
+        }
 
         // Each filing can have multiple entities; import each
         $bizLocations = $source['biz_locations'] ?? [];
@@ -93,7 +100,9 @@ class EdgarBulkImporter extends BaseBulkImporter
             $entityName = preg_replace('/\s*\([A-Z]+\)\s*/', ' ', $entityName);
             $entityName = trim($entityName);
 
-            if (!$entityName) continue;
+            if (! $entityName) {
+                continue;
+            }
 
             // Skip clearly non-startup entities (funds, trusts, LPs, etc.)
             $skipPatterns = [
@@ -116,6 +125,7 @@ class EdgarBulkImporter extends BaseBulkImporter
             if ($skip) {
                 $this->skipped++;
                 $this->processed++;
+
                 continue;
             }
 
@@ -142,6 +152,7 @@ class EdgarBulkImporter extends BaseBulkImporter
     {
         // Remove common suffixes like ", Inc.", ", Corp.", etc.
         $name = preg_replace('/,?\s*(Inc\.?|Corp\.?|Co\.?|Ltd\.?)$/i', '', $name);
+
         return trim($name);
     }
 }

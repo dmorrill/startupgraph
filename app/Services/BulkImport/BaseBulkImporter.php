@@ -10,9 +10,13 @@ use Illuminate\Support\Str;
 abstract class BaseBulkImporter
 {
     protected CompanyImport $importLog;
+
     protected int $created = 0;
+
     protected int $updated = 0;
+
     protected int $skipped = 0;
+
     protected int $processed = 0;
 
     abstract public function source(): string;
@@ -64,6 +68,7 @@ abstract class BaseBulkImporter
 
         if (empty($name)) {
             $this->skipped++;
+
             return;
         }
 
@@ -72,14 +77,14 @@ abstract class BaseBulkImporter
         if ($domain) {
             $existing = Company::where('website', 'LIKE', "%{$domain}%")->first();
         }
-        if (!$existing) {
+        if (! $existing) {
             $existing = Company::where('name', $name)->first();
         }
 
         $slug = $data['slug'] ?? Str::slug($name);
         // Ensure unique slug
-        if (!$existing && Company::where('slug', $slug)->exists()) {
-            $slug = $slug . '-' . Str::random(4);
+        if (! $existing && Company::where('slug', $slug)->exists()) {
+            $slug = $slug.'-'.Str::random(4);
         }
 
         $attributes = array_filter([
@@ -97,18 +102,20 @@ abstract class BaseBulkImporter
             'closed_at' => $data['closed_at'] ?? null,
             'acquired_by' => $data['acquired_by'] ?? null,
             'import_source' => $this->source(),
-        ], fn($v) => $v !== null);
+        ], fn ($v) => $v !== null);
 
         if ($existing) {
             // Only update null fields — don't overwrite existing data
             $updates = [];
             foreach ($attributes as $key => $value) {
-                if ($key === 'slug' || $key === 'name') continue;
-                if (empty($existing->$key) && !empty($value)) {
+                if ($key === 'slug' || $key === 'name') {
+                    continue;
+                }
+                if (empty($existing->$key) && ! empty($value)) {
                     $updates[$key] = $value;
                 }
             }
-            if (!empty($updates)) {
+            if (! empty($updates)) {
                 $existing->update($updates);
                 $this->updated++;
             } else {
@@ -122,9 +129,14 @@ abstract class BaseBulkImporter
 
     protected function extractDomain(?string $url): ?string
     {
-        if (!$url) return null;
+        if (! $url) {
+            return null;
+        }
         $host = parse_url($url, PHP_URL_HOST);
-        if (!$host) return null;
+        if (! $host) {
+            return null;
+        }
+
         return preg_replace('/^www\./', '', strtolower($host));
     }
 

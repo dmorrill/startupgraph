@@ -28,8 +28,9 @@ class RecordHeadcount extends Command
             ->orWhere('name', 'like', "%{$companyInput}%")
             ->first();
 
-        if (!$company) {
+        if (! $company) {
             $this->error("Company not found: {$companyInput}");
+
             return 1;
         }
 

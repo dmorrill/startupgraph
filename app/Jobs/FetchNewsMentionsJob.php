@@ -18,6 +18,7 @@ class FetchNewsMentionsJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public array $backoff = [60, 300, 900]; // 1min, 5min, 15min
 
     public function __construct(
@@ -36,7 +37,7 @@ class FetchNewsMentionsJob implements ShouldQueue
         try {
             $result = $newsSearchService->searchCompanyNews($this->company);
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 throw new \RuntimeException($result['error'] ?? 'Unknown error');
             }
 
@@ -46,9 +47,10 @@ class FetchNewsMentionsJob implements ShouldQueue
 
             foreach ($articles as $article) {
                 // Validate URL before storing
-                if (!filter_var($article['url'], FILTER_VALIDATE_URL)) {
+                if (! filter_var($article['url'], FILTER_VALIDATE_URL)) {
                     Log::warning("Invalid URL skipped: {$article['url']}");
                     $skipped++;
+
                     continue;
                 }
 

@@ -17,20 +17,20 @@ class CrunchbaseCsvImporter extends BaseBulkImporter
     {
         $this->filePath = $options['file'] ?? '';
 
-        if (!file_exists($this->filePath)) {
+        if (! file_exists($this->filePath)) {
             throw new \RuntimeException("CSV file not found: {$this->filePath}");
         }
 
         $handle = fopen($this->filePath, 'r');
-        if (!$handle) {
+        if (! $handle) {
             throw new \RuntimeException("Cannot open CSV: {$this->filePath}");
         }
 
         // Read header
         $header = fgetcsv($handle);
-        if (!$header) {
+        if (! $header) {
             fclose($handle);
-            throw new \RuntimeException("Empty CSV file");
+            throw new \RuntimeException('Empty CSV file');
         }
 
         $header = array_map('strtolower', array_map('trim', $header));
@@ -42,10 +42,14 @@ class CrunchbaseCsvImporter extends BaseBulkImporter
         while (($row = fgetcsv($handle)) !== false) {
             $line++;
 
-            if ($line <= $resumeOffset) continue;
+            if ($line <= $resumeOffset) {
+                continue;
+            }
 
             $data = @array_combine($header, $row);
-            if (!$data) continue;
+            if (! $data) {
+                continue;
+            }
 
             $this->importRow($data);
 
@@ -66,7 +70,9 @@ class CrunchbaseCsvImporter extends BaseBulkImporter
     private function importRow(array $row): void
     {
         $name = $row['name'] ?? ($row['organization_name'] ?? null);
-        if (!$name || !trim($name)) return;
+        if (! $name || ! trim($name)) {
+            return;
+        }
 
         $status = $this->mapStatus($row['status'] ?? ($row['operating_status'] ?? 'operating'));
 
@@ -77,9 +83,9 @@ class CrunchbaseCsvImporter extends BaseBulkImporter
         }
 
         $foundedDate = null;
-        if (!empty($row['founded_on'])) {
+        if (! empty($row['founded_on'])) {
             $foundedDate = $row['founded_on'];
-        } elseif (!empty($row['founded_date'])) {
+        } elseif (! empty($row['founded_date'])) {
             $foundedDate = $row['founded_date'];
         }
 
@@ -114,7 +120,9 @@ class CrunchbaseCsvImporter extends BaseBulkImporter
             'c_10001_max' => 15000,
         ];
 
-        if (isset($map[$range])) return $map[$range];
+        if (isset($map[$range])) {
+            return $map[$range];
+        }
 
         // Try parsing "N-M" format
         if (preg_match('/(\d+)\s*[-–]\s*(\d+)/', $range, $m)) {

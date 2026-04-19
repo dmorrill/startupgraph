@@ -27,7 +27,7 @@ class BackfillCompaniesSeeder extends Seeder
             }
         }
 
-        $this->command->info("Created: {$created}, Updated: {$updated}, Total: " . Company::count());
+        $this->command->info("Created: {$created}, Updated: {$updated}, Total: ".Company::count());
     }
 
     private function getCompanies(): array

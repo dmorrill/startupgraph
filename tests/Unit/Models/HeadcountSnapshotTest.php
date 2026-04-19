@@ -5,6 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\Company;
 use App\Models\HeadcountSnapshot;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class HeadcountSnapshotTest extends TestCase
@@ -30,6 +31,6 @@ class HeadcountSnapshotTest extends TestCase
     {
         $snapshot = HeadcountSnapshot::factory()->create();
 
-        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $snapshot->recorded_date);
+        $this->assertInstanceOf(Carbon::class, $snapshot->recorded_date);
     }
 }

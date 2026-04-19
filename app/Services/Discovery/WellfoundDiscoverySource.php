@@ -22,13 +22,14 @@ class WellfoundDiscoverySource implements CompanyDiscoverySource
         try {
             $companies = $this->discoverViaGraphQL();
 
-            if (!empty($companies)) {
+            if (! empty($companies)) {
                 return $companies;
             }
 
             return $this->discoverViaScrape();
         } catch (\Exception $e) {
             Log::warning("Wellfound discovery error: {$e->getMessage()}");
+
             return [];
         }
     }
@@ -80,8 +81,9 @@ class WellfoundDiscoverySource implements CompanyDiscoverySource
                 GRAPHQL,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::info("Wellfound GraphQL returned HTTP {$response->status()}, falling back to scrape");
+
                 return [];
             }
 
@@ -97,7 +99,7 @@ class WellfoundDiscoverySource implements CompanyDiscoverySource
                 $node = $edge['node'] ?? [];
                 $name = $node['name'] ?? null;
 
-                if (!$name) {
+                if (! $name) {
                     continue;
                 }
 
@@ -112,7 +114,7 @@ class WellfoundDiscoverySource implements CompanyDiscoverySource
 
                 // Location
                 $locations = $node['locationTags'] ?? [];
-                if (!empty($locations)) {
+                if (! empty($locations)) {
                     $company['location'] = $locations[0]['displayName'] ?? null;
                 }
 
@@ -133,6 +135,7 @@ class WellfoundDiscoverySource implements CompanyDiscoverySource
             return $companies;
         } catch (\Exception $e) {
             Log::info("Wellfound GraphQL failed: {$e->getMessage()}");
+
             return [];
         }
     }
@@ -154,17 +157,18 @@ class WellfoundDiscoverySource implements CompanyDiscoverySource
                     'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 ])->timeout(30)->get($url);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     continue;
                 }
 
                 $companies = $this->parseHtml($response->body());
 
-                if (!empty($companies)) {
+                if (! empty($companies)) {
                     return $companies;
                 }
             } catch (\Exception $e) {
                 Log::info("Wellfound scrape of {$url} failed: {$e->getMessage()}");
+
                 continue;
             }
         }
@@ -185,7 +189,7 @@ class WellfoundDiscoverySource implements CompanyDiscoverySource
 
             foreach (array_slice($startups, 0, 50) as $startup) {
                 $name = $startup['name'] ?? null;
-                if (!$name) {
+                if (! $name) {
                     continue;
                 }
 
@@ -222,6 +226,6 @@ class WellfoundDiscoverySource implements CompanyDiscoverySource
             }
         }
 
-        return array_filter($companies, fn ($c) => !empty($c['name']));
+        return array_filter($companies, fn ($c) => ! empty($c['name']));
     }
 }

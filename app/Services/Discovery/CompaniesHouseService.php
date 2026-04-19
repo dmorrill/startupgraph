@@ -20,7 +20,7 @@ class CompaniesHouseService
      */
     public function search(string $query, int $startIndex = 0, int $itemsPerPage = 50): array
     {
-        if (!$this->apiKey) {
+        if (! $this->apiKey) {
             throw new \RuntimeException('Companies House API key not configured. Set COMPANIES_HOUSE_KEY in .env');
         }
 
@@ -31,8 +31,9 @@ class CompaniesHouseService
                 'items_per_page' => $itemsPerPage,
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::error('Companies House API error', ['status' => $response->status()]);
+
             return ['companies' => [], 'total' => 0];
         }
 

@@ -30,13 +30,14 @@ class DispatchDailyHeadcounts extends Command
 
         if ($this->option('assign-only')) {
             $this->showDistribution();
+
             return self::SUCCESS;
         }
 
         // Get companies to process
         $query = Company::whereNotNull('linkedin_url');
 
-        if (!$this->option('force')) {
+        if (! $this->option('force')) {
             $query->where('headcount_fetch_day', $dayOfMonth);
         }
 
@@ -44,6 +45,7 @@ class DispatchDailyHeadcounts extends Command
 
         if ($companies->isEmpty()) {
             $this->info("No companies scheduled for day {$dayOfMonth}.");
+
             return self::SUCCESS;
         }
 
@@ -53,7 +55,7 @@ class DispatchDailyHeadcounts extends Command
             // Stagger jobs by 3 seconds each to avoid LinkedIn rate limiting
             $delay = $index * 3;
             FetchCompanyHeadcountJob::dispatch($company)->delay(now()->addSeconds($delay));
-            $this->line("  Dispatched: {$company->name}" . ($delay > 0 ? " (delay: {$delay}s)" : ''));
+            $this->line("  Dispatched: {$company->name}".($delay > 0 ? " (delay: {$delay}s)" : ''));
         }
 
         $this->newLine();
@@ -82,7 +84,7 @@ class DispatchDailyHeadcounts extends Command
 
         // Fill in missing days with 0
         for ($day = 1; $day <= 25; $day++) {
-            if (!isset($distribution[$day])) {
+            if (! isset($distribution[$day])) {
                 $distribution[$day] = 0;
             }
         }

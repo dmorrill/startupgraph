@@ -5,6 +5,7 @@ use App\Http\Middleware\ApiCors;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Add CORS and rate limiting to all API routes
         $middleware->api(prepend: [
             ApiCors::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            ThrottleRequests::class.':api',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

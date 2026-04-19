@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Company;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class UnicornBackfillSeeder extends Seeder
 {
@@ -2359,14 +2358,13 @@ class UnicornBackfillSeeder extends Seeder
                 ->orWhere('slug', $data['slug'])
                 ->first();
 
-            if (!$existing) {
+            if (! $existing) {
                 Company::create($data);
                 $count++;
             }
         }
 
         $this->command->info("Unicorn backfill complete: {$count} new companies added.");
-        $this->command->info("Total companies: " . Company::count());
+        $this->command->info('Total companies: '.Company::count());
     }
 }
-

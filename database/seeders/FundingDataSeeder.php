@@ -87,7 +87,9 @@ class FundingDataSeeder extends Seeder
     private function seedAnthropicFunding(array $investors): void
     {
         $company = Company::where('slug', 'anthropic')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $rounds = [
             [
@@ -156,7 +158,9 @@ class FundingDataSeeder extends Seeder
     private function seedOpenAIFunding(array $investors): void
     {
         $company = Company::where('slug', 'openai')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $rounds = [
             [
@@ -199,7 +203,9 @@ class FundingDataSeeder extends Seeder
     private function seedPerplexityFunding(array $investors): void
     {
         $company = Company::where('slug', 'perplexity')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $rounds = [
             [
@@ -251,7 +257,9 @@ class FundingDataSeeder extends Seeder
     private function seedStripeFunding(array $investors): void
     {
         $company = Company::where('slug', 'stripe')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $rounds = [
             [
@@ -322,7 +330,9 @@ class FundingDataSeeder extends Seeder
     private function seedSpaceXFunding(array $investors): void
     {
         $company = Company::where('slug', 'spacex')->first();
-        if (!$company) return;
+        if (! $company) {
+            return;
+        }
 
         $rounds = [
             [

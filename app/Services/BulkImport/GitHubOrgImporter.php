@@ -2,6 +2,7 @@
 
 namespace App\Services\BulkImport;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -24,7 +25,9 @@ class GitHubOrgImporter extends BaseBulkImporter
     ];
 
     private ?string $token;
+
     private int $requestCount = 0;
+
     private float $windowStart;
 
     public function source(): string
@@ -37,14 +40,14 @@ class GitHubOrgImporter extends BaseBulkImporter
         $this->token = env('GITHUB_TOKEN') ?: null;
         $this->windowStart = microtime(true);
 
-        Log::info("GitHub org import starting", ['has_token' => (bool) $this->token]);
+        Log::info('GitHub org import starting', ['has_token' => (bool) $this->token]);
 
         foreach (self::SEARCH_QUERIES as $query) {
             Log::info("Searching GitHub orgs: {$query}");
             $this->searchAndImport($query, $options['max_pages'] ?? 10);
         }
 
-        Log::info("GitHub org import complete", $this->getStats());
+        Log::info('GitHub org import complete', $this->getStats());
     }
 
     private function searchAndImport(string $query, int $maxPages): void
@@ -61,11 +64,12 @@ class GitHubOrgImporter extends BaseBulkImporter
                 'page' => $page,
             ]);
 
-            if (!$response || !$response->successful()) {
+            if (! $response || ! $response->successful()) {
                 if ($response && $response->status() === 403) {
-                    Log::warning("GitHub: Rate limited, waiting 60s");
+                    Log::warning('GitHub: Rate limited, waiting 60s');
                     sleep(60);
                     $page--; // Retry
+
                     continue;
                 }
                 Log::warning("GitHub: Search failed for query: {$query}");
@@ -75,18 +79,24 @@ class GitHubOrgImporter extends BaseBulkImporter
             $data = $response->json();
             $items = $data['items'] ?? [];
 
-            if (empty($items)) break;
+            if (empty($items)) {
+                break;
+            }
 
             foreach ($items as $item) {
                 $login = $item['login'] ?? '';
-                if (!$login) continue;
+                if (! $login) {
+                    continue;
+                }
 
                 $this->importOrg($login);
             }
 
             // Check if there are more results
             $totalCount = $data['total_count'] ?? 0;
-            if ($page * 100 >= $totalCount) break;
+            if ($page * 100 >= $totalCount) {
+                break;
+            }
         }
     }
 
@@ -96,7 +106,9 @@ class GitHubOrgImporter extends BaseBulkImporter
 
         $response = $this->githubGet("/orgs/{$login}");
 
-        if (!$response || !$response->successful()) return;
+        if (! $response || ! $response->successful()) {
+            return;
+        }
 
         $org = $response->json();
 
@@ -109,9 +121,10 @@ class GitHubOrgImporter extends BaseBulkImporter
         $createdAt = $org['created_at'] ?? '';
 
         // Skip orgs without a name or website (less likely to be companies)
-        if (!$name || strlen($name) < 2) {
+        if (! $name || strlen($name) < 2) {
             $this->skipped++;
             $this->processed++;
+
             return;
         }
 
@@ -120,8 +133,8 @@ class GitHubOrgImporter extends BaseBulkImporter
 
         // Parse website
         $website = $blog;
-        if ($website && !str_starts_with($website, 'http')) {
-            $website = 'https://' . $website;
+        if ($website && ! str_starts_with($website, 'http')) {
+            $website = 'https://'.$website;
         }
 
         // Parse founded date from created_at
@@ -141,7 +154,7 @@ class GitHubOrgImporter extends BaseBulkImporter
         ]);
     }
 
-    private function githubGet(string $path, array $query = []): ?\Illuminate\Http\Client\Response
+    private function githubGet(string $path, array $query = []): ?Response
     {
         $this->requestCount++;
 
@@ -154,9 +167,10 @@ class GitHubOrgImporter extends BaseBulkImporter
         }
 
         try {
-            return $request->get(self::GITHUB_API . $path, $query);
+            return $request->get(self::GITHUB_API.$path, $query);
         } catch (\Exception $e) {
             Log::warning("GitHub API error: {$e->getMessage()}");
+
             return null;
         }
     }
@@ -182,7 +196,9 @@ class GitHubOrgImporter extends BaseBulkImporter
 
     private function parseLocation(?string $location): array
     {
-        if (!$location) return [];
+        if (! $location) {
+            return [];
+        }
 
         $cityCountryMap = [
             'san francisco' => ['city' => 'San Francisco', 'country' => 'US'],
@@ -199,7 +215,9 @@ class GitHubOrgImporter extends BaseBulkImporter
 
         $lower = strtolower($location);
         foreach ($cityCountryMap as $key => $val) {
-            if (str_contains($lower, $key)) return $val;
+            if (str_contains($lower, $key)) {
+                return $val;
+            }
         }
 
         // Try to parse "City, Country" or "City, State, Country"

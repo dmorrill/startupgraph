@@ -3,8 +3,8 @@
 namespace Tests\Unit;
 
 use App\Models\CompanyImport;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class CompanyImportTest extends TestCase
 {

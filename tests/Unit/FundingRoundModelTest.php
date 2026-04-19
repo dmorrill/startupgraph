@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\FundingRound;
 use App\Models\Company;
-use App\Models\Investor;
+use App\Models\FundingRound;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 test('funding round belongs to a company', function () {
     $company = Company::factory()->create();
@@ -12,7 +12,7 @@ test('funding round belongs to a company', function () {
 
 test('funding round has many investors', function () {
     $round = FundingRound::factory()->create();
-    expect($round->investors())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class);
+    expect($round->investors())->toBeInstanceOf(BelongsToMany::class);
 });
 
 test('funding round has amount', function () {

@@ -41,8 +41,9 @@ class FetchNews extends Command
             ->orWhere('name', 'LIKE', "%{$escapedIdentifier}%")
             ->first();
 
-        if (!$company) {
+        if (! $company) {
             $this->error("Company not found: {$identifier}");
+
             return self::FAILURE;
         }
 
@@ -69,6 +70,7 @@ class FetchNews extends Command
 
         if ($total === 0) {
             $this->info('No companies found.');
+
             return self::SUCCESS;
         }
 
@@ -87,7 +89,7 @@ class FetchNews extends Command
                 $delaySeconds = $index * $delay;
                 FetchNewsMentionsJob::dispatch($company)->delay(now()->addSeconds($delaySeconds));
 
-                $this->line("  Dispatched: {$company->name}" . ($delaySeconds > 0 ? " (delay: {$delaySeconds}s)" : ''));
+                $this->line("  Dispatched: {$company->name}".($delaySeconds > 0 ? " (delay: {$delaySeconds}s)" : ''));
                 $index++;
             }
 
