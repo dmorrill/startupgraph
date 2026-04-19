@@ -9,7 +9,7 @@ trait LogsErrors
     /**
      * Log an error with standardized context.
      */
-    protected function logError(string $message, \Throwable $exception = null, array $context = []): void
+    protected function logError(string $message, ?\Throwable $exception = null, array $context = []): void
     {
         $logContext = array_merge([
             'class' => static::class,

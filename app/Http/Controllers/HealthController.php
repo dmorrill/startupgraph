@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class HealthController extends Controller
 {
     use LogsErrors;
+
     /**
      * Health check endpoint for monitoring system status.
      */

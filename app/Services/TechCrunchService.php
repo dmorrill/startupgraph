@@ -6,11 +6,11 @@ use App\Models\Company;
 use App\Traits\LogsErrors;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class TechCrunchService
 {
     use LogsErrors;
+
     private const FUNDRAISING_URL = 'https://techcrunch.com/tag/fundraising/';
 
     private const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';

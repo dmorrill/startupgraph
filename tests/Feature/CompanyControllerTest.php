@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Company;
-use App\Models\FundingRound;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,7 +13,7 @@ class CompanyControllerTest extends TestCase
     public function test_company_index_page_loads_successfully(): void
     {
         $response = $this->get('/companies');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('companies.index');
     }
@@ -27,7 +26,7 @@ class CompanyControllerTest extends TestCase
         ]);
 
         $response = $this->get('/companies');
-        
+
         $response->assertSee('Test Company');
         $response->assertSee('A test company description');
     }
@@ -38,7 +37,7 @@ class CompanyControllerTest extends TestCase
         Company::factory()->create(['name' => 'Beta Inc']);
 
         $response = $this->get('/companies?search=Acme');
-        
+
         $response->assertSee('Acme Corp');
         $response->assertDontSee('Beta Inc');
     }
@@ -49,7 +48,7 @@ class CompanyControllerTest extends TestCase
         Company::factory()->create(['name' => 'Fintech Company', 'category' => 'fintech']);
 
         $response = $this->get('/companies?category=ai_ml');
-        
+
         $response->assertSee('AI Company');
         $response->assertDontSee('Fintech Company');
     }
@@ -59,7 +58,7 @@ class CompanyControllerTest extends TestCase
         $company = Company::factory()->create();
 
         $response = $this->get("/companies/{$company->slug}");
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('companies.show');
         $response->assertSee($company->name);
@@ -70,7 +69,7 @@ class CompanyControllerTest extends TestCase
         // Make 6 requests (exceeding the 5 per minute limit)
         for ($i = 0; $i < 6; $i++) {
             $response = $this->get('/companies/export/csv');
-            
+
             if ($i < 5) {
                 $response->assertStatus(200);
             } else {
@@ -84,7 +83,7 @@ class CompanyControllerTest extends TestCase
         Company::factory()->create(['name' => 'Test Company']);
 
         $response = $this->get('/companies/export/json');
-        
+
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'application/json');
         $response->assertJsonStructure([
@@ -95,8 +94,8 @@ class CompanyControllerTest extends TestCase
                     'website',
                     'description',
                     'category',
-                ]
-            ]
+                ],
+            ],
         ]);
     }
 
@@ -105,7 +104,7 @@ class CompanyControllerTest extends TestCase
         Company::factory()->create(['name' => 'Test Company']);
 
         $response = $this->get('/companies/export/csv');
-        
+
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('Test Company', $response->getContent());
