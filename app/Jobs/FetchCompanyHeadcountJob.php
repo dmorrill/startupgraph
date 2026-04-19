@@ -13,6 +13,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Job to fetch and update company headcount from LinkedIn.
+ */
 class FetchCompanyHeadcountJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -25,6 +28,9 @@ class FetchCompanyHeadcountJob implements ShouldQueue
         public Company $company
     ) {}
 
+    /**
+     * Execute the job.
+     */
     public function handle(LinkedInService $linkedInService): void
     {
         $execution = ScheduledTaskExecution::create([
@@ -93,6 +99,9 @@ class FetchCompanyHeadcountJob implements ShouldQueue
         }
     }
 
+    /**
+     * Handle a job failure.
+     */
     public function failed(\Throwable $exception): void
     {
         Log::error("Headcount fetch job permanently failed for {$this->company->name}: {$exception->getMessage()}");

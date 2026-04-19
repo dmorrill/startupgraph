@@ -16,6 +16,9 @@ use Illuminate\Support\Carbon;
 
 class CompanyController extends Controller
 {
+    /**
+     * Get a paginated list of companies with optional filtering.
+     */
     public function index(Request $request): JsonResponse
     {
         $query = Company::query()
@@ -102,6 +105,9 @@ class CompanyController extends Controller
         ]);
     }
 
+    /**
+     * Get detailed information about a specific company.
+     */
     public function show(Company $company): JsonResponse
     {
         $company->load([
@@ -124,6 +130,9 @@ class CompanyController extends Controller
         ]);
     }
 
+    /**
+     * Get funding rounds information for a specific company.
+     */
     public function funding(Company $company): JsonResponse
     {
         $company->load('fundingRounds.investors');
@@ -147,6 +156,9 @@ class CompanyController extends Controller
         ]);
     }
 
+    /**
+     * Get people associated with a specific company.
+     */
     public function people(Company $company): JsonResponse
     {
         $company->load('people');
@@ -171,6 +183,9 @@ class CompanyController extends Controller
         ]);
     }
 
+    /**
+     * Get headcount history and growth data for a specific company.
+     */
     public function headcount(Company $company): JsonResponse
     {
         $company->load('headcountSnapshots');

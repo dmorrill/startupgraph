@@ -9,6 +9,9 @@ use Illuminate\Support\Carbon;
 
 class CompanyController extends Controller
 {
+    /**
+     * Display a listing of companies with filtering and sorting.
+     */
     public function index(Request $request)
     {
         $query = Company::query()
@@ -83,6 +86,9 @@ class CompanyController extends Controller
         return view('companies.index', compact('companies', 'countries', 'categories'));
     }
 
+    /**
+     * Export filtered companies to CSV format.
+     */
     public function exportCsv(Request $request)
     {
         $companies = $this->getFilteredQuery($request)->limit(1000)->get();
@@ -116,6 +122,9 @@ class CompanyController extends Controller
         ]);
     }
 
+    /**
+     * Export filtered companies to JSON format.
+     */
     public function exportJson(Request $request)
     {
         $companies = $this->getFilteredQuery($request)
@@ -183,6 +192,9 @@ class CompanyController extends Controller
         return $query->orderBy('name');
     }
 
+    /**
+     * Display the specified company.
+     */
     public function show(Company $company)
     {
         $company->load(['fundingRounds.investors', 'headcountSnapshots', 'newsMentions', 'people']);

@@ -68,26 +68,41 @@ class Company extends Model
         'closed_at' => 'date',
     ];
 
+    /**
+     * Get the headcount snapshots for the company.
+     */
     public function headcountSnapshots(): HasMany
     {
         return $this->hasMany(HeadcountSnapshot::class);
     }
 
+    /**
+     * Get all funding rounds for the company.
+     */
     public function fundingRounds(): HasMany
     {
         return $this->hasMany(FundingRound::class);
     }
 
+    /**
+     * Get the latest funding round for the company.
+     */
     public function latestFundingRound(): HasOne
     {
         return $this->hasOne(FundingRound::class)->latestOfMany('announced_date');
     }
 
+    /**
+     * Get all news mentions for the company.
+     */
     public function newsMentions(): HasMany
     {
         return $this->hasMany(NewsMention::class);
     }
 
+    /**
+     * Get the people associated with the company.
+     */
     public function people(): BelongsToMany
     {
         return $this->belongsToMany(Person::class, 'company_person')
@@ -95,6 +110,9 @@ class Company extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Get open source project alternatives for the company.
+     */
     public function ossAlternatives(): BelongsToMany
     {
         return $this->belongsToMany(OpenSourceProject::class, 'company_oss_alternatives', 'company_id', 'oss_project_id')
@@ -102,16 +120,25 @@ class Company extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Get all scheduled task executions for the company.
+     */
     public function scheduledTaskExecutions(): HasMany
     {
         return $this->hasMany(ScheduledTaskExecution::class);
     }
 
+    /**
+     * Get the route key name for the model.
+     */
     public function getRouteKeyName(): string
     {
         return 'slug';
     }
 
+    /**
+     * Get the human-readable category label.
+     */
     public function getCategoryLabelAttribute(): ?string
     {
         return $this->category ? (self::CATEGORIES[$this->category] ?? $this->category) : null;

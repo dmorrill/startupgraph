@@ -34,11 +34,17 @@ class DiscoverCompaniesService
         $this->registerSource($productHunt);
     }
 
+    /**
+     * Register a company discovery source.
+     */
     public function registerSource(CompanyDiscoverySource $source): void
     {
         $this->sources[$source->name()] = $source;
     }
 
+    /**
+     * Get list of available discovery sources.
+     */
     public function getAvailableSources(): array
     {
         return array_keys($this->sources);
