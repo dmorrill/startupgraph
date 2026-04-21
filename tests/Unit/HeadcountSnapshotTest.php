@@ -1,15 +1,26 @@
 <?php
 
+namespace Tests\Unit;
+
 use App\Models\Company;
 use App\Models\HeadcountSnapshot;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-test('headcount snapshot belongs to company', function () {
-    $company = Company::factory()->create();
-    $snapshot = HeadcountSnapshot::factory()->create(['company_id' => $company->id]);
-    expect($snapshot->company)->toBeInstanceOf(Company::class);
-});
+class HeadcountSnapshotTest extends TestCase
+{
+    use RefreshDatabase;
 
-test('headcount snapshot has count', function () {
-    $snapshot = HeadcountSnapshot::factory()->create(['headcount' => 150]);
-    expect($snapshot->headcount)->toBe(150);
-});
+    public function test_headcount_snapshot_belongs_to_company(): void
+    {
+        $company = Company::factory()->create();
+        $snapshot = HeadcountSnapshot::factory()->create(['company_id' => $company->id]);
+        $this->assertInstanceOf(Company::class, $snapshot->company);
+    }
+
+    public function test_headcount_snapshot_has_count(): void
+    {
+        $snapshot = HeadcountSnapshot::factory()->create(['headcount' => 150]);
+        $this->assertEquals(150, $snapshot->headcount);
+    }
+}
