@@ -1,12 +1,22 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\Person;
 use App\Models\User;
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-test('person page loads', function () {
-    $user = User::factory()->create();
-    $person = Person::factory()->create();
+class PersonTest extends TestCase
+{
+    use RefreshDatabase;
 
-    $response = $this->actingAs($user)->get("/people/{$person->id}");
-    $response->assertStatus(200);
-});
+    public function test_person_page_loads(): void
+    {
+        $user = User::factory()->create();
+        $person = Person::factory()->create();
+
+        $response = $this->actingAs($user)->get("/people/{$person->id}");
+        $response->assertStatus(200);
+    }
+}

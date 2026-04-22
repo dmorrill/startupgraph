@@ -1,22 +1,33 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\Company;
 use App\Models\User;
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-test('company index page loads', function () {
-    $user = User::factory()->create();
-    Company::factory()->count(3)->create();
+class CompanySearchTest extends TestCase
+{
+    use RefreshDatabase;
 
-    $response = $this->actingAs($user)->get('/companies');
+    public function test_company_index_page_loads(): void
+    {
+        $user = User::factory()->create();
+        Company::factory()->count(3)->create();
 
-    $response->assertStatus(200);
-});
+        $response = $this->actingAs($user)->get('/companies');
 
-test('company search returns results', function () {
-    $user = User::factory()->create();
-    Company::factory()->create(['name' => 'TestCorp']);
+        $response->assertStatus(200);
+    }
 
-    $response = $this->actingAs($user)->get('/companies?search=TestCorp');
+    public function test_company_search_returns_results(): void
+    {
+        $user = User::factory()->create();
+        Company::factory()->create(['name' => 'TestCorp']);
 
-    $response->assertStatus(200);
-});
+        $response = $this->actingAs($user)->get('/companies?search=TestCorp');
+
+        $response->assertStatus(200);
+    }
+}

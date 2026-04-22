@@ -259,4 +259,28 @@ class FundingRoundDeduplicationService
     {
         return $this->amountTolerance;
     }
+
+    /**
+     * Public test helper for areDatesWithinTolerance (for testing only).
+     */
+    public function testAreDatesWithinTolerance($date1, string $date2): bool
+    {
+        return $this->areDatesWithinTolerance($date1, $date2);
+    }
+
+    /**
+     * Public test helper for areAmountsWithinTolerance (for testing only).
+     */
+    public function testAreAmountsWithinTolerance(float $amount1, float $amount2): bool
+    {
+        return $this->areAmountsWithinTolerance($amount1, $amount2);
+    }
+
+    /**
+     * Public test helper for calculateAmountDiffPercent (for testing only).
+     */
+    public function testCalculateAmountDiffPercent(?float $amount1, ?float $amount2): ?float
+    {
+        return $this->calculateAmountDiffPercent($amount1, $amount2);
+    }
 }
