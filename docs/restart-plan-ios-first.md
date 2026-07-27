@@ -22,10 +22,10 @@ write to, and the API the iOS app reads.
 |----------|--------|
 | Primary client | Native iOS (SwiftUI). Blade web UI is demoted to admin/debug chrome. |
 | iOS v1 scope | **Read-only.** Browse/search companies, view lists, screens, notes, signals. No editing — even "build a screen" happens by asking an agent. |
-| Users | **Single-user personal app** (Elle) for now. Eventually a product — build so multi-tenancy is *possible later*, not *supported now*. |
+| Users | **Multi-tenant from the start**: registration + per-user API tokens. Elle is user #1; TestFlight beta users follow. A pro tier (or shutdown) stays possible later. |
 | Agent research | Lives **in this backend** as first-class data (lists, screens, notes, signals). The investing repo's agents write here; the phone renders from here. |
 | Dataset | Crucial, and should keep growing. The bulk import/discovery pipeline stays and gets investment (see issues #68–#75). |
-| Repo | **Private, personal project** — no longer open source. Elle flips visibility in GitHub settings; open-source framing (README, LICENSE, CONTRIBUTING, public submissions) gets cleaned up as part of the restart. |
+| Repo | **Stays public — built in public.** The repo doubles as a showcase of AI-assisted development, and public ownership keeps the project with Elle independent of her company. Open-source framing (README, CONTRIBUTING) stays, refreshed for the new direction. |
 
 ## Architecture: global graph vs. user-scoped research
 
@@ -69,16 +69,27 @@ Rules of thumb:
 ## Phases
 
 ### Phase 0 — Security & deploy readiness (blocking)
-- [ ] Make the repo private (Elle, via GitHub settings) — decided; resolves the
-      public-exposure half of #105. Check for public forks when flipping, since
-      forks keep the history.
-- [ ] Rotate the `APP_KEY` when setting up the deployed environment (never reuse
-      the leaked one). History purge is optional once the repo is private.
+- [x] Audit git history for leaked secrets (#105). **Result (2026-07-27): no real
+      secret was ever committed.** The only Laravel key in the entire reachable
+      history is the obvious dummy `base64:testing1234…` in `.env.testing`
+      (added 2026-02-18 for CI), which matches GitGuardian's Laravel-APP_KEY
+      pattern — almost certainly the source of the March 2026 alerts. `.env` was
+      never tracked; no other token patterns found. Caveat: this covers reachable
+      history of `main`; commits pushed to since-deleted branches aren't in a
+      fresh clone, so the GitGuardian alert details (in dmorrill's email) should
+      be glanced at once to confirm they point at `.env.testing`.
+- [ ] Dismiss the GitGuardian alerts as false positives (dmorrill, via the
+      GitGuardian dashboard) after confirming the flagged file.
+- [ ] Generate a fresh `APP_KEY` per environment at deploy time (standard
+      practice; nothing to rotate since no environment exists yet).
+- [ ] Since the repo stays public and gains real users: keep secrets exclusively
+      in env vars, and consider a pre-push secret-scan hook or CI secret scan.
 - [ ] Deploy the backend (#84 already scopes Laravel Cloud). The iPhone can't
       talk to a laptop; a hosted API is a v1 prerequisite.
 
 ### Phase 1 — Backend: the research layer
-- [ ] Sanctum token auth; authenticated write routes.
+- [ ] Sanctum per-user token auth; registration (web auth scaffolding already
+      exists); authenticated write routes.
 - [ ] Migrations + models: `List`, `ListEntry`, `Note`, `Signal`; generalize
       `SavedSearch` → `Screen` with stored result snapshots. All with `user_id`.
 - [ ] Write API endpoints + feature tests.
@@ -89,10 +100,10 @@ Rules of thumb:
 ### Phase 2 — iOS v1 (read-only)
 - [ ] SwiftUI app: signals feed (home), search, company profile (funding,
       headcount chart, people, notes), lists, screens.
-- [ ] Auth: single stored token.
-- [ ] Ship to Elle's phone via TestFlight.
+- [ ] Auth: sign-in with per-user API token.
+- [ ] Ship via TestFlight — Elle first, then a public TestFlight beta.
 - Explicitly out of scope: editing, push notifications (candidate for v1.1),
-  multi-user anything.
+  billing/pro tier.
 
 ### Phase 3 — Grow the dataset (parallel, ongoing)
 - [ ] Unblock importers that just need API keys: GitHub orgs (#68), Product Hunt
