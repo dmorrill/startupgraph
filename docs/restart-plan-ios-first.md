@@ -25,6 +25,7 @@ write to, and the API the iOS app reads.
 | Users | **Single-user personal app** (Elle) for now. Eventually a product — build so multi-tenancy is *possible later*, not *supported now*. |
 | Agent research | Lives **in this backend** as first-class data (lists, screens, notes, signals). The investing repo's agents write here; the phone renders from here. |
 | Dataset | Crucial, and should keep growing. The bulk import/discovery pipeline stays and gets investment (see issues #68–#75). |
+| Repo | **Private, personal project** — no longer open source. Elle flips visibility in GitHub settings; open-source framing (README, LICENSE, CONTRIBUTING, public submissions) gets cleaned up as part of the restart. |
 
 ## Architecture: global graph vs. user-scoped research
 
@@ -68,9 +69,11 @@ Rules of thumb:
 ## Phases
 
 ### Phase 0 — Security & deploy readiness (blocking)
-- [ ] Resolve #105: leaked `APP_KEY` in public git history. Rotate the key,
-      purge history (or take the repo private). Must happen **before** the backend
-      holds personal research data or auth tokens.
+- [ ] Make the repo private (Elle, via GitHub settings) — decided; resolves the
+      public-exposure half of #105. Check for public forks when flipping, since
+      forks keep the history.
+- [ ] Rotate the `APP_KEY` when setting up the deployed environment (never reuse
+      the leaked one). History purge is optional once the repo is private.
 - [ ] Deploy the backend (#84 already scopes Laravel Cloud). The iPhone can't
       talk to a laptop; a hosted API is a v1 prerequisite.
 
