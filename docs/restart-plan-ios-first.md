@@ -111,6 +111,30 @@ Rules of thumb:
 - [ ] Expand Wikipedia categories (#74); track the 50K→70K+ milestone (#75).
 - [ ] Recurring refresh jobs so the graph stays current (funding, headcount, OSS stars).
 
+## Community & contributions
+
+Building in public includes building *with* people. The mental model: **the
+company graph is the commons; the research layer is yours.** Contributions grow
+the shared graph; each user's lists/notes/screens stay private to them.
+
+On-ramps, easiest first:
+1. **Data imports** — issues #68–#71 are literally "get a free API key, run one
+   artisan command" (labeled `good first issue` / `help wanted`), and #74 is
+   adding Wikipedia categories to an existing importer. Perfect first PRs.
+2. **Company submissions** — the public form + admin review flow already exists.
+3. **Code** — new importers/discovery sources, API endpoints, and eventually the
+   iOS app itself.
+4. **Agent-mediated contributions** (the novel one, later) — outside contributors
+   point their own agents at the MCP server to propose graph updates, landing in
+   a review queue rather than writing directly. Fits the agent-first thesis.
+
+Prerequisites to make this real:
+- [ ] Rewrite the README — it still describes the 107-company curated MVP; it
+      should sell the agent-first vision and link this plan.
+- [ ] Refresh CONTRIBUTING.md for the new direction and on-ramps above.
+- [ ] Decide where the iOS app code lives (this repo vs. a sibling repo) —
+      affects who can contribute to it.
+
 ## Open questions
 
 - Whether to pull in Groupthink `app-iOS` scaffolding wholesale or just crib its
