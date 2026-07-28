@@ -18,7 +18,7 @@ class LinkedInService
                 'Accept-Language' => 'en-US,en;q=0.5',
             ])->timeout(30)->get($linkedinUrl);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'headcount' => null,

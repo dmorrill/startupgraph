@@ -34,7 +34,7 @@ class SavedSearchController extends Controller
         $savedSearch = Auth::user()->savedSearches()->create([
             'name' => $request->get('name'),
             'query' => $request->get('search'),
-            'filters_json' => !empty($filters) ? $filters : null,
+            'filters_json' => ! empty($filters) ? $filters : null,
             'notify_on_new' => $request->boolean('notify_on_new', false),
         ]);
 

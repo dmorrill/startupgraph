@@ -1,17 +1,17 @@
 <?php
 
-use App\Services\Discovery\ProductHuntDiscoveryService;
-use App\Services\Discovery\GitHubOrgDiscoveryService;
 use App\Services\Discovery\CompaniesHouseService;
+use App\Services\Discovery\GitHubOrgDiscoveryService;
+use App\Services\Discovery\ProductHuntDiscoveryService;
 
 test('product hunt service throws without token', function () {
     $service = new ProductHuntDiscoveryService(null);
-    expect(fn () => $service->discover())->toThrow(\RuntimeException::class);
+    expect(fn () => $service->discover())->toThrow(RuntimeException::class);
 });
 
 test('companies house service throws without key', function () {
     $service = new CompaniesHouseService(null);
-    expect(fn () => $service->search('test'))->toThrow(\RuntimeException::class);
+    expect(fn () => $service->search('test'))->toThrow(RuntimeException::class);
 });
 
 test('github org service works without token (lower rate limit)', function () {

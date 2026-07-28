@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\NewsMention;
 use App\Models\Company;
+use App\Models\NewsMention;
 
 test('news mention belongs to company', function () {
     $company = Company::factory()->create();

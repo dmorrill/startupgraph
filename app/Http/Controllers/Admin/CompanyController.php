@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -24,8 +24,8 @@ class CompanyController extends Controller
             $escapedSearch = str_replace(['%', '_'], ['\%', '\_'], $search);
             $query->where(function ($q) use ($escapedSearch) {
                 $q->where('name', 'like', "%{$escapedSearch}%")
-                  ->orWhere('city', 'like', "%{$escapedSearch}%")
-                  ->orWhere('country', 'like', "%{$escapedSearch}%");
+                    ->orWhere('city', 'like', "%{$escapedSearch}%")
+                    ->orWhere('country', 'like', "%{$escapedSearch}%");
             });
         }
 
@@ -68,7 +68,7 @@ class CompanyController extends Controller
         $originalSlug = $slug;
         $counter = 1;
         while (Company::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter;
+            $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
 

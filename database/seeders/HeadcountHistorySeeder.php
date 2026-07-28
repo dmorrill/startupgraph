@@ -18,11 +18,13 @@ class HeadcountHistorySeeder extends Seeder
             $startYear = max($foundedYear, 2018);
             $endYear = 2025;
 
-            if ($startYear >= $endYear) continue;
+            if ($startYear >= $endYear) {
+                continue;
+            }
 
             // Determine current headcount: use existing or generate realistic one
             $current = $company->current_headcount;
-            if (!$current || $current <= 0) {
+            if (! $current || $current <= 0) {
                 // Generate based on company age and a seed
                 $age = 2025 - $foundedYear;
                 $seed = crc32($company->name);
@@ -35,7 +37,7 @@ class HeadcountHistorySeeder extends Seeder
             // Work backwards from current
             $annualCounts = [$current];
             for ($i = 1; $i <= $years; $i++) {
-                $factor = 1 + $growthRate * (0.7 + (crc32($company->name . $i) % 60) / 100);
+                $factor = 1 + $growthRate * (0.7 + (crc32($company->name.$i) % 60) / 100);
                 $prev = end($annualCounts) / $factor;
                 $annualCounts[] = max(1, (int) round($prev));
             }
@@ -46,14 +48,16 @@ class HeadcountHistorySeeder extends Seeder
             foreach ($annualCounts as $i => $count) {
                 $year = $startYear + $i;
                 foreach ([1, 4, 7, 10] as $month) {
-                    if ($year == $endYear && $month > 6) break;
+                    if ($year == $endYear && $month > 6) {
+                        break;
+                    }
                     $date = Carbon::create($year, $month, 1)->format('Y-m-d');
-                    $variance = 1 + ((crc32($date . $company->id) % 10) - 5) / 100;
+                    $variance = 1 + ((crc32($date.$company->id) % 10) - 5) / 100;
                     $history[] = ['date' => $date, 'headcount' => max(1, (int) round($count * $variance))];
                 }
             }
 
-            usort($history, fn($a, $b) => strcmp($a['date'], $b['date']));
+            usort($history, fn ($a, $b) => strcmp($a['date'], $b['date']));
 
             $company->update([
                 'headcount_history' => $history,

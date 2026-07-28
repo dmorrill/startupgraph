@@ -6,7 +6,6 @@ use App\Models\Company;
 use App\Models\FundingRound;
 use App\Models\Investor;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -159,11 +158,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedXaiFunding(array $investors): void
     {
         $company = Company::where('slug', 'xai')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: xai');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -205,11 +207,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedScaleAiFunding(array $investors): void
     {
         $company = Company::where('slug', 'scale-ai')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: scale-ai');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -267,11 +272,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedCohereFunding(array $investors): void
     {
         $company = Company::where('slug', 'cohere')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: cohere');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -318,11 +326,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedMistralAiFunding(array $investors): void
     {
         $company = Company::where('slug', 'mistral-ai')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: mistral-ai');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -372,11 +383,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedHuggingFaceFunding(array $investors): void
     {
         $company = Company::where('slug', 'hugging-face')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: hugging-face');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -420,11 +434,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedRunwayFunding(array $investors): void
     {
         $company = Company::where('slug', 'runway')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: runway');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -469,11 +486,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedHarveyFunding(array $investors): void
     {
         $company = Company::where('slug', 'harvey')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: harvey');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -534,11 +554,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedFigureAiFunding(array $investors): void
     {
         $company = Company::where('slug', 'figure-ai')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: figure-ai');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -571,11 +594,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedPlaidFunding(array $investors): void
     {
         $company = Company::where('slug', 'plaid')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: plaid');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -628,11 +654,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedBrexFunding(array $investors): void
     {
         $company = Company::where('slug', 'brex')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: brex');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -692,11 +721,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedRampFunding(array $investors): void
     {
         $company = Company::where('slug', 'ramp')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: ramp');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -775,11 +807,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedChimeFunding(array $investors): void
     {
         $company = Company::where('slug', 'chime')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: chime');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -847,11 +882,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedWizFunding(array $investors): void
     {
         $company = Company::where('slug', 'wiz')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: wiz');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -906,11 +944,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedAndurilFunding(array $investors): void
     {
         $company = Company::where('slug', 'anduril-industries')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: anduril-industries');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -979,11 +1020,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedVercelFunding(array $investors): void
     {
         $company = Company::where('slug', 'vercel')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: vercel');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -1043,11 +1087,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedAirtableFunding(array $investors): void
     {
         $company = Company::where('slug', 'airtable')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: airtable');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -1109,11 +1156,14 @@ class AdditionalFundingDataSeeder extends Seeder
     private function seedRelativitySpaceFunding(array $investors): void
     {
         $company = Company::where('slug', 'relativity-space')->first();
-        if (!$company) {
+        if (! $company) {
             $this->command->warn('Company not found: relativity-space');
+
             return;
         }
-        if ($company->fundingRounds()->exists()) return;
+        if ($company->fundingRounds()->exists()) {
+            return;
+        }
 
         $rounds = [
             [
@@ -1172,7 +1222,7 @@ class AdditionalFundingDataSeeder extends Seeder
             $roundData['company_id'] = $company->id;
 
             $round = FundingRound::firstOrCreate(
-                ["company_id" => $roundData["company_id"], "announced_date" => $roundData["announced_date"], "round_type" => $roundData["round_type"] ?? null],
+                ['company_id' => $roundData['company_id'], 'announced_date' => $roundData['announced_date'], 'round_type' => $roundData['round_type'] ?? null],
                 $roundData
             );
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\OssProjectController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatsController;
+use App\Models\Company;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,7 +40,7 @@ Route::get('/oss-projects/{ossProject}', [OssProjectController::class, 'show']);
 
 // Categories list (for filtering)
 Route::get('/categories', fn () => response()->json([
-    'data' => collect(\App\Models\Company::CATEGORIES)->map(fn ($label, $key) => [
+    'data' => collect(Company::CATEGORIES)->map(fn ($label, $key) => [
         'key' => $key,
         'label' => $label,
     ])->values(),

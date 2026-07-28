@@ -15,7 +15,8 @@ class FundingRoundDeduplicationServiceTest extends TestCase
     {
         parent::setUp();
         // Bypass config() in constructor by using anonymous subclass
-        $this->service = new class extends FundingRoundDeduplicationService {
+        $this->service = new class extends FundingRoundDeduplicationService
+        {
             public function __construct()
             {
                 $this->dateTolerance = 30;
@@ -23,17 +24,17 @@ class FundingRoundDeduplicationServiceTest extends TestCase
             }
 
             // Expose protected methods for direct testing
-            public function testAreDatesWithinTolerance($date1, string $date2): bool
+            public function exposeAreDatesWithinTolerance($date1, string $date2): bool
             {
                 return $this->areDatesWithinTolerance($date1, $date2);
             }
 
-            public function testAreAmountsWithinTolerance(float $a1, float $a2): bool
+            public function exposeAreAmountsWithinTolerance(float $a1, float $a2): bool
             {
                 return $this->areAmountsWithinTolerance($a1, $a2);
             }
 
-            public function testCalculateAmountDiffPercent(?float $a1, ?float $a2): ?float
+            public function exposeCalculateAmountDiffPercent(?float $a1, ?float $a2): ?float
             {
                 return $this->calculateAmountDiffPercent($a1, $a2);
             }
@@ -192,12 +193,12 @@ class FundingRoundDeduplicationServiceTest extends TestCase
 
     public function test_dates_within_tolerance_with_string_input(): void
     {
-        $this->assertTrue($this->service->testAreDatesWithinTolerance('2025-03-01', '2025-03-15'));
+        $this->assertTrue($this->service->exposeAreDatesWithinTolerance('2025-03-01', '2025-03-15'));
     }
 
     public function test_dates_within_tolerance_with_carbon_input(): void
     {
-        $this->assertTrue($this->service->testAreDatesWithinTolerance(Carbon::parse('2025-03-01'), '2025-03-15'));
+        $this->assertTrue($this->service->exposeAreDatesWithinTolerance(Carbon::parse('2025-03-01'), '2025-03-15'));
     }
 
     // ---------------------------------------------------------------
@@ -206,25 +207,25 @@ class FundingRoundDeduplicationServiceTest extends TestCase
 
     public function test_both_amounts_zero(): void
     {
-        $this->assertTrue($this->service->testAreAmountsWithinTolerance(0.0, 0.0));
+        $this->assertTrue($this->service->exposeAreAmountsWithinTolerance(0.0, 0.0));
     }
 
     public function test_one_amount_zero_other_nonzero(): void
     {
-        $this->assertFalse($this->service->testAreAmountsWithinTolerance(0.0, 100.0));
-        $this->assertFalse($this->service->testAreAmountsWithinTolerance(100.0, 0.0));
+        $this->assertFalse($this->service->exposeAreAmountsWithinTolerance(0.0, 100.0));
+        $this->assertFalse($this->service->exposeAreAmountsWithinTolerance(100.0, 0.0));
     }
 
     public function test_very_small_amounts(): void
     {
         // 1.00 vs 1.05 = 5% diff, within tolerance
-        $this->assertTrue($this->service->testAreAmountsWithinTolerance(1.00, 1.05));
+        $this->assertTrue($this->service->exposeAreAmountsWithinTolerance(1.00, 1.05));
     }
 
     public function test_very_large_amounts(): void
     {
         // 1B vs 1.05B = 5% diff, within tolerance
-        $this->assertTrue($this->service->testAreAmountsWithinTolerance(1_000_000_000, 1_050_000_000));
+        $this->assertTrue($this->service->exposeAreAmountsWithinTolerance(1_000_000_000, 1_050_000_000));
     }
 
     // ---------------------------------------------------------------
@@ -233,36 +234,36 @@ class FundingRoundDeduplicationServiceTest extends TestCase
 
     public function test_diff_percent_both_null(): void
     {
-        $this->assertNull($this->service->testCalculateAmountDiffPercent(null, null));
+        $this->assertNull($this->service->exposeCalculateAmountDiffPercent(null, null));
     }
 
     public function test_diff_percent_one_null(): void
     {
-        $this->assertNull($this->service->testCalculateAmountDiffPercent(100.0, null));
-        $this->assertNull($this->service->testCalculateAmountDiffPercent(null, 100.0));
+        $this->assertNull($this->service->exposeCalculateAmountDiffPercent(100.0, null));
+        $this->assertNull($this->service->exposeCalculateAmountDiffPercent(null, 100.0));
     }
 
     public function test_diff_percent_both_zero(): void
     {
-        $this->assertEquals(0.0, $this->service->testCalculateAmountDiffPercent(0.0, 0.0));
+        $this->assertEquals(0.0, $this->service->exposeCalculateAmountDiffPercent(0.0, 0.0));
     }
 
     public function test_diff_percent_one_zero(): void
     {
-        $this->assertEquals(100.0, $this->service->testCalculateAmountDiffPercent(0.0, 500.0));
-        $this->assertEquals(100.0, $this->service->testCalculateAmountDiffPercent(500.0, 0.0));
+        $this->assertEquals(100.0, $this->service->exposeCalculateAmountDiffPercent(0.0, 500.0));
+        $this->assertEquals(100.0, $this->service->exposeCalculateAmountDiffPercent(500.0, 0.0));
     }
 
     public function test_diff_percent_normal_values(): void
     {
         // 10M vs 11M = 1M/11M ≈ 9.09%
-        $result = $this->service->testCalculateAmountDiffPercent(10_000_000, 11_000_000);
+        $result = $this->service->exposeCalculateAmountDiffPercent(10_000_000, 11_000_000);
         $this->assertEqualsWithDelta(9.09, $result, 0.01);
     }
 
     public function test_diff_percent_identical_values(): void
     {
-        $this->assertEquals(0.0, $this->service->testCalculateAmountDiffPercent(5_000_000, 5_000_000));
+        $this->assertEquals(0.0, $this->service->exposeCalculateAmountDiffPercent(5_000_000, 5_000_000));
     }
 
     // ---------------------------------------------------------------
@@ -302,7 +303,7 @@ class FundingRoundDeduplicationServiceTest extends TestCase
 
     private function makeFundingRound(string $date, ?float $amount): FundingRound
     {
-        $round = new FundingRound();
+        $round = new FundingRound;
         $round->announced_date = Carbon::parse($date);
         $round->amount = $amount;
 

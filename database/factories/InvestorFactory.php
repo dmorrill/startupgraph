@@ -12,7 +12,7 @@ class InvestorFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->company() . ' Ventures',
+            'name' => fake()->company().' Ventures',
             'slug' => fake()->unique()->slug(),
             'type' => fake()->randomElement(['vc', 'angel', 'corporate', 'accelerator', 'pe']),
             'website' => fake()->url(),

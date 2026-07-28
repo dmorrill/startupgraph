@@ -644,6 +644,6 @@ class TechCrunchCompaniesSeeder extends Seeder
             );
         }
 
-        $this->command->info('Seeded ' . count($companies) . ' companies from TechCrunch headlines.');
+        $this->command->info('Seeded '.count($companies).' companies from TechCrunch headlines.');
     }
 }

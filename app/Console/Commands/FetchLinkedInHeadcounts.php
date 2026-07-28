@@ -28,6 +28,7 @@ class FetchLinkedInHeadcounts extends Command
 
         if ($companies->isEmpty()) {
             $this->warn('No companies with LinkedIn URLs found.');
+
             return self::SUCCESS;
         }
 
@@ -42,9 +43,10 @@ class FetchLinkedInHeadcounts extends Command
 
             $result = $linkedInService->fetchHeadcount($company->linkedin_url);
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 $this->error("  Failed: {$result['error']}");
                 $failed++;
+
                 continue;
             }
 
@@ -52,7 +54,8 @@ class FetchLinkedInHeadcounts extends Command
             $this->info("  Found: {$headcount} employees");
 
             if ($this->option('dry-run')) {
-                $this->comment("  [Dry run - not saving]");
+                $this->comment('  [Dry run - not saving]');
+
                 continue;
             }
 
@@ -67,16 +70,16 @@ class FetchLinkedInHeadcounts extends Command
                 ->orderBy('recorded_date', 'desc')
                 ->first();
 
-            if (!$lastSnapshot || $lastSnapshot->headcount !== $headcount) {
+            if (! $lastSnapshot || $lastSnapshot->headcount !== $headcount) {
                 HeadcountSnapshot::create([
                     'company_id' => $company->id,
                     'headcount' => $headcount,
                     'recorded_date' => now()->toDateString(),
                     'source' => 'linkedin',
                 ]);
-                $this->info("  Saved new snapshot");
+                $this->info('  Saved new snapshot');
             } else {
-                $this->comment("  Headcount unchanged, skipping snapshot");
+                $this->comment('  Headcount unchanged, skipping snapshot');
             }
 
             $updated++;
