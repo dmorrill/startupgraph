@@ -59,12 +59,46 @@ Rules of thumb:
    signals (these require auth since they're personal).
 2. **Write API** — new. Token auth (Laravel Sanctum, one personal token). Endpoints
    for creating/updating lists, screens, notes, signals. This is what agents use.
-3. **MCP server** — promoted from nice-to-have to **primary product interface**.
-   Existing read tools stay; add write tools: `create_list`, `add_to_list`,
-   `save_note`, `create_screen`, `refresh_screen`, `log_signal`.
+3. **MCP server** — promoted from nice-to-have to **primary product interface**,
+   and hosted: a remote MCP endpoint (Streamable HTTP) at `startupgraph.dev/mcp`
+   so any agent connects with just a URL + token — not a localhost artisan
+   process. Existing read tools stay; add write tools: `create_list`,
+   `add_to_list`, `save_note`, `create_screen`, `refresh_screen`, `log_signal`.
 4. **iOS app** — thin SwiftUI client over the API. Reference architecture:
    Groupthink's `app-iOS` (Laravel backend + native client + web sharing one
    database), borrowed selectively since this client is thinner than a typical app.
+
+## Agent-native by design
+
+Agents are the native users from day one; humans mostly browse what agents
+produce. What that means concretely:
+
+1. **Hosted MCP endpoint is the front door.** Connecting an agent must be
+   "paste a URL, paste a token" — no cloning, no PHP, no local process.
+2. **Parity rule.** Anything the iOS app can display, an agent can query;
+   anything an agent can do goes through the same authed API a user's token
+   uses. No UI-only features, no agent-only backdoors.
+3. **Agent-legible surface.** OpenAPI spec, `llms.txt`, predictable JSON
+   envelopes, stable slugs, cursor pagination, structured errors, idempotent
+   writes. Docs written as copy-pasteable prompts and `mcp.json` snippets, not
+   just human prose.
+4. **Provenance on every write.** Which token/agent wrote it, when, and
+   optionally why (the `rationale` fields). This is what makes agent-written
+   research trustworthy and makes a community review queue possible later.
+
+## Marketing site (startupgraph.dev)
+
+Positioning: **"The startup database built for AI agents."** The site's job is
+to sell the loop: *you ask your agent → the agent works through StartupGraph →
+screens, lists, and memos appear on your phone.*
+
+- Primary CTAs: **Connect your agent** (token signup + `mcp.json` snippet) and
+  **Get the iPhone app** (TestFlight).
+- Serve `llms.txt` and agent-oriented docs; the site itself must be as legible
+  to a visiting agent as to a human.
+- Build-in-public angle: the repo, this plan, and the AI-assisted development
+  story are part of the pitch.
+- Message architecture and copy draft: `docs/marketing-site.md`.
 
 ## Phases
 
@@ -93,7 +127,9 @@ Rules of thumb:
 - [ ] Migrations + models: `List`, `ListEntry`, `Note`, `Signal`; generalize
       `SavedSearch` → `Screen` with stored result snapshots. All with `user_id`.
 - [ ] Write API endpoints + feature tests.
-- [ ] MCP write tools wired to the same endpoints.
+- [ ] MCP write tools wired to the same endpoints; host the MCP server as a
+      remote endpoint (Streamable HTTP) at `startupgraph.dev/mcp`.
+- [ ] OpenAPI spec + `llms.txt` + agent quickstart docs.
 - [ ] Signals generation: emit signal rows from existing pipelines (new funding
       round detected, headcount snapshot delta, etc.).
 
@@ -104,6 +140,11 @@ Rules of thumb:
 - [ ] Ship via TestFlight — Elle first, then a public TestFlight beta.
 - Explicitly out of scope: editing, push notifications (candidate for v1.1),
   billing/pro tier.
+
+### Phase 2.5 — Marketing site
+- [ ] Landing page at startupgraph.dev selling the agent-first loop, with the
+      two CTAs (connect your agent / get the app), `llms.txt`, and docs.
+      Copy draft in `docs/marketing-site.md`.
 
 ### Phase 3 — Grow the dataset (parallel, ongoing)
 - [ ] Unblock importers that just need API keys: GitHub orgs (#68), Product Hunt
