@@ -134,10 +134,15 @@ screens, lists, and memos appear on your phone.*
       round detected, headcount snapshot delta, etc.).
 
 ### Phase 2 — iOS v1 (read-only)
-- [ ] SwiftUI app: signals feed (home), search, company profile (funding,
-      headcount chart, people, notes), lists, screens.
-- [ ] Auth: sign-in with per-user API token.
-- [ ] Ship via TestFlight — Elle first, then a public TestFlight beta.
+- [x] Decide where the app lives: `ios/` in this repo (monorepo — one PR flow,
+      contributors see everything, fits build-in-public).
+- [x] SwiftUI scaffold (`ios/`, XcodeGen project): sign-in with server URL +
+      token (Keychain), signals feed (home), screens, lists with rationales,
+      search, company profile with headcount chart (Swift Charts) and the
+      user's notes. Not yet compiled — needs a Mac/Xcode pass (#108 covers
+      TestFlight setup).
+- [ ] First build + fix pass in Xcode; app icon; TestFlight (Elle first,
+      then public beta — #108).
 - Explicitly out of scope: editing, push notifications (candidate for v1.1),
   billing/pro tier.
 
@@ -178,7 +183,8 @@ Prerequisites to make this real:
 
 ## Open questions
 
-- Whether to pull in Groupthink `app-iOS` scaffolding wholesale or just crib its
-  API-client/auth patterns — pending a look at that repo.
-- Hosting: Laravel Cloud per #84, unless something changed.
+- Hosting: Laravel Cloud per #84, unless something changed. Domain: #107.
 - Push notifications for signals: v1.1, needs APNs setup.
+- Groupthink `app-iOS` reference: the scaffold was built fresh (thin client
+  didn't warrant importing a full architecture); still worth a comparison
+  pass for auth/API-client patterns if the repo gets added to a session.

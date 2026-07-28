@@ -40,7 +40,7 @@ class ScreenController extends Controller
             ['name' => $validated['name']],
             [
                 'description' => $validated['description'] ?? null,
-                'criteria' => $validated['criteria'],
+                'criteria' => CompanyQueryService::sanitizeCriteria($validated['criteria']),
                 'created_via' => $request->user()?->currentAccessToken()?->name,
             ]
         );

@@ -27,6 +27,24 @@ class CompanyQueryService
         'latest_funding_date',
     ];
 
+    public const CRITERIA_KEYS = [
+        'q', 'category', 'country', 'funded_after', 'funded_before',
+        'funded_recent', 'sort', 'order',
+    ];
+
+    /**
+     * Keep only known criteria keys with scalar values — screens store
+     * this JSON and clients decode it strictly as string maps.
+     */
+    public static function sanitizeCriteria(array $criteria): array
+    {
+        return collect($criteria)
+            ->only(self::CRITERIA_KEYS)
+            ->filter(fn ($value) => is_scalar($value) && $value !== '')
+            ->map(fn ($value) => (string) $value)
+            ->all();
+    }
+
     public function build(array $criteria): Builder
     {
         $query = Company::query()

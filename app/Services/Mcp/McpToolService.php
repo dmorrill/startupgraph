@@ -332,7 +332,7 @@ class McpToolService
 
         $screen = $user->screens()->updateOrCreate(
             ['name' => $args['name']],
-            ['criteria' => $args['criteria'], 'created_via' => $this->createdVia($user)]
+            ['criteria' => CompanyQueryService::sanitizeCriteria($args['criteria']), 'created_via' => $this->createdVia($user)]
         );
 
         return $this->runScreen($screen);
