@@ -1,23 +1,24 @@
 <?php
 
-use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\SitemapController;
-use App\Http\Controllers\CompareController;
-use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\Admin\CompanyController as AdminCompanyController;
-use App\Http\Controllers\Admin\SubmissionController as AdminSubmissionController;
-use App\Http\Controllers\PersonController;
-use App\Http\Controllers\InvestorController;
-use App\Http\Controllers\OpenSourceController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\CompanyFollowController;
-use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\OssProjectController as AdminOssProjectController;
+use App\Http\Controllers\Admin\SubmissionController as AdminSubmissionController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanyFollowController;
+use App\Http\Controllers\CompareController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\InvestorController;
+use App\Http\Controllers\OpenSourceController;
+use App\Http\Controllers\PersonController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', fn () => response(file_get_contents(public_path('robots.txt')), 200, ['Content-Type' => 'text/plain']))->name('robots');
 Route::get('/', [CompanyController::class, 'index'])->name('home');
 Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
 Route::get('/compare', [CompareController::class, 'index'])->name('companies.compare');

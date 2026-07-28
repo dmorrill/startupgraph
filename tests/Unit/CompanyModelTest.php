@@ -1,9 +1,6 @@
 <?php
 
 use App\Models\Company;
-use App\Models\FundingRound;
-use App\Models\Person;
-use App\Models\NewsMention;
 
 test('company has many funding rounds', function () {
     $company = Company::factory()->create();
@@ -12,7 +9,7 @@ test('company has many funding rounds', function () {
 
 test('company has many people', function () {
     $company = Company::factory()->create();
-    expect($company->people())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($company->people())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class);
 });
 
 test('company has many news mentions', function () {

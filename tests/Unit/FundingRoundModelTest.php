@@ -1,8 +1,7 @@
 <?php
 
-use App\Models\FundingRound;
 use App\Models\Company;
-use App\Models\Investor;
+use App\Models\FundingRound;
 
 test('funding round belongs to a company', function () {
     $company = Company::factory()->create();
@@ -17,5 +16,5 @@ test('funding round has many investors', function () {
 
 test('funding round has amount', function () {
     $round = FundingRound::factory()->create(['amount' => 5000000]);
-    expect($round->amount)->toBe(5000000);
+    expect((float) $round->amount)->toBe(5000000.0);
 });

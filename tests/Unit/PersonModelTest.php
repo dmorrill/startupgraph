@@ -1,12 +1,14 @@
 <?php
 
-use App\Models\Person;
 use App\Models\Company;
+use App\Models\Person;
 
-test('person belongs to a company', function () {
+test('person can belong to a company', function () {
     $company = Company::factory()->create();
-    $person = Person::factory()->create(['company_id' => $company->id]);
-    expect($person->company)->toBeInstanceOf(Company::class);
+    $person = Person::factory()->create();
+    $person->companies()->attach($company->id, ['role' => 'CEO', 'is_current' => true]);
+
+    expect($person->companies->first())->toBeInstanceOf(Company::class);
 });
 
 test('person has a name', function () {

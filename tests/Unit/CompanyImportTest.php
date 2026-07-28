@@ -7,7 +7,7 @@ test('company import has source', function () {
     expect($import->source)->toBe('wikipedia');
 });
 
-test('company import tracks count', function () {
-    $import = CompanyImport::factory()->create(['count' => 500]);
-    expect($import->count)->toBe(500);
+test('company import tracks processed count', function () {
+    $import = CompanyImport::factory()->create(['total_processed' => 500]);
+    expect($import->total_processed)->toBe(500);
 });
