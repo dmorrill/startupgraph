@@ -102,6 +102,11 @@ class Company extends Model
             ->withTimestamps();
     }
 
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'company_follows')->withTimestamps();
+    }
+
     public function scheduledTaskExecutions(): HasMany
     {
         return $this->hasMany(ScheduledTaskExecution::class);

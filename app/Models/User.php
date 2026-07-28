@@ -58,6 +58,26 @@ class User extends Authenticatable
             ->distinct();
     }
 
+    public function lists()
+    {
+        return $this->hasMany(CompanyList::class);
+    }
+
+    public function screens()
+    {
+        return $this->hasMany(Screen::class);
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+
+    public function signals()
+    {
+        return $this->hasMany(Signal::class);
+    }
+
     public function isFollowing(Company $company): bool
     {
         return $this->followedCompanies()->where('company_id', $company->id)->exists();
