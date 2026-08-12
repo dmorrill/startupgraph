@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -14,7 +15,7 @@ class DashboardController extends Controller
         $followedCompanies = $user->followedCompanies()->take(12)->get();
         $recentlyViewed = $user->recentlyViewedCompanies()->take(10)->get();
         $isNewUser = $user->created_at->gt(now()->subMinutes(5)) || session('just_registered');
-        $companyCount = \App\Models\Company::count();
+        $companyCount = Company::count();
 
         return view('dashboard', compact('savedSearches', 'followedCompanies', 'recentlyViewed', 'isNewUser', 'companyCount'));
     }

@@ -5,6 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\Company;
 use App\Models\OpenSourceProject;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class OpenSourceProjectTest extends TestCase
@@ -50,7 +51,7 @@ class OpenSourceProjectTest extends TestCase
     {
         $project = OpenSourceProject::factory()->create();
 
-        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $project->last_commit_at);
-        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $project->github_created_at);
+        $this->assertInstanceOf(Carbon::class, $project->last_commit_at);
+        $this->assertInstanceOf(Carbon::class, $project->github_created_at);
     }
 }

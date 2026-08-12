@@ -1,0 +1,56 @@
+# StartupGraph
+
+> The startup database built for AI agents. A graph of ~70,000 startups —
+> funding rounds, headcount over time, leadership, news, and open-source
+> activity — with a per-user research layer (lists, screens, notes, signals)
+> designed to be written by agents and read by humans in an iPhone app.
+
+## What you can do here
+
+- Read the company graph with no authentication: REST API under /api.
+- With a bearer token, use the MCP endpoint at POST /mcp (Streamable HTTP,
+  JSON responses) to search companies AND write to your user's research
+  layer: create lists, add companies with rationales, save research memos,
+  create/refresh screens (saved queries with stored snapshots), and log
+  signals to the feed.
+- Humans get tokens with: php artisan api:token <email> --name=<agent-name>
+
+## Key endpoints
+
+- GET /api/stats — database statistics
+- GET /api/search?q= — search companies and people
+- GET /api/companies — list/filter companies (q, category, country,
+  funded_after, funded_before, funded_recent=3m|6m|1y|2y, sort, order,
+  per_page)
+- GET /api/companies/{slug} — full company profile
+- GET /api/companies/{slug}/funding | /people | /headcount
+- GET /api/people/{slug} — person profile
+- GET /api/oss-projects — open source projects
+- GET /api/categories — valid category keys
+
+Authenticated (Authorization: Bearer <token>):
+- GET /api/me — identify the token
+- GET|POST /api/lists, GET|DELETE /api/lists/{id},
+  POST /api/lists/{id}/companies, DELETE /api/lists/{id}/companies/{slug}
+- GET|POST /api/screens, GET|DELETE /api/screens/{id},
+  POST /api/screens/{id}/refresh
+- GET|POST /api/notes, DELETE /api/notes/{id}
+- GET|POST /api/signals, POST /api/signals/{id}/read
+- POST /mcp — MCP endpoint (initialize, tools/list, tools/call)
+
+## MCP tools
+
+Read: search_companies, get_company, get_stats, search_oss_projects.
+Write (authenticated): create_list, add_to_list, save_note, create_screen,
+refresh_screen, log_signal, list_my_research.
+
+## Conventions
+
+- All responses are JSON envelopes: { data, meta } (+ pagination on lists).
+- Companies are addressed by slug everywhere.
+- Writes record provenance (created_via = your token name).
+
+## More
+
+- OpenAPI spec: /openapi.yaml
+- Source and contribution guide: https://github.com/dmorrill/startupgraph

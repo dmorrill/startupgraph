@@ -1,0 +1,239 @@
+openapi: 3.1.0
+info:
+  title: StartupGraph API
+  version: "2.0"
+  description: >
+    The startup database built for AI agents. Public reads over the company
+    graph; authenticated writes to the caller's personal research layer
+    (lists, screens, notes, signals). Companies are addressed by slug.
+    All responses are JSON envelopes of the form { data, meta }.
+servers:
+  - url: https://startupgraph.dev
+  - url: http://localhost:8000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Sanctum personal access token (php artisan api:token).
+paths:
+  /api/stats:
+    get:
+      summary: Database statistics
+      responses: {"200": {description: OK}}
+  /api/search:
+    get:
+      summary: Search companies and people
+      parameters:
+        - {name: q, in: query, required: true, schema: {type: string}}
+      responses: {"200": {description: OK}}
+  /api/categories:
+    get:
+      summary: Valid company category keys
+      responses: {"200": {description: OK}}
+  /api/companies:
+    get:
+      summary: List companies with filters
+      parameters:
+        - {name: q, in: query, schema: {type: string}}
+        - {name: category, in: query, schema: {type: string}}
+        - {name: country, in: query, schema: {type: string}}
+        - {name: funded_after, in: query, schema: {type: string, format: date}}
+        - {name: funded_before, in: query, schema: {type: string, format: date}}
+        - {name: funded_recent, in: query, schema: {type: string, enum: [3m, 6m, 1y, 2y]}}
+        - {name: sort, in: query, schema: {type: string, enum: [name, founded_date, city, country, category, funding_rounds_sum_amount, latest_funding_date]}}
+        - {name: order, in: query, schema: {type: string, enum: [asc, desc]}}
+        - {name: per_page, in: query, schema: {type: integer, maximum: 100}}
+      responses: {"200": {description: OK}}
+  /api/companies/{slug}:
+    get:
+      summary: Full company profile
+      parameters: [{name: slug, in: path, required: true, schema: {type: string}}]
+      responses: {"200": {description: OK}, "404": {description: Not found}}
+  /api/companies/{slug}/funding:
+    get:
+      summary: Funding history
+      parameters: [{name: slug, in: path, required: true, schema: {type: string}}]
+      responses: {"200": {description: OK}}
+  /api/companies/{slug}/people:
+    get:
+      summary: Leadership team
+      parameters: [{name: slug, in: path, required: true, schema: {type: string}}]
+      responses: {"200": {description: OK}}
+  /api/companies/{slug}/headcount:
+    get:
+      summary: Headcount snapshots over time
+      parameters: [{name: slug, in: path, required: true, schema: {type: string}}]
+      responses: {"200": {description: OK}}
+  /api/people/{slug}:
+    get:
+      summary: Person profile
+      parameters: [{name: slug, in: path, required: true, schema: {type: string}}]
+      responses: {"200": {description: OK}}
+  /api/oss-projects:
+    get:
+      summary: Open source projects
+      responses: {"200": {description: OK}}
+  /api/me:
+    get:
+      summary: Identify the calling token
+      security: [{bearerAuth: []}]
+      responses: {"200": {description: OK}, "401": {description: Unauthenticated}}
+  /api/lists:
+    get:
+      summary: The caller's lists
+      security: [{bearerAuth: []}]
+      responses: {"200": {description: OK}}
+    post:
+      summary: Create a list (find-or-create by name)
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: {type: string}
+                description: {type: string}
+      responses: {"201": {description: Created}, "200": {description: Already existed}}
+  /api/lists/{id}:
+    get:
+      summary: A list with its companies and rationales
+      security: [{bearerAuth: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: integer}}]
+      responses: {"200": {description: OK}}
+    delete:
+      summary: Delete a list
+      security: [{bearerAuth: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: integer}}]
+      responses: {"200": {description: Deleted}}
+  /api/lists/{id}/companies:
+    post:
+      summary: Add a company (by slug) to a list
+      security: [{bearerAuth: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: integer}}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company]
+              properties:
+                company: {type: string, description: Company slug}
+                rationale: {type: string}
+      responses: {"201": {description: Added}}
+  /api/lists/{id}/companies/{slug}:
+    delete:
+      summary: Remove a company from a list
+      security: [{bearerAuth: []}]
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+        - {name: slug, in: path, required: true, schema: {type: string}}
+      responses: {"200": {description: Removed}}
+  /api/screens:
+    get:
+      summary: The caller's screens
+      security: [{bearerAuth: []}]
+      responses: {"200": {description: OK}}
+    post:
+      summary: Create/update a screen (upsert by name); runs immediately
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, criteria]
+              properties:
+                name: {type: string}
+                description: {type: string}
+                criteria:
+                  type: object
+                  description: Same filter keys as GET /api/companies
+      responses: {"201": {description: Created}, "200": {description: Updated}}
+  /api/screens/{id}:
+    get:
+      summary: A screen with its stored result snapshot
+      security: [{bearerAuth: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: integer}}]
+      responses: {"200": {description: OK}}
+    delete:
+      summary: Delete a screen
+      security: [{bearerAuth: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: integer}}]
+      responses: {"200": {description: Deleted}}
+  /api/screens/{id}/refresh:
+    post:
+      summary: Re-run a screen and update its snapshot
+      security: [{bearerAuth: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: integer}}]
+      responses: {"200": {description: OK}}
+  /api/notes:
+    get:
+      summary: The caller's notes (optionally ?company=slug)
+      security: [{bearerAuth: []}]
+      parameters: [{name: company, in: query, schema: {type: string}}]
+      responses: {"200": {description: OK}}
+    post:
+      summary: Attach a research memo to a company
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company, body]
+              properties:
+                company: {type: string, description: Company slug}
+                title: {type: string}
+                body: {type: string, description: Markdown}
+      responses: {"201": {description: Created}}
+  /api/notes/{id}:
+    delete:
+      summary: Delete a note
+      security: [{bearerAuth: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: integer}}]
+      responses: {"200": {description: Deleted}}
+  /api/signals:
+    get:
+      summary: The caller's signal feed (?unread=1, ?limit=)
+      security: [{bearerAuth: []}]
+      parameters:
+        - {name: unread, in: query, schema: {type: boolean}}
+        - {name: limit, in: query, schema: {type: integer, maximum: 100}}
+      responses: {"200": {description: OK}}
+    post:
+      summary: Log a custom signal to the feed
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: {type: string}
+                body: {type: string}
+                company: {type: string, description: Company slug}
+                payload: {type: object}
+      responses: {"201": {description: Created}}
+  /api/signals/{id}/read:
+    post:
+      summary: Mark a signal read
+      security: [{bearerAuth: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: integer}}]
+      responses: {"200": {description: OK}}
+  /mcp:
+    post:
+      summary: Hosted MCP endpoint (Streamable HTTP, JSON responses)
+      description: >
+        JSON-RPC 2.0. Methods: initialize, ping, tools/list, tools/call.
+        Read tools plus write tools operating on the caller's research layer.
+      security: [{bearerAuth: []}]
+      responses: {"200": {description: JSON-RPC response}, "401": {description: Unauthenticated}}

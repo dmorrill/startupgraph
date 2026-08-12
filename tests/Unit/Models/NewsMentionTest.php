@@ -5,6 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\Company;
 use App\Models\NewsMention;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class NewsMentionTest extends TestCase
@@ -30,6 +31,6 @@ class NewsMentionTest extends TestCase
     {
         $mention = NewsMention::factory()->create();
 
-        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $mention->published_date);
+        $this->assertInstanceOf(Carbon::class, $mention->published_date);
     }
 }

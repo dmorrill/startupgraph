@@ -7,6 +7,6 @@ test('person page loads', function () {
     $user = User::factory()->create();
     $person = Person::factory()->create();
 
-    $response = $this->actingAs($user)->get("/people/{$person->id}");
+    $response = $this->actingAs($user)->get("/people/{$person->slug}");
     $response->assertStatus(200);
 });

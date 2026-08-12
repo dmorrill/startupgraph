@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Company;
 use App\Services\FundingRoundDeduplicationService;
 use Illuminate\Console\Command;
 
@@ -29,7 +30,7 @@ class CheckFundingDuplicates extends Command
      */
     public function handle(): int
     {
-        $service = new FundingRoundDeduplicationService();
+        $service = new FundingRoundDeduplicationService;
 
         // Apply custom tolerances if provided
         $dateTolerance = (int) $this->option('date-tolerance');
@@ -38,9 +39,9 @@ class CheckFundingDuplicates extends Command
         $service->setDateTolerance($dateTolerance);
         $service->setAmountTolerance($amountTolerance);
 
-        $this->info("Checking for potential duplicate funding rounds...");
+        $this->info('Checking for potential duplicate funding rounds...');
         $this->info("Date tolerance: {$dateTolerance} days");
-        $this->info("Amount tolerance: " . ($amountTolerance * 100) . "%");
+        $this->info('Amount tolerance: '.($amountTolerance * 100).'%');
         $this->newLine();
 
         if ($companySlug = $this->option('company')) {
@@ -55,10 +56,11 @@ class CheckFundingDuplicates extends Command
      */
     protected function checkForCompany(FundingRoundDeduplicationService $service, string $slug): int
     {
-        $company = \App\Models\Company::where('slug', $slug)->first();
+        $company = Company::where('slug', $slug)->first();
 
-        if (!$company) {
+        if (! $company) {
             $this->error("Company with slug '{$slug}' not found.");
+
             return 1;
         }
 
@@ -66,10 +68,11 @@ class CheckFundingDuplicates extends Command
 
         if ($duplicates->isEmpty()) {
             $this->info("No potential duplicates found for {$company->name}.");
+
             return 0;
         }
 
-        $this->warn("Found " . $duplicates->count() . " potential duplicate pair(s) for {$company->name}:");
+        $this->warn('Found '.$duplicates->count()." potential duplicate pair(s) for {$company->name}:");
         $this->newLine();
 
         $this->outputDuplicates($duplicates);
@@ -85,16 +88,17 @@ class CheckFundingDuplicates extends Command
         $results = $service->findAllDuplicates();
 
         if ($results->isEmpty()) {
-            $this->info("No potential duplicates found across all companies.");
+            $this->info('No potential duplicates found across all companies.');
+
             return 0;
         }
 
-        $totalPairs = $results->sum(fn($r) => $r['duplicates']->count());
-        $this->warn("Found {$totalPairs} potential duplicate pair(s) across " . $results->count() . " company(ies):");
+        $totalPairs = $results->sum(fn ($r) => $r['duplicates']->count());
+        $this->warn("Found {$totalPairs} potential duplicate pair(s) across ".$results->count().' company(ies):');
         $this->newLine();
 
         foreach ($results as $result) {
-            $this->info("Company: " . $result['company']->name);
+            $this->info('Company: '.$result['company']->name);
             $this->outputDuplicates($result['duplicates']);
             $this->newLine();
         }
@@ -140,13 +144,13 @@ class CheckFundingDuplicates extends Command
         }
 
         if ($amount >= 1_000_000_000) {
-            return '$' . round($amount / 1_000_000_000, 2) . 'B';
+            return '$'.round($amount / 1_000_000_000, 2).'B';
         }
 
         if ($amount >= 1_000_000) {
-            return '$' . round($amount / 1_000_000, 1) . 'M';
+            return '$'.round($amount / 1_000_000, 1).'M';
         }
 
-        return '$' . number_format($amount);
+        return '$'.number_format($amount);
     }
 }

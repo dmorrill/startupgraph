@@ -50,6 +50,7 @@ class SchedulingStatus extends Command
         if ($stats->isEmpty()) {
             $this->comment('No task executions found.');
             $this->newLine();
+
             return;
         }
 
@@ -57,8 +58,9 @@ class SchedulingStatus extends Command
             ['Task Type', 'Total', 'Success', 'Failed', 'Running', 'Success Rate'],
             $stats->map(function ($row) {
                 $rate = $row->total > 0
-                    ? round(($row->success / $row->total) * 100, 1) . '%'
+                    ? round(($row->success / $row->total) * 100, 1).'%'
                     : 'N/A';
+
                 return [
                     $row->task_type,
                     $row->total,
@@ -75,7 +77,7 @@ class SchedulingStatus extends Command
 
     private function showRecentFailures(int $days, ?string $taskType): void
     {
-        $this->info("=== Recent Failures ===");
+        $this->info('=== Recent Failures ===');
         $this->newLine();
 
         $query = ScheduledTaskExecution::recent($days)
@@ -93,6 +95,7 @@ class SchedulingStatus extends Command
         if ($failures->isEmpty()) {
             $this->comment('No failures found. Great!');
             $this->newLine();
+
             return;
         }
 
@@ -102,7 +105,7 @@ class SchedulingStatus extends Command
                 $companyName = $execution->company?->name ?? 'N/A';
                 $error = $execution->error_message
                     ? (strlen($execution->error_message) > 50
-                        ? substr($execution->error_message, 0, 47) . '...'
+                        ? substr($execution->error_message, 0, 47).'...'
                         : $execution->error_message)
                     : 'Unknown error';
 
@@ -120,7 +123,7 @@ class SchedulingStatus extends Command
 
     private function showCompanyDistribution(): void
     {
-        $this->info("=== Company Distribution by Fetch Day ===");
+        $this->info('=== Company Distribution by Fetch Day ===');
         $this->newLine();
 
         $withLinkedIn = Company::whereNotNull('linkedin_url')->count();
@@ -137,6 +140,7 @@ class SchedulingStatus extends Command
         if ($assigned === 0) {
             $this->comment('No companies assigned yet. Run: php artisan schedule:headcounts --assign-only');
             $this->newLine();
+
             return;
         }
 
@@ -157,7 +161,7 @@ class SchedulingStatus extends Command
         }
 
         foreach ($rows as $row) {
-            $this->line('  ' . implode('  |  ', $row));
+            $this->line('  '.implode('  |  ', $row));
         }
 
         $this->newLine();

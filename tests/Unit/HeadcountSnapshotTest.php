@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\HeadcountSnapshot;
 use App\Models\Company;
+use App\Models\HeadcountSnapshot;
 
 test('headcount snapshot belongs to company', function () {
     $company = Company::factory()->create();

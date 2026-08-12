@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ScheduledTaskExecution extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'task_type',
         'company_id',

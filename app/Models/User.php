@@ -3,14 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    /** @use HasFactory<UserFactory> */
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -54,6 +56,26 @@ class User extends Authenticatable
             ->withPivot('viewed_at')
             ->orderByPivot('viewed_at', 'desc')
             ->distinct();
+    }
+
+    public function lists()
+    {
+        return $this->hasMany(CompanyList::class);
+    }
+
+    public function screens()
+    {
+        return $this->hasMany(Screen::class);
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+
+    public function signals()
+    {
+        return $this->hasMany(Signal::class);
     }
 
     public function isFollowing(Company $company): bool

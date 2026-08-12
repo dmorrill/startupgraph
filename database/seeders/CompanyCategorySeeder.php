@@ -83,7 +83,7 @@ class CompanyCategorySeeder extends Seeder
         // Report any uncategorized companies
         $uncategorized = Company::whereNull('category')->pluck('name');
         if ($uncategorized->isNotEmpty()) {
-            $this->command->warn("Uncategorized companies: " . $uncategorized->join(', '));
+            $this->command->warn('Uncategorized companies: '.$uncategorized->join(', '));
         }
     }
 }

@@ -1,198 +1,116 @@
 # StartupGraph
 
-An open source database of startups tracking company growth, funding, and news mentions over time.
+**The startup database built for AI agents.**
 
-## What is this?
+StartupGraph is an open-source graph of ~70,000 startups — funding rounds,
+headcount over time, leadership, news, and open-source activity — designed so
+that **AI agents are the native users**. Your agent queries the graph, builds
+screens and lists, and writes research memos; you read the results in a native
+iPhone app.
 
-StartupGraph helps you keep tabs on startups by tracking:
+Think of it as an agent-first Mattermark: instead of a human clicking through
+filter dashboards, you ask your agent —
 
-- **Company basics** - name, website, description, founded date, location
-- **Product highlights** - key products, features, and capabilities
-- **Leadership** - founders, executives, and key team members with LinkedIn profiles
-- **Headcount over time** - see how teams grow (or shrink)
-- **Funding history** - rounds, amounts, investors, and source links
-- **News mentions** - media coverage and press
+> "Find Series A dev-tools companies that raised in the last 6 months and are
+> still under 50 people, and put the interesting ones on a list."
 
-## Current data
+— and the screen, the list, and the memos show up on your phone.
 
-The database currently includes **107 companies** with:
-- Product highlights (6 bullet points per company)
-- Leadership profiles (233 people total)
-- Funding rounds with source URLs
-- Headcount snapshots
+**This project is being rebuilt in public.** The full plan is in
+[`docs/restart-plan-ios-first.md`](docs/restart-plan-ios-first.md); the
+marketing/positioning draft is in [`docs/marketing-site.md`](docs/marketing-site.md).
+It's also a running showcase of AI-assisted development — most of this codebase
+is built with Claude.
 
-## Features
+## Architecture
 
-- Sortable and filterable company table
-- Company detail pages with product info and team
-- Person profile pages showing career history
-- Filter by funding recency (3 months, 6 months, 1 year, etc.)
-- Sort by total raised, last fundraise date, headcount
-- **Export** — CSV and JSON export with current filters applied
-- **Open source tracking** — GitHub OSS project discovery and star monitoring
-- **Public submissions** — community submission form with admin review
-- **XML Sitemap** — auto-generated at `/sitemap.xml`
-- **Public REST API** — no auth required, designed for AI agents
-- **MCP server** — direct integration with Claude and other AI tools
+Two layers, one rule:
 
-## Use cases
+- **The company graph is the commons.** Companies, funding rounds, investors,
+  people, headcount snapshots, news, and OSS projects. Shared by everyone,
+  grown by import pipelines, agents, and community contributions.
+- **The research layer is yours.** Lists, screens (saved queries), notes, and
+  signals are scoped to your account and written mostly by your agent through
+  the API and MCP server.
 
-- **Investing** - Track growth signals and company trajectory
-- **Job hunting** - Evaluate potential employers beyond LinkedIn
-- **Curiosity** - Browse and discover interesting companies
-
-## Tech stack
-
-- Laravel 12
-- SQLite (development) / MySQL/PostgreSQL (production)
-- Tailwind CSS
-- Blade templates
-
-## Local development
-
-```bash
-# Install dependencies
-composer install
-
-# Copy environment file
-cp .env.example .env
-
-# Generate app key
-php artisan key:generate
-
-# Run migrations
-php artisan migrate
-
-# Seed the database
-php artisan db:seed
-
-# Start the dev server
-php artisan serve
+```
+Your agent ──MCP/API──▶ StartupGraph (Laravel + MySQL/SQLite)
+                              │
+                              ▼
+                        iPhone app (SwiftUI) — your screens, lists, memos
 ```
 
-## Monthly maintenance
+## For agents (and their humans)
 
-To keep the data fresh, run these tasks monthly:
-
-### 1. Update employee headcounts
-
-Fetch latest employee counts from LinkedIn:
+StartupGraph speaks MCP (Model Context Protocol). Today that's a local stdio
+server; a hosted endpoint at `startupgraph.dev/mcp` is part of the current
+build phase.
 
 ```bash
-php artisan headcount:fetch-linkedin --limit=107
+php artisan mcp:serve
 ```
 
-This creates new HeadcountSnapshot records when counts change, building historical data for the growth charts.
+```json
+{
+  "mcpServers": {
+    "startupgraph": { "command": "php", "args": ["artisan", "mcp:serve"] }
+  }
+}
+```
 
-### 2. Review new funding rounds
+Read tools available now: `search_companies`, `get_company`, `get_stats`,
+`search_oss_projects`. Write tools (`create_list`, `add_to_list`, `save_note`,
+`create_screen`, `log_signal`) are part of Phase 1 — see the plan.
 
-Check for recent funding announcements and add new FundingRound records. Sources:
-- [Crunchbase News](https://news.crunchbase.com/)
-- [TechCrunch Fundraising](https://techcrunch.com/tag/fundraising/)
-
-### 3. Update company profiles (quarterly)
-
-Refresh product highlights and leadership data as companies evolve.
-
-## Status
-
-Early development. See [Issue #1](https://github.com/dmorrill/startupgraph/issues/1) for the full vision and roadmap.
-
-### Recent additions
-
-- OSS project tracking with GitHub star monitoring
-- Indie project tracking with Product Hunt discovery
-- MCP server for AI tool integration
-- Public submission form for community contributions
-- Data audit command for completeness reporting
-
-## API
-
-StartupGraph provides a public JSON API with no authentication required. Designed to be queried by AI agents like Claude Code.
-
-### Endpoints
+There is also a public REST API with no auth required for reads:
 
 | Endpoint | Description |
 |----------|-------------|
 | `GET /api/stats` | Database statistics |
 | `GET /api/search?q=` | Search companies and people |
-| `GET /api/companies` | List companies with filters |
+| `GET /api/companies` | List companies (filters: `q`, `category`, `country`, `funded_recent`, `sort`, …) |
 | `GET /api/companies/{slug}` | Full company profile |
 | `GET /api/companies/{slug}/funding` | Funding history |
 | `GET /api/companies/{slug}/people` | Leadership team |
 | `GET /api/companies/{slug}/headcount` | Employee growth |
 | `GET /api/people/{slug}` | Person profile |
-| `GET /api/categories` | List category filters |
-| `GET /api/oss-projects` | List open source projects |
-| `GET /api/oss-projects/{id}` | OSS project details |
+| `GET /api/oss-projects` | Open source projects |
 
-### Query Parameters
+## Current data
 
-For `/api/companies`:
-- `q` - Search by name, description, city, country
-- `category` - Filter by category (ai_ml, fintech, enterprise, etc.)
-- `country` - Filter by country
-- `funded_after` - Date filter (YYYY-MM-DD)
-- `funded_before` - Date filter (YYYY-MM-DD)
-- `funded_recent` - Preset filter (3m, 6m, 1y, 2y)
-- `sort` - Sort field (name, founded_date, funding_rounds_sum_amount, etc.)
-- `order` - Sort direction (asc, desc)
-- `per_page` - Results per page (default 50, max 100)
+- ~70,000 companies (YC, Wikipedia, SEC EDGAR, GitHub, HackerNews, and more)
+- Funding rounds with amounts, investors, and source links
+- 233 curated leadership profiles, headcount snapshots, OSS star tracking
+- Growing — see the [50K+ milestone](https://github.com/dmorrill/startupgraph/issues/75)
 
-### Example
+## Contributing
 
-```bash
-# Get all AI/ML companies
-curl "http://localhost:8000/api/companies?category=ai_ml"
+The easiest first contribution: several importers are built and waiting on a
+free API key — grab one issue from
+[`good first issue`](https://github.com/dmorrill/startupgraph/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22),
+get the key, run one artisan command, and thousands of companies land in the
+commons. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full range: data
+sources, importers, API/backend, and (soon) the iOS app.
 
-# Search for a company
-curl "http://localhost:8000/api/search?q=stripe"
-
-# Get full company profile
-curl "http://localhost:8000/api/companies/stripe"
-```
-
-## MCP Server
-
-StartupGraph includes a built-in MCP (Model Context Protocol) server for direct AI tool integration:
+## Local development
 
 ```bash
-# Run the MCP server
-php artisan mcp:serve
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan serve
 ```
 
-Configure in your AI tool using the provided `mcp.json`:
+Tests: `php artisan test`
 
-```json
-{
-  "mcpServers": {
-    "startupgraph": {
-      "command": "php",
-      "args": ["artisan", "mcp:serve"]
-    }
-  }
-}
-```
+## Tech stack
 
-### Available Tools
-
-| Tool | Description |
-|------|-------------|
-| `search_companies` | Search for companies by name, category, or country |
-| `get_company` | Get detailed company info with funding and headcount |
-| `get_stats` | Get database statistics |
-| `search_oss_projects` | Search open source projects by name or language |
-
-Ask your AI tool questions like:
-- "What's Stripe's funding history?"
-- "Find AI companies in San Francisco"
-- "Show me trending open source projects"
-
-## Future plans
-
-- Hosted public API at startupgraph.dev
-- Community contributions to keep data fresh
-- Automated data refresh from company websites
+- Laravel 12 · PHP 8.2+ · SQLite (dev) / MySQL (prod)
+- Blade + Tailwind for the web/admin UI
+- SwiftUI iPhone app (in progress — see the plan)
+- MCP server for agent integration
 
 ## License
 

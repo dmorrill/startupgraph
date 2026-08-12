@@ -9,14 +9,14 @@ class CompareController extends Controller
 {
     public function index(Request $request)
     {
-        $slugs = array_filter(array_slice(
-            explode(',', $request->get('companies', '')),
-            0,
-            4
-        ));
+        $raw = $request->get('companies', '');
+        if (is_array($raw)) {
+            $raw = implode(',', $raw);
+        }
+        $slugs = array_filter(array_slice(explode(',', (string) $raw), 0, 4));
 
         $companies = collect();
-        if (!empty($slugs)) {
+        if (! empty($slugs)) {
             $companies = Company::whereIn('slug', $slugs)
                 ->with(['fundingRounds.investors', 'headcountSnapshots'])
                 ->withSum('fundingRounds', 'amount')

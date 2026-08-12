@@ -47,6 +47,7 @@ class ProductHuntDiscoverySource implements CompanyDiscoverySource
         }
 
         Log::info('ProductHunt: No API token configured, falling back to web scraping');
+
         return $this->discoverViaScraping();
     }
 
@@ -100,21 +101,21 @@ class ProductHuntDiscoverySource implements CompanyDiscoverySource
                         ],
                     ]);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     Log::warning("ProductHunt API error: HTTP {$response->status()}");
                     break;
                 }
 
                 $data = $response->json('data.posts');
-                if (!$data) {
+                if (! $data) {
                     break;
                 }
 
                 foreach ($data['edges'] as $edge) {
                     $post = $edge['node'];
-                    $combined = strtolower(($post['tagline'] ?? '') . ' ' . ($post['description'] ?? ''));
+                    $combined = strtolower(($post['tagline'] ?? '').' '.($post['description'] ?? ''));
 
-                    if (!$this->hasIndieSignals($combined, $post)) {
+                    if (! $this->hasIndieSignals($combined, $post)) {
                         continue;
                     }
 
@@ -128,7 +129,7 @@ class ProductHuntDiscoverySource implements CompanyDiscoverySource
                     ];
                 }
 
-                if (!($data['pageInfo']['hasNextPage'] ?? false)) {
+                if (! ($data['pageInfo']['hasNextPage'] ?? false)) {
                     break;
                 }
 
@@ -154,8 +155,9 @@ class ProductHuntDiscoverySource implements CompanyDiscoverySource
                 ])
                 ->get('https://www.producthunt.com/leaderboard/daily');
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning("ProductHunt scrape error: HTTP {$response->status()}");
+
                 return [];
             }
 

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Company extends Model
 {
     use HasFactory;
+
     public const CATEGORIES = [
         'ai_ml' => 'AI/ML',
         'fintech' => 'Fintech',
@@ -99,6 +100,11 @@ class Company extends Model
         return $this->belongsToMany(OpenSourceProject::class, 'company_oss_alternatives', 'company_id', 'oss_project_id')
             ->withPivot('relationship_type', 'notes')
             ->withTimestamps();
+    }
+
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'company_follows')->withTimestamps();
     }
 
     public function scheduledTaskExecutions(): HasMany

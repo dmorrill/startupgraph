@@ -12,6 +12,7 @@ class OpenSourceProjectFactory extends Factory
     public function definition(): array
     {
         $repo = fake()->unique()->slug();
+
         return [
             'name' => fake()->words(2, true),
             'github_url' => "https://github.com/org/{$repo}",

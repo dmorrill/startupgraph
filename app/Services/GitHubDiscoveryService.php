@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\OpenSourceProject;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -18,6 +19,7 @@ class GitHubDiscoveryService
     ];
 
     private const MIN_STARS = 500;
+
     private const AWESOME_SELFHOSTED_REPO = 'awesome-selfhosted/awesome-selfhosted';
 
     private ?string $token;
@@ -71,14 +73,14 @@ class GitHubDiscoveryService
         $page = 1;
         do {
             $response = $this->githubRequest('https://api.github.com/search/repositories', [
-                'q' => "topic:{$topic} stars:>" . self::MIN_STARS . " pushed:>{$pushedAfter}",
+                'q' => "topic:{$topic} stars:>".self::MIN_STARS." pushed:>{$pushedAfter}",
                 'sort' => 'stars',
                 'order' => 'desc',
                 'per_page' => 100,
                 'page' => $page,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning("GitHub search failed for topic '{$topic}': {$response->status()}");
                 break;
             }
@@ -108,13 +110,14 @@ class GitHubDiscoveryService
         $stats = ['created' => 0, 'updated' => 0];
 
         $response = $this->githubRequest(
-            'https://api.github.com/repos/' . self::AWESOME_SELFHOSTED_REPO . '/readme',
+            'https://api.github.com/repos/'.self::AWESOME_SELFHOSTED_REPO.'/readme',
             [],
             ['Accept' => 'application/vnd.github.raw']
         );
 
-        if (!$response->successful()) {
-            Log::warning('Failed to fetch awesome-selfhosted README: ' . $response->status());
+        if (! $response->successful()) {
+            Log::warning('Failed to fetch awesome-selfhosted README: '.$response->status());
+
             return $stats;
         }
 
@@ -142,7 +145,7 @@ class GitHubDiscoveryService
                     "https://api.github.com/repos/{$match[3]}/{$match[4]}"
                 );
 
-                if (!$repoResponse->successful()) {
+                if (! $repoResponse->successful()) {
                     continue;
                 }
 
@@ -194,17 +197,19 @@ class GitHubDiscoveryService
 
         if ($existing) {
             $existing->update($data);
+
             return 'updated';
         }
 
         OpenSourceProject::create($data);
+
         return 'created';
     }
 
     /**
      * Make a GitHub API request with optional token auth.
      */
-    private function githubRequest(string $url, array $query = [], array $headers = []): \Illuminate\Http\Client\Response
+    private function githubRequest(string $url, array $query = [], array $headers = []): Response
     {
         $request = Http::timeout(30)
             ->withHeaders(array_merge([

@@ -46,13 +46,13 @@ class PersonTest extends TestCase
 
     public function test_uses_people_table(): void
     {
-        $person = new Person();
+        $person = new Person;
         $this->assertEquals('people', $person->getTable());
     }
 
     public function test_route_key_name_is_slug(): void
     {
-        $person = new Person();
+        $person = new Person;
         $this->assertEquals('slug', $person->getRouteKeyName());
     }
 }
