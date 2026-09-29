@@ -27,6 +27,77 @@ memos on your phone.
 3. **Contributors** — devs and data folks who grow the commons (see
    CONTRIBUTING). The build-in-public story recruits them.
 
+## Competitive landscape: Exa and Monid
+
+*Researched September 2026.* All three products are built for AI agents to
+use, but they sit at different layers. Exa is a search engine over the whole
+web, Monid is a marketplace where agents pay per call for other companies'
+tools, and StartupGraph is a structured dataset about startups plus a
+workspace where an agent keeps its research.
+
+| | **StartupGraph** | **Exa.ai** | **Monid** |
+|---|---|---|---|
+| **Core thing** | A structured graph of startups: companies, funding rounds, investors, people, headcount over time, news, open-source projects | Its own web crawl and index with embedding-based search. Websets builds verified lists of companies or people from a single prompt. | A router that lets agents find, inspect and run 200+ paid data endpoints (1,800+ connectable tools) from one balance |
+| **Scope** | Startups only | The whole web | Any tool (social data, search, ecommerce, lead generation, blockchain…) |
+| **Data model** | Relational with a fixed schema (`Company`, `FundingRound`, `HeadcountSnapshot`, `Person`, `Investor`…) | Documents and web pages. Websets adds criteria-matched entities with relevance scores. | None of its own. It passes through whatever each tool returns. |
+| **Where data comes from** | Import pipelines (YC, Wikipedia, SEC EDGAR, GitHub, HN, TechCrunch funding news, Product Hunt, Companies House) plus community contributions | Live crawling | Third-party providers |
+| **Keeps history** | Yes. Headcount snapshots, funding timelines, OSS star history. | No. It shows the web as it is now. | No |
+| **Keeps the agent's own work** | Yes. The research layer stores lists, screens (saved queries), notes and signals per user. | Websets are saved lists, but meant for prospecting rather than an ongoing research workspace | No |
+| **What the human sees** | A native iPhone app that shows what the agent found | A web dashboard | Nothing. It's pure infrastructure. |
+| **Business model** | Open source (MIT); REST reads need no key | Paid API, usage-based ($2.2B valuation, 400K+ developers) | Pay per call, markup on a pooled balance (pre-seed, $2.1M) |
+
+### Where the real differences are
+
+1. **Depth vs. breadth.** Exa can answer "find Series A dev-tools companies
+   under 50 people" today by crawling the web and checking results against
+   your criteria. It works out that answer from scratch on every query, from
+   whatever pages exist. StartupGraph keeps it as structured rows, e.g.
+   `funding_rounds.round_type`, `headcount_snapshots` over time, and
+   `company_person.is_current`. That makes queries cheap, repeatable and
+   comparable over time ("who grew headcount 40% since March?"). Exa can't
+   answer that kind of time-series question, because the web doesn't keep old
+   snapshots in a queryable form.
+2. **We store the agent's work; they don't.** The write tools (`create_list`,
+   `add_to_list`, `save_note`, `create_screen`, `log_signal`) are the part
+   that sets us apart. Exa and Monid answer calls and keep nothing.
+   StartupGraph is where the agent's research lives between sessions, and the
+   iPhone app displays it — "sells the agent a workspace."
+3. **Monid is a sales channel, not a competitor.** Monid doesn't have its own
+   data; it resells other providers' endpoints. If StartupGraph offered a paid
+   or rate-limited tier, being one of Monid's endpoints could reach agents that
+   never set up our MCP server directly. Exa is closer to a real competitor,
+   but also a possible data source: Websets or Exa's company search could feed
+   the discovery importers (`DiscoverCompanies`, `BulkImportCompanies`) to fill
+   gaps in the graph.
+4. **Weaknesses to be honest about.**
+   - **Coverage and freshness:** ~70K companies, and some funding rounds still
+     have no source URL (issue #3). Exa's index is far larger and updates live.
+   - **Verification:** Websets checks every result against your criteria and
+     gives a relevance score. Our quality depends on the importers plus
+     `AuditCompanyData`, and we don't give agents a per-field confidence or
+     source score.
+   - **Where agents connect:** the hosted MCP endpoint is still being built,
+     while Exa and Monid are already one-line connections in Claude, Cursor
+     and others.
+
+### Positioning in one sentence
+
+Exa searches the web and Monid lets agents buy tools, while StartupGraph is a
+structured startup dataset that tracks changes over time, with a research
+workspace your agent keeps on your behalf. Its advantages are the historical
+data and the saved lists and notes, not breadth.
+
+Two practical follow-ups: use Exa as a discovery and enrichment source feeding
+the commons, and list StartupGraph on Monid as a distribution channel.
+
+Sources: [Exa](https://exa.ai/) ·
+[Exa Search](https://exa.ai/products/search) ·
+[Exa Websets](https://exa.ai/websets) ·
+[Exa pricing](https://exa.ai/pricing) ·
+[Monid docs](https://docs.monid.ai/) ·
+[Monid raises $2.1M (Dealroom)](https://dealroom.co/news/148133-monid-raises-2-1m-to-let-ai-agents-buy-tools-on-demand/) ·
+[Monid on Product Hunt](https://www.producthunt.com/products/monid)
+
 ## The core loop (hero demo)
 
 > You: "Find me Series A dev-tools companies that raised in the last 6 months
