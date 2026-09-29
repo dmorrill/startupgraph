@@ -1,6 +1,6 @@
 # StartupGraph Restart: Agent-First, iOS-First
 
-*Decided July 2026. This document is the source of truth for the project restart —
+*Decided July 2026; roadmap updated September 2026 (Phase 1.5). This document is the source of truth for the project restart —
 it supersedes the original web-MVP framing in issue #1 and the README where they conflict.*
 
 ## The product idea
@@ -86,6 +86,40 @@ produce. What that means concretely:
    optionally why (the `rationale` fields). This is what makes agent-written
    research trustworthy and makes a community review queue possible later.
 
+## Lessons from Exa and Monid (September 2026)
+
+*Added after the competitive review in `docs/marketing-site.md`.* Exa (web
+search API for agents) and Monid (pay-per-call tool router for agents) both
+make **the agent the one that onboards**: the first working call takes one
+step, inside a tool the developer already uses, and costs nothing up front.
+We had the right pieces (hosted MCP, `llms.txt`, OpenAPI, quickstart) but the
+front door still ran through a server admin. Principles we're adopting:
+
+1. **Value before signup.** Exa's hosted MCP works with no key (rate-limited);
+   sign-in only unlocks higher limits and more tools. For us: the graph is
+   already a public commons over REST, so read tools on the hosted MCP should
+   be keyless too. Writes need an account — and that's the natural signup
+   prompt.
+2. **Sign-in happens in the browser, not the terminal.** Exa supports OAuth on
+   the MCP URL; Monid has OAuth for apps. No one should need to see or paste a
+   token to connect a mainstream MCP client. A self-serve token page is the
+   fallback for everything else.
+3. **Teach the agent, not just the developer.** Monid's entire onboarding is
+   "set up https://monid.ai/SKILL.md". A skill file can teach our *workflow*
+   (screen → shortlist with rationale → memo → signal), which a tool list
+   alone can't.
+4. **Small default tool surface.** Exa exposes two tools by default, the rest
+   opt-in. Fewer, sharper tools = less context and better tool choice.
+5. **Every surface does the same things.** Monid ships MCP, skill, CLI and HTTP over one
+   capability set. We already have the parity rule; extend it to guests
+   (same read tools, keyed or not).
+6. **Be where agents already are.** One-click installs and directory listings
+   (Claude connectors/plugins, Cursor, VS Code, the MCP registry) do more for
+   adoption than docs. Monid itself is a directory we can list in.
+7. **Publish the limits.** Exa prints a price per endpoint and a free monthly
+   allowance. We're free, but we should still publish rate limits and return
+   them in headers and structured errors so agents can plan.
+
 ## Marketing site (startupgraph.dev)
 
 Positioning: **"The startup database built for AI agents."** The site's job is
@@ -121,17 +155,127 @@ screens, lists, and memos appear on your phone.*
 - [ ] Deploy the backend (#84 already scopes Laravel Cloud). The iPhone can't
       talk to a laptop; a hosted API is a v1 prerequisite.
 
-### Phase 1 — Backend: the research layer
-- [ ] Sanctum per-user token auth; registration (web auth scaffolding already
-      exists); authenticated write routes.
-- [ ] Migrations + models: `List`, `ListEntry`, `Note`, `Signal`; generalize
+### Phase 1 — Backend: the research layer ✅ (shipped in #106)
+- [x] Sanctum per-user token auth; registration (web auth scaffolding already
+      exists); authenticated write routes. *Gap: tokens can only be issued by
+      a server admin via `php artisan api:token` — fixed in Phase 1.5, M1.*
+- [x] Migrations + models: `List`, `ListEntry`, `Note`, `Signal`; generalize
       `SavedSearch` → `Screen` with stored result snapshots. All with `user_id`.
-- [ ] Write API endpoints + feature tests.
-- [ ] MCP write tools wired to the same endpoints; host the MCP server as a
+- [x] Write API endpoints + feature tests.
+- [x] MCP write tools wired to the same endpoints; host the MCP server as a
       remote endpoint (Streamable HTTP) at `startupgraph.dev/mcp`.
-- [ ] OpenAPI spec + `llms.txt` + agent quickstart docs.
-- [ ] Signals generation: emit signal rows from existing pipelines (new funding
-      round detected, headcount snapshot delta, etc.).
+- [x] OpenAPI spec + `llms.txt` + agent quickstart docs.
+- [x] Signals generation: emit signal rows from existing pipelines (funding
+      round and headcount-delta observers).
+
+### Phase 1.5 — Zero-friction agent onboarding
+
+Goal: **a stranger goes from "paste one line into my agent" to their first
+list on their phone without touching a terminal or a token.** Applies the
+Exa/Monid lessons above. Each checkbox below is sized as one issue / one PR;
+IDs (e.g. `M2.1`) are for cross-referencing in issue titles.
+
+**Dependencies at a glance**
+
+```
+Phase 0 deploy (#84) + domain (#107) ──┐
+                                       ├──▶ M5 Distribution
+M1 Self-serve tokens ──▶ M3 OAuth ─────┤
+M2 Keyless MCP reads ──────────────────┤
+M4 Agent onboarding kit ───────────────┘
+```
+
+M1, M2 and M4 have no dependencies on each other and can be built in parallel
+now (locally, before deploy). M3 builds on M1. M5 needs a live deploy.
+
+#### M1 — Self-serve API tokens
+*Done when: a registered user creates, names and revokes a token in the web
+UI, and no public doc mentions `php artisan api:token`.*
+- [ ] **M1.1 Token management page.** Profile → "Agent tokens": create (name
+      becomes the `created_via` label), list with last-used time, revoke.
+      Plaintext shown once. Sanctum already backs this; reuse
+      `IssueApiToken`'s naming logic. Feature tests for create/revoke/scoping.
+- [ ] **M1.2 Docs pass.** Replace the artisan instruction in `public/llms.txt`,
+      `docs/agent-quickstart.md` and `README.md` with the sign-up → token page
+      flow. Keep `api:token` documented only for self-hosters.
+- [ ] **M1.3 Post-signup "connect your agent" screen.** After registration,
+      show the token plus ready-to-paste `mcp.json` / Claude Code
+      (`claude mcp add …`) snippets with the token filled in.
+
+#### M2 — Keyless hosted MCP for reads
+*Done when: `startupgraph.dev/mcp` with no `Authorization` header lists and
+runs the read tools, rate-limited per IP; write tools return a structured
+"sign in to save this" error.*
+- [ ] **M2.1 Optional auth on `/mcp`.** Route currently requires
+      `auth:sanctum` (`bootstrap/app.php`). Resolve the user if a token is
+      present, otherwise continue as guest. `McpToolService::tools()` /
+      `execute()` already accept a null user (the stdio server relies on it) —
+      verify guest mode exposes only read tools.
+- [ ] **M2.2 Guest rate limiter.** Separate `mcp-guest` limiter (e.g.
+      30/min per IP) from the authenticated 120/min `api` limiter; return
+      `X-RateLimit-*` headers and a JSON-RPC error carrying `retry_after` and
+      a signup URL when exceeded.
+- [ ] **M2.3 Auth-required error for write tools.** Guests calling
+      `create_list` etc. get a structured error with a human-readable
+      message the agent can relay ("Create a free account at … to save
+      lists") — the upgrade prompt, not a 401.
+- [ ] **M2.4 Tests + docs.** Feature tests for guest list/call/limit/write-
+      refusal; update quickstart and `llms.txt` to lead with the keyless URL.
+
+#### M3 — OAuth sign-in for MCP clients
+*Done when: adding `https://startupgraph.dev/mcp` in Claude (or another MCP
+client that supports auth) opens a browser login and the agent can write,
+with no token pasted.*
+- [ ] **M3.1 Spike: pick the OAuth stack.** Evaluate Laravel Passport vs. the
+      `laravel/mcp` package's OAuth support against the MCP authorization spec
+      (OAuth 2.1 + PKCE, protected-resource metadata, dynamic client
+      registration). Output: short decision note in this doc.
+- [ ] **M3.2 Authorization server + discovery.** Implement per M3.1:
+      `/.well-known/oauth-protected-resource`, authorization-server metadata,
+      dynamic client registration, consent screen. `/mcp` returns a
+      `WWW-Authenticate` challenge only when a write tool needs it (keeps M2
+      keyless reads working).
+- [ ] **M3.3 Provenance from OAuth clients.** Registered client name →
+      `created_via`, so research written through OAuth is attributed just like
+      token-written research. Tokens from M1 keep working.
+- [ ] **M3.4 Connected-apps UI.** List and revoke OAuth grants alongside
+      tokens on the M1 page.
+
+#### M4 — Agent onboarding kit
+*Done when: "set up https://startupgraph.dev/SKILL.md" is enough for an agent
+to connect and run the hero demo from `docs/marketing-site.md`.*
+- [ ] **M4.1 `SKILL.md`.** Served from `public/`. Teaches connection (keyless
+      first, then sign-in), the tool set, and the research routine: build a
+      screen → shortlist onto a list with a rationale per entry → write memos
+      → log signals. Includes the three example prompts.
+- [ ] **M4.2 Tool groups.** Default hosted tool list = reads + the core write
+      loop; opt-in groups via query param (e.g. `/mcp?tools=all` or
+      `?tools=read,lists`). Audit every tool description for clarity and
+      consistent argument names.
+- [ ] **M4.3 Structured, self-describing errors.** One error envelope across
+      REST and MCP (code, message, hint, docs URL); validation errors name the
+      bad argument and valid values (e.g. category keys).
+- [ ] **M4.4 Limits page.** Publish rate limits (guest vs. signed-in) and the
+      free-forever promise for the commons in docs and `llms.txt`.
+
+#### M5 — Distribution (after deploy)
+*Done when: StartupGraph can be installed from at least three directories
+without hand-editing JSON.*
+- [ ] **M5.1 Official MCP registry** listing (`server.json`) for the hosted
+      endpoint.
+- [ ] **M5.2 Claude**: submit to the connector directory and/or publish a
+      Claude Code plugin bundling the MCP config + `SKILL.md`.
+- [ ] **M5.3 Cursor + VS Code**: one-click install links on the site and in
+      the README; Cursor marketplace submission.
+- [ ] **M5.4 Monid listing**: list the read endpoints on Monid as an extra
+      channel (free or nominal price); track calls arriving via Monid.
+- [ ] **M5.5 Marketing site CTA**: "Connect your agent" becomes the one-line
+      skill/URL plus install buttons (feeds Phase 2.5).
+
+#### Later — usage before pricing
+Not scheduled; revisit once M1–M5 ship. Per-token/per-client usage metering
+(which tools, how often, guest vs. signed-in) so any future pro tier or
+credits model (Exa-style free monthly allowance) is based on real usage.
 
 ### Phase 2 — iOS v1 (read-only)
 - [x] Decide where the app lives: `ios/` in this repo (monorepo — one PR flow,
@@ -149,13 +293,17 @@ screens, lists, and memos appear on your phone.*
 ### Phase 2.5 — Marketing site
 - [ ] Landing page at startupgraph.dev selling the agent-first loop, with the
       two CTAs (connect your agent / get the app), `llms.txt`, and docs.
-      Copy draft in `docs/marketing-site.md`.
+      Copy draft in `docs/marketing-site.md`. The "connect your agent" CTA
+      is the one-line skill/URL from Phase 1.5 (M4.1, M5.5).
 
 ### Phase 3 — Grow the dataset (parallel, ongoing)
 - [ ] Unblock importers that just need API keys: GitHub orgs (#68), Product Hunt
       (#69), OpenCorporates (#70), Companies House (#71).
 - [ ] Expand Wikipedia categories (#74); track the 50K→70K+ milestone (#75).
 - [ ] Recurring refresh jobs so the graph stays current (funding, headcount, OSS stars).
+- [ ] Spike: Exa (Search / Websets) as a discovery and enrichment source —
+      cost per 1K companies, fit with `DiscoverCompanies`/`BulkImportCompanies`,
+      and terms of use for storing results in an open commons (cf. #72).
 
 ## Community & contributions
 
